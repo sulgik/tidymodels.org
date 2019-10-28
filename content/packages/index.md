@@ -49,13 +49,6 @@ These package are guided by our [principles for creating modeling packages](http
     </div>
   </div>
   <div class="package">
-    <img class="package-image" src="/images/yardstick.png" alt=""></img>
-    <div class="package-info">
-      <h3><a href="https://tidymodels.github.io/yardstick/"> yardstick </a></h3>
-      <p>The effectiveness of a model can be measured using various performance metrics in yardstick <a href="https://tidymodels.github.io/yardstick/" aria-hidden="true">Learn more ...</a></p>
-    </div>
-  </div>
-  <div class="package">
     <img class="package-image" src="/images/parsnip.png" alt=""></img>
     <div class="package-info">
       <h3><a href="https://tidymodels.github.io/parsnip/"> parsnip </a></h3>
@@ -68,6 +61,21 @@ These package are guided by our [principles for creating modeling packages](http
       <h3><a href="https://broom.tidyverse.org/"> broom </a></h3>
       <p>broom can take common R objects and convert their information into useable and predictable formats. 
       <a href="https://broom.tidyverse.org/" aria-hidden="true">Learn more ...</a></p>
+    </div>
+  </div>
+  <div class="package">
+    <img class="package-image" src="/images/dials.png" alt=""></img>
+    <div class="package-info">
+      <h3><a href="https://tidymodels.github.io/dials/"> dials </a></h3>
+      <p>dials contains functions to create and manipulating tuning parameters. </p>
+      <a href="https://tidymodels.github.io/dials/" aria-hidden="true">Learn more ...</a></p>
+    </div>
+  </div>    
+    <div class="package">
+    <img class="package-image" src="/images/yardstick.png" alt=""></img>
+    <div class="package-info">
+      <h3><a href="https://tidymodels.github.io/yardstick/"> yardstick </a></h3>
+      <p>The effectiveness of a model can be measured using various performance metrics in yardstick <a href="https://tidymodels.github.io/yardstick/" aria-hidden="true">Learn more ...</a></p>
     </div>
   </div>
   <div class="package">
