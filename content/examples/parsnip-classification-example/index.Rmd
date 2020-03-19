@@ -1,6 +1,7 @@
 ---
 title: "Using parsnip for Classification Models"
-tags: [parsnip, keras, classification models]
+tags: [rsample, parsnip]
+categories: [model fitting]
 ---
   
 ```{r ex_setup, include=FALSE}
@@ -12,71 +13,136 @@ knitr::opts_chunk$set(
 )
 options(digits = 3)
 library(tidymodels)
+pkgs <- c("tidymodels", "keras")
 
-theme_set(theme_bw())
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `modeldata` and `keras` packages (with tensorflow installed via `keras::install_keras()`). 
+`r req_pkgs(pkgs)`
 
-To demonstrate `parsnip` for classification models, the credit data will be used. 
+# Introduction
 
-```{r credit-split}
-library(tidymodels)
-library(modeldata)
-data(credit_data)
+This article focuses on fitting models using the `parsnip` package. For a classification problem, a single model is fit and evaluated using a validation set. While the `tune` package has functionality to also do this, the `parsnip` package is the center of attention so that we can better understand its usage. 
 
-set.seed(7075)
-data_split <- initial_split(credit_data, strata = "Status", p = 0.75)
+# Fitting a neural network model
 
-credit_train <- training(data_split)
-credit_test  <- testing(data_split)
+
+A small, two predictor classification data set is used to fit the model. The data are in the `workflows` package and have been split into a training, validation, and test data sets. In this analysis, the test set is left untouched; the code here is trying to emulate a good data usage methodology where the test set would only be evaluated once a variety of models were considered. 
+
+
+```{r biv--split}
+data(bivariate)
+nrow(bivariate_train)
+nrow(bivariate_val)
 ```
 
-A single hidden layer neural network will be used to predict a person's credit status. To do so, the columns of the predictor matrix should be numeric and on a common scale. `recipes` will be used to do so.  
+A plot of the data shows two right-skewed predictors: 
 
-```{r credit-proc}
-credit_rec <- 
-  recipe(Status ~ ., data = credit_train) %>%
-  step_knnimpute(Home, Job, Marital, Income, Assets, Debt) %>%
-  step_dummy(all_nominal(), -Status) %>%
-  step_center(all_predictors()) %>%
-  step_scale(all_predictors()) %>%
-  prep(training = credit_train, retain = TRUE)
+```{r biv-plot}
+ggplot(bivariate_train, aes(x = A, y = B, col = Class)) + 
+  geom_point(alpha = .2)
+```
+
+A single hidden layer neural network will be used to predict the outcome. To do so, the columns of the predictor are transformed to be more symmetric (via the `step_BoxCox()` function) and on a common scale (using `step_normalize()`). `recipes` will be used to do so:
+
+```{r biv--proc}
+biv_rec <- 
+  recipe(Class ~ ., data = bivariate_train) %>%
+  # There are some missing values to be imputed: 
+  step_BoxCox(all_predictors())%>%
+  step_normalize(all_predictors()) %>%
+  # Estimate the means and standard deviations for the columns as well as
+  # the two transformation parameters: 
+  prep(training = bivariate_train, retain = TRUE)
 
 # juice() will be used to get the processed training set back
 
-test_normalized <- bake(credit_rec, new_data = credit_test, all_predictors())
+val_normalized <- bake(biv_rec, new_data = bivariate_val, all_predictors())
+# For when we arrive at a final model: 
+test_normalized <- bake(biv_rec, new_data = bivariate_test, all_predictors())
 ```
 
-`keras` will be used to fit a model with 5 hidden units and uses a 10% dropout rate to regularize the model. At each training iteration (aka epoch) a random 20% of the data will be used to measure the cross-entropy of the model. 
+The `keras` package will be used to fit a model with 5 hidden units and uses a 10% dropout rate to regularize the model:
 
-```{r credit-nnet}
+```{r biv--nnet}
 set.seed(57974)
 nnet_fit <-
   mlp(epochs = 100, hidden_units = 5, dropout = 0.1) %>%
   set_mode("classification") %>% 
-  # Also set engine-specific arguments: 
-  set_engine("keras", verbose = 0, validation_split = .20) %>%
-  fit(Status ~ ., data = juice(credit_rec))
+  # Also set engine-specific argument to prevent logging the results: 
+  set_engine("keras", verbose = 0) %>%
+  fit(Class ~ ., data = juice(biv_rec))
 
 nnet_fit
 ```
 
-In `parsnip`, the `predict()` function can be used:  
+In `parsnip`, the `predict()` function can be used to characterize performance on the validation set. Since `parsnip` always produces tibble outputs, these can just be column bound to the original data: 
 
-```{r credit-perf}
-test_results <- 
-  credit_test %>%
-  select(Status) %>%
-  as_tibble() %>%
-  mutate(
-    nnet_class = predict(nnet_fit, new_data = test_normalized) %>% 
-      pull(.pred_class),
-    nnet_prob  = predict(nnet_fit, new_data = test_normalized, type = "prob") %>% 
-      pull(.pred_good)
+```{r biv--perf}
+val_results <- 
+  bivariate_val %>%
+  bind_cols(
+    predict(nnet_fit, new_data = val_normalized),
+    predict(nnet_fit, new_data = val_normalized, type = "prob")
   )
+val_results %>% slice(1:5)
 
-test_results %>% roc_auc(truth = Status, nnet_prob)
-test_results %>% accuracy(truth = Status, nnet_class)
-test_results %>% conf_mat(truth = Status, nnet_class)
+val_results %>% roc_auc(truth = Class, .pred_One)
+val_results %>% accuracy(truth = Class, .pred_class)
+val_results %>% conf_mat(truth = Class, .pred_class)
+```
+
+Let's also create a grid to get a visual sense of the class boundary for the validation set.
+
+```{r biv-boundary}
+x_grid <-
+  expand.grid(A = seq(min(bivariate_train$A), max(bivariate_train$A), length.out = 100),
+              B = seq(min(bivariate_train$B), max(bivariate_train$B), length.out = 100))
+x_grid_trans <- bake(biv_rec, x_grid)
+
+# Make predictions using the transformed predictors but 
+# attach them to the predictors in the original units: 
+x_grid <- 
+  x_grid %>% 
+  bind_cols(predict(nnet_fit, x_grid_trans, type = "prob"))
+
+ggplot(x_grid, aes(x = A, y = B)) + 
+  geom_contour(aes(z = .pred_One), breaks = .5, col = "black") + 
+  geom_point(data = bivariate_val, aes(col = Class), alpha = 0.3)
+```
+
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
 ```

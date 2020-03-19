@@ -1,6 +1,7 @@
 ---
 title: "Entity Embeddings of Categorical Variables using Tensorflow"
-tags: [embed, tensorflow, recipes, ggiraph, classification models, feature engineering, categorical predictors]
+tags: [recipes, embed]
+categories: [pre-processing]
 ---
 
 
@@ -17,20 +18,53 @@ library(keras)
 library(AmesHousing)
 library(embed)
 library(ggiraph)
-options(digits = 3)
-set.seed(24566)
+
+pkgs <- c("tidymodels", "ggiraph", "embed", "AmesHousing")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
 theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
 
-In addition to the `tidymodels` package, this example uses the `timetk`, `AmesHousing`, `keras`, `embed`, and `ggiraph` packages. 
+`r req_pkgs(pkgs)`
 
+# Introduction
 
 The approach encodes categorical data as multiple numeric variables using a _word embedding_ approach. Originally intended as a way to take a large number of word identifiers and represent them in a smaller dimension. Good references on this are [Guo and Berkhahn (2016)](https://arxiv.org/abs/1604.06737) and Chapter 6 of [Francois and Allaire (2018)](https://www.manning.com/books/deep-learning-with-r). 
 
 The methodology first translates the _C_ factor levels as a set of integer values then randomly allocates them to the new _D_ numeric columns. These columns are optionally connected in a neural network to an intermediate layer of hidden units. Optionally, other predictors can be added to the network in the usual way (via the `predictors` argument) that also link to the hidden layer. This implementation uses a single layer with ReLu activations. Finally, an output layer is used with either linear activation (for numeric outcomes) or softmax (for classification).  
 
 To translate this model to a set of embeddings, the coefficients of the original embedding layer are used to represent the original factor levels. 
+
+
+# Ames housing data
 
 As an example, we use the Ames housing data where the sale price of houses are being predicted. One predictor, neighborhood, has the most factor levels of the predictors. 
 
@@ -145,3 +179,11 @@ hood_coef %>%
   cor() %>%
   round(2)
 ```
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+

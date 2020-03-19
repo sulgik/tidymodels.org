@@ -1,6 +1,7 @@
 ---
 title: "Effect Encodings Using Generalized Linear Models"
-tags: [embed, recipes, ggiraph, classification models, feature engineering, categorical predictors, Bayesian analysis, mixed models]
+tags: [recipes, embed]
+categories: [pre-processing]
 ---
 
 ```{r setup, include = FALSE}
@@ -19,12 +20,47 @@ library(modeldata)
 
 data(okc)
 
+pkgs <- c("tidymodels", "ggiraph", "embed", "modeldata")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
 theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `ggiraph`, `modeldata`, `rstanarm`, and `lme4` packages. 
+`r req_pkgs(pkgs)`
+
+# Introduction
 
 Effect Encoding (a.k.a. likelihood encoding) method uses a generalized linear model to estimate the effect of each level of a factor predictor on the outcome. These values are retained to serve as the new encodings for the factor levels. This is sometimes referred to as _likelihood encodings_. The `embed` package has two estimation methods for accomplishing this via a recipe: with and without pooling. 
+
+
+# OkCupid data
 
 The example used here is the OkCupid data from [Kim and Escobedo-Land (2015)(pdf)](http://www.amstat.org/publications/jse/v23n2/kim.pdf). In [Kuhn and Johnson (2018)](http://feat.engineering), these data are used to predict whether a person is in the STEM fields (science, technology, engineering, and mathematics). One predictor, geographic location, is a factor variable. The frequencies of location in the data set used here vary between `r min(table(okc$location))` person and `r max(table(okc$location))` per location. There are `r length(table(okc$location))` locations in the data. Rather than producing `r length(table(okc$location)) - 1` indicator variables for a model, a single numeric variable can be used to represent the _effect_ or _impact_ of the factor level on the outcome. In this case, where a factor outcome is being predicted (STEM or not), the effects are quantified by the log-odds of the location for being STEM.  
 
@@ -42,7 +78,7 @@ props <-
   group_by(location) %>%
   summarise(
     prop = mean(Class == "stem"),
-    log_odds  = log(prop/(1-prop)),
+    log_odds  = log(prop/(1 - prop)),
     n = length(Class)
   ) %>% 
   mutate(label = paste0(gsub("_", " ", location), " (n=", n, ")"))
@@ -56,7 +92,7 @@ rng <- extendrange(props$log_odds[is.finite(props$log_odds)], f = 0.1)
 
 In subsequent sections, a logistic regression model is used. When the outcome variable is numeric, the steps automatically use linear regression models to estimate effects. 
 
-## No Pooling
+# No pooling
 
 In this case, the effect of each location can be estimated separately for each factor level. One method for conducting this estimation step is to fit a logistic regression with the STEM classification as the outcome and the location as the predictor. From this, the log-odds are naturally estimated by logistic regression. 
 
@@ -90,7 +126,7 @@ For the locations with `n > 1`, the estimates are effectively the same:
 ```{r simple-glm-check}
 glm_estimates %>%
   dplyr::filter(is.finite(log_odds)) %>%
-  mutate(difference = log_odds-glm) %>%
+  mutate(difference = log_odds - glm) %>%
   dplyr::select(difference) %>%
   summary()
 ```
@@ -103,23 +139,26 @@ tidy(okc_glm, number = 1) %>%
   select(-id)
 ```
 
-## Partial Pooling
+# Partial pooling
 
 This method estimates the effects by using all of the locations at once using a hierarchical Bayesian generalized linear model. The locations are treated as a random set that contributes a random intercept to the previously used logistic regression. 
 
 Partial pooling estimates each effect as a combination of the separate empirical estimates of the log-odds and the prior distribution. For locations with small sample sizes, the final estimate is _shrunken_ towards the overall mean of the log-odds. This makes sense since we have poor information for estimating these locations. For locations with many data points, the estimates reply more on the empirical estimates. [This page](https://cran.r-project.org/web/packages/rstanarm/vignettes/glmer.html) has a good discussion of pooling using Bayesian models. 
  
-### Bayesian Methods
+# Bayesian methods
 
 One appraoch to partial pooling is the function `step_lencode_bayes()` uses the `stan_glmer()` function in the `rstanarm` package. There are a number of options that can be used to control the model estimation routine, including:
 
 ```{r stan-options}
+# Run in parallel
+cores <- parallel::detectCores()
+
 opts <- 
   list(
     ## the number of chains
-    chains = 4,
+    chains = cores,
     ## how many cores to use 
-    cores = 4,
+    cores = cores,
     ## the total number of iterations per chain (low here for time)
     iter = 500,
     ## set the random number seed
@@ -174,7 +213,7 @@ tidy(okc_glmer, number = 1) %>%
   dplyr::select(-terms, -id)
 ```
 
-### Empirical Bayesian Methods/Mixed Models
+## Empirical Bayesian methods/mixed models
 
 The same generalized linear model can be fit using mixed models via a random intercept. The `lme4` package can also be used to get pooled estimates via `step_lencode_mixed()`.
 
@@ -208,3 +247,10 @@ ggiraph(ggobj = mixed_plot)
 ```
 
 These values are very similar to the Bayesian estimates. 
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+

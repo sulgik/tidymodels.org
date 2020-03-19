@@ -1,6 +1,7 @@
 ---
 title: "Using parsnip for Regression Models"
-tags: [parsnip, glmnet, randomForest, ranger, regression models]
+tags: [rsample, parsnip]
+categories: [model fitting]
 ---
   
 
@@ -16,15 +17,53 @@ library(AmesHousing)
 library(ranger)
 library(randomForest)
 library(glmnet)
-library(ggplot2)
 
 preds <- c("Longitude", "Latitude", "Lot_Area", "Neighborhood", "Year_Sold")
 pred_names <- paste0("`", preds, "`")
 
-theme_set(theme_bw())
+pkgs <- c("tidymodels", "AmesHousing", "ranger", "randomForest", "glmnet")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `AmesHousing`, `glmnet`,  `randomForest`, `ranger`, and `modeldata` packages. 
+
+`r req_pkgs(pkgs)`
+
+# Introduction
+
+This article demonstrates how to use `parsnip` for creating regression models using a few different data sets. The first model that it fit (random forest), does _not_ require all numeric input (see discussion [here](https://bookdown.org/max/FES/categorical-trees.html)) and the effect of using `fit()` and `fit_xy()` are discussed as well as _data descriptors_. 
+
+Another model (regularized linear regression) is also used to demonstrate how easy it is to move between different types of models using `parsnip`. 
+
+# The Ames housing data
 
 The Ames housing data will be used to to demonstrate how regression models can be made using `parsnip`. We'll create the data set and create a simple training/test set split:
 
@@ -40,6 +79,8 @@ data_split <- initial_split(ames, strata = "Sale_Price", p = 0.75)
 ames_train <- training(data_split)
 ames_test  <- testing(data_split)
 ```
+
+The use of the test set here is _only for illustration_; normally in a data analysis these data would be saved to the very end after many models have been evaluated. 
 
 # Random Forests
 
@@ -79,7 +120,7 @@ test_results <- ames_test %>%
   bind_cols(
     predict(rf_xy_fit, new_data = ames_test[, preds])
   )
-test_results
+test_results %>% slice(1:5)
 
 # summarize performance
 test_results %>% metrics(truth = Sale_Price, estimate = .pred) 
@@ -194,3 +235,12 @@ test_results %>%
   facet_wrap(~model) + 
   coord_fixed()
 ```
+
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+ 

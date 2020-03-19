@@ -1,6 +1,7 @@
 ---
 title: "Nested Resampling"
-tags: [rsample, parsnip, kernlab, scales, furrr, resampling, parallel processing]
+tags: [rsample, parsnip]
+categories: [resampling]
 ---
 
 
@@ -16,27 +17,63 @@ library(scales)
 library(mlbench)
 library(kernlab)
 library(furrr)
-theme_set(theme_bw())
+
+pkgs <- c("tidymodels", "scales", "mlbench", "kernlab", "furrr")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
+`r req_pkgs(pkgs)`
 
-(A version of this article was originally published in the [_Applied Predictive Modeling_ blog](http://appliedpredictivemodeling.com/blog/2017/9/2/njdc83d01pzysvvlgik02t5qnaljnd))
+# Introduction
 
-In addition to the `tidymodels` package, this example uses the `furrr`, `kernlab`, `scales`, and `mlbench` packages. 
+In this article, an alternative method for evaluating and tuning models is discussed, called [nested resampling](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=). While it is more computationally taxing than other resampling methods, it has the potential to produce better estimates of model performance. 
+
+# Resampling models
 
 A typical scheme for splitting the data when developing a predictive model is to create an initial split of the data into a training and test set. If resampling is used, it is executed on the training set. A series of binary splits is created. In `rsample`, we use the term _analysis set_ for the data that are used to fit the model and the _assessment set_ is used to compute performance: 
 
-![](https://bookdown.org/max/FES/figures/resampling.svg)
+```{r resampling-fig, echo = FALSE, fig.align='center', out.width="70%"}
+knitr::include_graphics(here::here("static/images/resampling.svg"))
+```
 
 A common method for tuning models is grid search where a candidate set of tuning parameters is created. The full set of models for every combination of the tuning parameter grid and the resamples is created. Each time, the assessment data are used to measure performance and the average value is determined for each tuning parameter. 
 
-The potential problem is, once we pick the tuning parameter associated with the best performance, this performance value is usually quoted as the performance of the model. There is serious potential for _optimization bias_ since we uses the same data to tune the model and quote performance. This would result in an optimistic estimate of performance. 
+The potential problem is, once we pick the tuning parameter associated with the best performance, this performance value is usually quoted as the performance of the model. There is serious potential for _optimization bias_ since we use the same data to tune the model and to auote performance. This would result in an optimistic estimate of performance. 
 
 Nested resampling does an additional layer of resampling that separates the tuning activities from the process used to estimate the efficacy of the model. An _outer_ resampling scheme is used and, for every split in the outer resample, another full set of resampling splits are created on the original analysis set. For example, if 10-fold cross-validation is used on the outside and 5-fold cross-validation on the inside, a total of 500 models will be fit. The parameter tuning will be conducted 10 times and the best parameters are determined from the average of the 5 assessment sets. This process occurs 10 times. 
 
 Once the tuning results are complete, a model is fit to each of the outer resampling splits using the best parameter associated with that resample. The average of the outer method's assessment sets are a unbiased estimate of the model.  
 
-We will simulate some regression data to illustrate the methods. The `mlbench` function `mlbench::mlbench.friedman1` can simulate a complex regression data structure from the [original MARS publication](https://scholar.google.com/scholar?hl=en&q=%22Multivariate+adaptive+regression+splines%22&btnG=&as_sdt=1%2C7&as_sdtp=). A training set size of 100 data points are generated as well as a large set that will be used to characterize how well the resampling procedure performed.  
+We will simulate some regression data to illustrate the methods. The `mlbench` function `mlbench::mlbench.friedman1()` can simulate a complex regression data structure from the [original MARS publication](https://scholar.google.com/scholar?hl=en&q=%22Multivariate+adaptive+regression+splines%22&btnG=&as_sdt=1%2C7&as_sdtp=). A training set size of 100 data points are generated as well as a large set that will be used to characterize how well the resampling procedure performed.  
 
 ```{r sim-data}
 library(mlbench)
@@ -52,6 +89,8 @@ set.seed(9815)
 train_dat <- sim_data(100)
 large_dat <- sim_data(10^5)
 ```
+
+# Nested resampling via {rsample}
 
 To get started, the types of resampling methods need to be specified. This isn't a large data set, so 5 repeats of 10-fold cross validation will be used as the _outer_ resampling method that will be used to generate the estimate of overall performance. To tune the model, it would be good to have precise estimates for each of the values of the tuning parameter so 25 iterations of the bootstrap will be used. This means that there will eventually be `5 * 10 * 25 = 1250` models that are fit to the data _per tuning parameter_. These will be discarded once the performance of the model has been quantified. 
 
@@ -114,6 +153,7 @@ rmse_wrapper <- function(cost, object) svm_rmse(object, cost)
 ```
 
 For the nested resampling, a model needs to be fit for each tuning parameter and each bootstrap split. To do this, a wrapper can be created: 
+
 ```{r inner-tune-func}
 # `object` will be an `rsplit` object for the bootstrap samples
 tune_over_cost <- function(object) {
@@ -123,6 +163,7 @@ tune_over_cost <- function(object) {
 ```
 
 Since this will be called across the set of outer cross-validation splits, another wrapper is required: 
+
 ```{r inner-func}
 # `object` is an `rsplit` object in `results$inner_resamples` 
 summarize_tune_results <- function(object) {
@@ -238,3 +279,9 @@ sqrt(mean((large_dat$y - large_pred) ^ 2, na.rm = TRUE))
 
 The nested procedure produces a closer estimate to the approximate truth but the non-nested estimate is very similar.
 
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
