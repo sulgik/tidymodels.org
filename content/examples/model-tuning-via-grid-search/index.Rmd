@@ -1,6 +1,7 @@
 ---
 title: "Model Tuning via Grid Search"
-tags: [tune, kernlab, grid search, classification models, model tuning]
+tags: [rsample, parsnip, tune, yardstick]
+categories: [model tuning]
 ---
   
 ```{r setup, include=FALSE}
@@ -8,13 +9,49 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidymodels)
 library(mlbench)
 library(kernlab)
-theme_set(theme_bw())
-
 library(doMC)
 registerDoMC(cores = parallel::detectCores())
+
+pkgs <- c("tidymodels", "mlbench", "kernlab")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `kernlab`, and `mlbench` packages. 
+`r req_pkgs(pkgs)`
+
+# Introduction
+
+This article provides another example of tuning a model using grid search. 
+
+# Example data
 
 To demonstrate model tuning, we'll use the Ionosphere data in the `mlbench` package:
 
@@ -23,6 +60,12 @@ library(tidymodels)
 library(mlbench)
 data(Ionosphere)
 ```
+
+From `?Ionosphere`:
+
+> This radar data was collected by a system in Goose Bay, Labrador. This system consists of a phased array of 16 high-frequency antennas with a total transmitted power on the order of 6.4 kilowatts. See the paper for more details. The targets were free electrons in the ionosphere. "good" radar returns are those showing evidence of some type of structure in the ionosphere. "bad" returns are those that do not; their signals pass through the ionosphere.
+
+> Received signals were processed using an autocorrelation function whose arguments are the time of a pulse and the pulse number. There were 17 pulse numbers for the Goose Bay system. Instances in this databse are described by 2 attributes per pulse number, corresponding to the complex values returned by the function resulting from the complex electromagnetic signal. See cited below for more details.
 
 There are 43 predictors and a factor outcome. Two of the predictors are factors (`V1` and `V2`) and the rest are numerics that have been scaled to a range of -1 to 1. Note that the two factor predictors have sparse distributions:
 
@@ -47,7 +90,7 @@ At a minimum, let's get rid of the most problematic variable:
 Ionosphere <- Ionosphere %>% select(-V2)
 ```
 
-## Inputs for the Search
+# Inputs for the Search
 
 To demonstrate, we'll fit a radial basis function support vector machine to these data and tune the SVM cost parameter and the $\sigma$ parameter in the kernel function:
 
@@ -78,7 +121,7 @@ set.seed(4943)
 iono_rs <- bootstraps(Ionosphere, times = 30)
 ```
 
-## Optional Inputs
+# Optional Inputs
 
 An _optional_ step for model tuning is to specify which metrics should be computed using the out-of-sample predictions. For classification, the default is to calculate the log-likelihood statistic and overall accuracy. Instead of the defaults, the area under the ROC curve will be used. To do this, a `yardstick` function can be used to create a metric set:
 
@@ -94,63 +137,69 @@ Also, a control object can be passed that specifies different aspects of the sea
 ctrl <- control_grid(verbose = FALSE)
 ```
 
-## Executing the Grid Using a Formula
+# Executing the grid using a formula
 
 First, the formula interface will be used:
 
 ```{r grid}
 set.seed(35)
-grid_form <-
+formula_res <-
+  svm_mod %>% 
   tune_grid(
     Class ~ .,
-    model = svm_mod,
     resamples = iono_rs,
     metrics = roc_vals,
     control = ctrl
   )
-grid_form
+formula_res
 ```
 
 The `.metrics` column contains tibbles of the performance metrics for each tuning parameter combination:
 
 ```{r raw-metrics}
-grid_form %>% select(.metrics) %>% slice(1) %>% pull(1)
+formula_res %>% select(.metrics) %>% slice(1) %>% pull(1)
 ```
 
 To get the final resampling estimates, the `collect_metrics()` function can be used on the grid object:
 
 ```{r metric-estimates}
-estimates <- collect_metrics(grid_form)
+estimates <- collect_metrics(formula_res)
 estimates
 ```
 
-The best combination was:
+The top combinations were:
 
 ```{r sorted-metrics}
-show_best(grid_form)
+show_best(formula_res, metric = "roc_auc")
 ```
 
-## Executing the Grid Using a Recipe
+#  Executing the grid using a recipe
 
-The same syntax is used but a recipe is passed in the first argument:
-
+The same syntax is used but a recipe is passed in as the pre-processor argument:
 
 ```{r recipe}
 set.seed(325)
-rec_form <-
+recipe_res <-
+  svm_mod %>% 
   tune_grid(
     iono_rec,
-    model = svm_mod,
     resamples = iono_rs,
     metrics = roc_vals,
     control = ctrl
   )
-rec_form
+recipe_res
 ```
 
 The best setting here was:
 
 ```{r best-rec}
-show_best(rec_form)
+show_best(recipe_res, metric = "roc_auc")
 ```
 
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```

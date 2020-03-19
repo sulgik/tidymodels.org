@@ -1,6 +1,7 @@
 ---
 title: "Multivariate Analysis using Partial Least Squares"
-tags: [recipes, multivariate analysis]
+tags: [recipes]
+categories: [pre-processing]
 ---
 
 ```{r setup, include = FALSE}
@@ -13,19 +14,47 @@ knitr::opts_chunk$set(
 options(digits = 3)
 library(pls)
 library(tidymodels)
+library(sessioninfo)
+pkgs <- c("modeldata", "pls", "tidymodels")
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
 ```
 
+`r req_pkgs(pkgs)`
 
-In addition to the `tidymodels` package, this example uses the `pls` and `modeldata` packages. 
 
+# Introduction
 
-_Multivariate Analysis_ usually refers to the situation where multiple _outcomes_ are being modeled, analyzed, and/or predicted. There are multivariate versions of many common statistical tools. For example, suppose there was a data set with columns `y1` and `y2` containing two outcomes to be predicted. The `lm` function would look something like:
+_Multivariate Analysis_ usually refers to the situation where multiple _outcomes_ are being modeled, analyzed, and/or predicted. There are multivariate versions of many common statistical tools. For example, suppose there was a data set with columns `y1` and `y2` containing two outcomes to be predicted. The `lm()` function would look something like:
 
 ```{r lm, eval = FALSE}
 lm(cbind(y1, y2) ~ ., data = dat)
 ```
 
-The `cbind` is pretty awkward and is a consequence of how the traditional formula infrastructure works. `recipes` is a lot easter to work with and this document shows an example to illustrate how to use multiple outcomes.   
+The `cbind()` call is pretty awkward and is a consequence of how the traditional formula infrastructure works. `recipes` is a lot easter to work with and this document shows an example to illustrate how to use multiple outcomes.   
 
 The data that we'll use has three outcomes. From `?meats`:
 
@@ -41,13 +70,18 @@ To start, let's take the two data matrices (called `endpoints` and `absorp`) and
 library(modeldata)
 data(meats)
 ```
-The three outcomes have fairly high correlations also. If the outcomes can be predicted using a linear model, partial least squares (PLS) is an idea method. PLS models the data as a function of a set of unobserved _latent_ variables that are derived in a manner similar to principal component analysis (PCA). 
+
+The three outcomes have fairly high correlations also. 
+
+# Partial least squares
+
+If the outcomes can be predicted using a linear model, partial least squares (PLS) is an idea method. PLS models the data as a function of a set of unobserved _latent_ variables that are derived in a manner similar to principal component analysis (PCA). 
 
 PLS, unlike PCA, also incorporates the outcome data when creating the PLS components. Like PCA it tries to maximize the variance of the predictors that are explained by the components but also tries to simultaneously maximize the correlation between those components and the outcomes. In this way, PLS _chases_ variation of the predictors and outcomes. 
 
 Since we are working with variances and covariances, it makes sense to standardize the data. The recipe will center and scale all of the variables. 
 
-Many base R functions that deal with multivariate outcomes using the formula require the use of `cbind` on the left-hand side of the formula to work with the traditional formula methods. `recipes` do not; the outcomes can be symbolically "added" together on the left-hand side:
+Many base R functions that deal with multivariate outcomes using the formula require the use of `cbind()` on the left-hand side of the formula to work with the traditional formula methods. `recipes` do not; the outcomes can be symbolically "added" together on the left-hand side:
 
 ```{r recipe}
 norm_rec <- 
@@ -75,13 +109,13 @@ The complicated part here is:
 1. Formatting the predictors and outcomes into the format that the `pls` package requires, and
 2. Estimating the proportions. 
 
-For the first part, the standardized outcomes and predictors will need to be formatted into two separate matrices. Since we used `retain = TRUE` when prepping the recipes, the `juice` function can be used. To save the data as a matrix, the option `composition = "matrix"` will avoid saving the data as tibbles and use the required format. 
+For the first part, the standardized outcomes and predictors will need to be formatted into two separate matrices. Since we used `retain = TRUE` when prepping the recipes, the `juice()` function can be used. To save the data as a matrix, the option `composition = "matrix"` will avoid saving the data as tibbles and use the required format. 
 
-The `pls` wants to use a simple formula to specify the model but each side of the formula should _represent a matrix_. In other words, we need a data from with two columns and each column is a matrix. The secret to doing this is to "protect" the two matrices using `I()` when adding them to the data frame.
+The `pls` package wants to use a simple formula to specify the model but each side of the formula should _represent a matrix_. In other words, we need a data from with two columns and each column is a matrix. The secret to doing this is to "protect" the two matrices using `I()` when adding them to the data frame.
 
-The calculation for the proportion of variance explained is simple for the predictors; the function `pls::explvar` will compute that. For the outcomes, the process is more complicated. I didn't see a ready-made function to compute these but there is some code inside of the summary function to do the computation (see below). 
+The calculation for the proportion of variance explained is simple for the predictors; the function `pls::explvar()` will compute that. For the outcomes, the process is more complicated. I didn't see a ready-made function to compute these but there is some code inside of the summary function to do the computation (see below). 
 
-The function `get_var_explained` will do these computations and return a data frame with columns `components`, `source` (for the predictors, water, etc) and the `proportion` of variance that is explained by the components. 
+The function `get_var_explained()` shown below will do these computations and return a data frame with columns `components`, `source` (for the predictors, water, etc) and the `proportion` of variance that is explained by the components. 
 
 
 ```{r var-explained}
@@ -95,7 +129,7 @@ get_var_explained <- function(recipe, ...) {
   
   # The pls package prefers the data in a data frame where the outcome
   # and predictors are in _matrices_. To make sure this is formatted
-  # properly, use the `I` function to inhibit `data.frame` from making
+  # properly, use the `I()` function to inhibit `data.frame()` from making
   # all the individual columns. `pls_format` should have two columns.
   pls_format <- data.frame(
     endpoints = I(y_mat),
@@ -137,7 +171,6 @@ folds <-
 
 To extract and aggregate these data, simple row binding can be used to stack the data vertically. Most of the action happens in the first 15 components so the data are filtered and the _average_ proportion is computed.
 
-
 ```{r collapse-and-average}
 variance_data <- 
   bind_rows(folds[["var"]]) %>%
@@ -148,7 +181,6 @@ variance_data <-
 
 The plot below shows that, if the protein measurement is important, you might require 10 or so components to achieve a good representation of that outcome. Note that the predictor variance is captured extremely well using a single component. This is due to the high degree of correlation in those data. 
 
-
 ```{r plot, fig.width=6, fig.height=4.25,  out.width = '100%'}
 ggplot(variance_data, aes(x = components, y = proportion, col = source)) + 
   geom_line() + 
@@ -156,3 +188,11 @@ ggplot(variance_data, aes(x = components, y = proportion, col = source)) +
   theme_bw() + 
   theme(legend.position = "top")
 ```
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+ 

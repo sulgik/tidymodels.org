@@ -1,9 +1,8 @@
-
 ---
 title: "Comparing Models via Bayesian Analysis and Resampling"
-tags: [tune, tidyposterior, earth, rpart, kernlab, Bayesian analysis, regression models, model comparisons]
+tags: [tune, rsample, parsnip, tidyposterior]
+categories: [model comparisons, tuning]
 ---
-
 
 ```{r load, include = FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(
@@ -15,13 +14,53 @@ knitr::opts_chunk$set(
 
 library(tidyposterior)
 library(tidymodels)
+library(sessioninfo)
+library(modeldata)
+library(doMC)
+registerDoMC(cores = parallel::detectCores())
+
+pkgs <- c("modeldata", "tidyposterior", "tidymodels", "rpart", "kernlab", "earth")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
 theme_set(theme_bw() + theme(legend.position = "top"))
 options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `tidyposterior`, `tune`, `earth`, `rpart`, `kernlab`, and `modeldata` packages. 
+`r req_pkgs(pkgs)`
 
-## Predicting Compressive Strength of Concrete
+# Introduction
+
+
+This article describes how resampled models can be formally compared using _Bayesian analysis_ (in _the spirit_ of [Benavoli _et al_ (2017)](http://people.idsia.ch/~marco/papers/2017jmlr-tests.pdf)). 
+. It does assume some basic knowledge of statistics and Bayesian modeling. 
+
+# Predicting compressive strength of concrete
 
 These data are used as a case study in Kuhn and Johnson (2013). The outcome is the compressive strength of concrete samples and the predictors are the ingredients used in the mixtures. About the data: 
 
@@ -74,23 +113,33 @@ The tuning objects are created using grid search:
 
 ```{r tune}
 set.seed(7053)
-svm_tune <- tune_grid(compressive_strength ~ ., svm_mod, resamples = folds, grid = 20)
-show_best(svm_tune, metric = "rmse", maximize = FALSE)
+svm_tune <- 
+  svm_mod %>% 
+  tune_grid(compressive_strength ~ ., resamples = folds, grid = 20)
+show_best(svm_tune, metric = "rmse",)
 
 set.seed(5401)
-rf_tune <- tune_grid(compressive_strength ~ ., rf_mod, resamples = folds, grid = 20)
-show_best(rf_tune, metric = "rmse", maximize = FALSE)
+rf_tune <- 
+  rf_mod %>% 
+  tune_grid(compressive_strength ~ ., resamples = folds, grid = 20)
+show_best(rf_tune, metric = "rmse",)
 
 set.seed(3336)
-cart_tune <- tune_grid(compressive_strength ~ ., cart_mod, resamples = folds, grid = 20)
-show_best(cart_tune, metric = "rmse", maximize = FALSE)
+cart_tune <- 
+  cart_mod %>% 
+  tune_grid(compressive_strength ~ ., resamples = folds, grid = 20)
+show_best(cart_tune, metric = "rmse",)
 
 mars_grid <- expand.grid(num_terms = 2 * (1:10), prod_degree = 1:2)
 
 set.seed(9313)
-mars_tune <- tune_grid(compressive_strength ~ ., mars_mod, resamples = folds, grid = mars_grid)
-show_best(mars_tune, metric = "rmse", maximize = FALSE)
+mars_tune <- 
+  mars_mod %>% 
+  tune_grid(compressive_strength ~ ., resamples = folds, grid = mars_grid)
+show_best(mars_tune, metric = "rmse",)
 ```
+
+# Consolidating the performance metrics
 
 At this point, we want to extract the individual resampling estimates of RMSE for the best model and then merge them back into the `rsample` object (`folds`). A function is used to do this for each model. These values are merged and then merged back into `folds`: 
 
@@ -103,7 +152,7 @@ extract_rmse <- function(x) {
   
   collect_metrics(x, summarize = FALSE) %>% 
     # Keep the numerically best results
-    inner_join(select_best(x, metric = "rmse", maximize = FALSE)) %>% 
+    inner_join(select_best(x, metric = "rmse",)) %>% 
     dplyr::filter(.metric == "rmse") %>% 
     dplyr::select(.estimate, id, id2) %>% 
     # Rename the RMSE column with the model prefix
@@ -117,7 +166,13 @@ rmse_values <-
   inner_join(extract_rmse(mars_tune), by = c("id", "id2")) %>% 
   arrange(id, id2) 
 
-folds <- bind_cols(arrange(folds, id, id2), rmse_values %>% dplyr::select(-id, -id2))
+rmse_values %>% slice(1:5)
+
+# Merge these values back into the original rsample object.
+folds <- 
+  folds %>% 
+  arrange(id, id2) %>% 
+  bind_cols(rmse_values %>% dplyr::select(-id, -id2))
 ```
 
 A tibble of the stacked resampling estimates is saved to use for plotting and diagnostics: 
@@ -139,20 +194,24 @@ stacked_rmse %>%
   ggplot(aes(sample = rmse, col = model)) + 
   stat_qq() + 
   stat_qq_line(alpha = .4) + 
-  facet_wrap(~model)
+  facet_wrap(~ model)
 ```
 
 Not perfect but pretty indicative of normality for a sample size of `r nrow(folds)`. This basically shows the effect of the central limit theorem. 
 
 
-## A First Bayesian Model
+# A first Bayesian model
 
 It might make sense to use a probability model that is consistent with the characteristics of the data (in terms of skewness). Instead of using a symmetric distribution for the summary statistics (such as Gaussian), a potentially right skewed probability model might make more theoretical sense. A Gamma distribution is a reasonable choice and can be fit using the generalized linear model embedded in `perf_mod()`. This also requires a _link_ function to be chosen to model the data. The canonical link for this distribution is the inverse transformation and this will be our choice. 
 
-To fit this model, the `family` argument to `stan_glmer()` can be passed in. The default link is the inverse and no extra transformation will be used. 
+To fit this model, the `family` argument to `stan_glmer()` can be passed in. The default link is the inverse and no extra transformation will be used. The `tidyposterior::perf_mod()` function below uses  `rstanarm::stan_glmer()`, which produces _a lot_ of output. 
 
-```{r gamma-fit, include = FALSE}
+```{r gamma-fit}
 library(tidyposterior)
+
+# Run in parallel
+cores <- parallel::detectCores()
+cores
 
 gamma_model <-
   perf_mod(
@@ -161,14 +220,16 @@ gamma_model <-
     family = Gamma(),
     seed = 74,
     iter = 2000,
-    chains = 4,
-    cores = 4
+    chains = cores,
+    cores = cores
   )
 ```
+
+The `tidy()` method saves a tibble with columns for the model and draws of the posterior distributions. The subsequent `summary()` method returns a tibble with means and tail quantiles of each posterior. 
+
 ```{r gamma-stats}
-# Get the posterior distributions of the mean parameters:
 gamma_post <- tidy(gamma_model, seed = 3750)
-gamma_mean <- summary(gamma_post)
+gamma_mean <- summary(gamma_post, prob = 0.9)
 gamma_mean
 ```
 
@@ -187,20 +248,20 @@ gamma_post %>%
 
 The spread of the posterior is not much smaller than the range of the original values (which seems excessive). 
 
-## Transforming the Data
+# Transforming the data
 
 Another approach is to transform the RMSE values to something model symmetric and model the data on a different scale. A log transform will be used here using the built-in object `ln_trans`. In using this option, the posterior distributions are computed on the log scale and is automatically back-transformed into the original units. By not passing `family` to the function, we are using a Gaussian model.
 
 
-```{r log-linear-fit, include = FALSE}
+```{r log-linear-fit}
 log_linear_model <-
   perf_mod(
     folds,
     transform = ln_trans,
     seed = 74,
     iter = 2000,
-    chains = 4,
-    cores = 4
+    chains = cores,
+    cores = cores
   )
 ```
 
@@ -230,12 +291,12 @@ log_linear_post %>%
   arrange(mean)
 ```
 
-## A Simple Gaussian Model
+# A simple Gaussian model
 
 Let's try the easiest model that used a linear function and assumes a Gaussian distribution for the RMSE estimates. 
 
-```{r linear-linear-fit, include = FALSE}
-linear_model <- perf_mod(folds, seed = 74, iter = 2000, chains = 4, cores = 4)
+```{r linear-linear-fit}
+linear_model <- perf_mod(folds, seed = 74, iter = 2000, chains = cores, cores = cores)
 ```
 ```{r linear-linear}
 linear_post <- tidy(linear_model, seed = 3750)
@@ -263,21 +324,26 @@ If we want to fit a model where each of the posterior distributions are allowed 
 
 ## Comparing Models
 
-We can compare models using the `contrast_models` function. The function has arguments for two sets of models to compare but if these are left to their default (`NULL`), all pair-wise combinations are used. Let's say that an RMSE difference of 1 unit is important. 
+We can compare models using the `contrast_models()` function. The function has arguments for two sets of models to compare but if these are left to their default (`NULL`), all pair-wise combinations are used. Let's say that an RMSE difference of 1 unit is important. 
 
 ```{r contrast}
 one_contrast <- contrast_models(linear_model, list_1 = "rf", list_2 = "svm", seed = 8967)
 ggplot(one_contrast, size = 1) + 
   xlab("Posterior for Random Forest - SVM")
 summary(one_contrast, size = 1)
-````
+```
 
 The negative values indicate that the random forest model tended to have smaller RMSE values than the SVM model. While the probability that the SVM  model is better is effectively zero (in the `probability` column), the region of practical equivalence captures most of the posterior distribution. The probability that the two models are _practically equivalent_ for an effect size of one unit is `r round(summary(one_contrast, size = 1)$pract_equiv* 100, 2)`%.
 
-## One Final Note
+# One final note
 
 The Bayesian models have population parameters for the model effects (akin to "fixed" effects in mixed models) as well as variance parameter(s) related to the resamples. The posteriors computed by this package only reflect the mean parameters and should only be used to make inferences about this data set generally. This posterior calculation could not be used to predict the level of performance for a model on a new _resample_ of the data. In this case, the variance parameters come into play and the posterior would be much wider. 
 
 In essence, the posteriors shown here are measuring the average performance value instead of a resample-specific value.  
 
+# Session information
+
+```{r si, echo = FALSE}
+small_session(c(pkgs, "rstan", "rstanarm"))
+```
  
