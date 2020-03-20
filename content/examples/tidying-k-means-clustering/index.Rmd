@@ -1,6 +1,6 @@
 ---
 title: "K-Means Clasutering with dplyr and broom"
-tags: [broom, clustering]
+tags: [broom]
 ---
 
 ```{r setup, include = FALSE}
@@ -11,8 +11,44 @@ knitr::opts_chunk$set(
   dev.args = list(bg = "transparent")
 )
 library(tidymodels)
+pkgs <- c("tidymodels")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
 theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
+
+
+This article only requires that the `tidymodels` package be installed.
+
+
+# Introduction
 
 K-means clustering serves as a very useful example of tidy data, and especially the distinction between the three tidying functions: `tidy()`, `augment()`, and `glance()`.
 
@@ -43,7 +79,7 @@ ggplot(labelled_points, aes(x1, x2, color = cluster)) +
   geom_point(alpha = 0.3)
 ```
 
-This is an ideal case for k-means clustering. We'll use the built-in `kmeans` function, which accepts a dataframe with all numeric columns as it's primary argument.
+This is an ideal case for k-means clustering. We'll use the built-in `kmeans()` function, which accepts a dataframe with all numeric columns as it's primary argument.
 
 ```{r}
 points <- 
@@ -81,7 +117,7 @@ And as it always does, the `glance()` function extracts a single-row summary:
 glance(kclust)
 ```
 
-## broom and dplyr for exploratory clustering
+# {broom} and {dplyr} for exploratory clustering
 
 While these summaries are useful, they would not have been too difficult to extract out from the dataset yourself. The real power comes from combining these analyses with `dplyr`.
 
@@ -101,7 +137,7 @@ kclusts
 ```
 
 We can turn these into three separate datasets each representing a different type of data:
-Then tidy the clusterings three ways: using `tidy`, using `augment`, and using `glance`. Each of these goes into a separate dataset as they represent different types of data.
+Then tidy the clusterings three ways: using `tidy()`, using `augment()`, and using `glance()`. Each of these goes into a separate dataset as they represent different types of data.
 
 ```{r}
 clusters <- 
@@ -142,4 +178,11 @@ ggplot(clusterings, aes(k, tot.withinss)) +
   geom_point()
 ```
 
-This represents the variance within the clusters. It decreases as `k` increases, but one can notice a bend (or "elbow") right at k=3. This bend indicates that additional clusters beyond the third have little value. (See [here](http://web.stanford.edu/~hastie/Papers/gap.pdf) for a more mathematically rigorous interpretation and implementation of this method). Thus, all three methods of tidying data provided by broom are useful for summarizing clustering output.
+This represents the variance within the clusters. It decreases as `k` increases, but one can notice a bend (or "elbow") right at k=3. This bend indicates that additional clusters beyond the third have little value. (See [here](http://web.stanford.edu/~hastie/Papers/gap.pdf) for a more mathematically rigorous interpretation and implementation of this method). Thus, all three methods of tidying data provided by `broom` are useful for summarizing clustering output.
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+ 

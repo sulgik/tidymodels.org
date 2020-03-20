@@ -1,6 +1,7 @@
 ---
 title: "Subsampling for Class Imbalances"
-tags: [recipes, themis, discrim, klaR, ROSE, classification models, class imbalance]
+tags: [recipes, themis, discrim, parsnip]
+categories: [model fitting, pre-processing]
 ---
 
 ```{r ex_setup, include=FALSE}
@@ -11,36 +12,74 @@ knitr::opts_chunk$set(
   comment = "#>"
   )
 options(digits = 3)
-library(caret)
+library(readr)
 library(klaR)
 library(tidymodels)
-thm <- theme_bw() + 
-  theme(
-    panel.background = element_rect(fill = "transparent", colour = NA), 
-    plot.background = element_rect(fill = "transparent", colour = NA)
-  )
-theme_set(thm)
+library(discrim)
+library(themis)
+library(ROSE)
 
-options(digits = 3)
+
+pkgs <- c("tidymodels", "klaR", "themis", "discrim", "readr", "ROSE")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `caret`, `discrim`, `ROSE`, `klaR`, and `themis` packages. 
 
-Subsampling can be a helpful approach to dealing will classification data where one or more classes occur very infrequently. Often, most models will overfit to the majority class and produce very good statistics for the class containing the frequently occurring classes while the minority classes have poor performance. 
+`r req_pkgs(pkgs)`
 
-Consider a two-class problem where the first class has a very low rate of occurrence. The [`caret`](https://topepo.github.io/caret/) package has a function that can simulate such data:
+# Introduction
 
-```{r simulate}
-library(caret)
 
-set.seed(244)
-imbal_data <- twoClassSim(1000, intercept = 10)
+Subsampling a training set can be a helpful approach to dealing will classification data where one or more classes occur very infrequently. Often, most models will overfit to the majority class and produce very good statistics for the class containing the frequently occurring classes while the minority classes have poor performance. 
+
+The analysis below describes this method for dealing with class imbalances. For better understanding, some knowledge of classification metrics like sensitivity, specificity, and receiver operating characteristic curves is required. See Section 3.2.2 for [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/measuring-performance.html) for more information on these metrics.  
+
+# Simulated data
+
+Consider a two-class problem where the first class has a very low rate of occurrence. The data were simulated and can be imported into R using the code below:
+
+```{r load-data, message = FALSE}
+imbal_data <- 
+  readr::read_csv("https://bit.ly/imbal_data") %>% 
+  mutate(Class = factor(Class))
+dim(imbal_data)
 table(imbal_data$Class)
 ```
 
 If "Class1" is the event of interest, it is very likely that a classification model would be able to achieve very good _specificity_ since almost all of the data are the second class. _Sensitivity_ will often be poor since the models will optimize accuracy (or other loss functions) by predicting everything to be the majority class. 
 
 When there are two classes, the results is that the default probability cutoff of 50% is inappropriate; a different cutoff that is more extreme might be able to achieve good performance. 
+
+# Subsampling the data
 
 One way to alleviate this issue is to _subsample_ the data. There are a number of ways to do this but the most simple one is to _sample down_ the majority class data until it occurs with the same frequency as the minority class. While counterintuitive, throwing out a large percentage of the data can be effective at producing a results. In some cases, this means that the overall performance of the model is better (e.g. improved area under the ROC curve). However, subsampling almost always produces models that are _better calibrated_, meaning that the distributions of the class probabilities are model well behaved. As a result, the default 50% cutoff is much model likely to produce better sensitivity and specificity values than they would otherwise. 
 
@@ -142,4 +181,11 @@ bind_rows(no_sampling, with_sampling) %>%
   facet_wrap(~ .metric, scales = "free_y")
 ```
 
- 
+This visually demonstrates that the subsampling mostly affects metrics that use the hard class predictions. 
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+

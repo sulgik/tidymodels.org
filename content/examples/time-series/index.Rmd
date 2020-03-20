@@ -16,13 +16,47 @@ library(forecast)
 library(tidymodels)
 library(sweep)
 library(zoo)
+pkgs <- c("tidymodels", "timetk", "forecast", "sweep", "zoo")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
 theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `timetk`, `forecast`, `sweep`, `modeldata`, and `zoo` packages. 
 
+`r req_pkgs(pkgs)`
+
+# Introduction
 
 "[Demo Week: Tidy Forecasting with `sweep`](http://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" is an excellent article that uses tidy methods with time series. This article uses their analysis with `rsample` to get performance estimates for future observations using [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/). 
+
+# Example data
 
 The data are sales of alcoholic beverages originally from [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN).
 
@@ -34,6 +68,8 @@ str(drinks, give.att = FALSE)
 ```
 
 Each row is a month of sales (in millions of US dollars). 
+
+# Time series resampling
 
 Suppose that predictions for one year ahead were needed and the model should use the most recent data from the last 20 years. To setup this resampling scheme:
 
@@ -151,10 +187,7 @@ It is likely that the interpolation error is an underestimate to some degree.
 
 It is also worth noting that `rolling_origin()` can be used over calendar periods, rather than just over a fixed window size. This is especially useful for irregular series where a fixed window size might not make sense because of missing data points, or because of calendar features like different months having a different number of days.
 
-The example below demonstrates this idea by splitting `drinks` into a nested set
-of 26 years, and rolling over years rather than months. Note that the end result
-accomplishes a different task than the original example, in this case, each slice
-moves forward an entire year, rather than just one month.
+The example below demonstrates this idea by splitting `drinks` into a nested set of 26 years, and rolling over years rather than months. Note that the end result accomplishes a different task than the original example, in this case, each slice moves forward an entire year, rather than just one month.
 
 ```{r rof-annual}
 # The idea is to nest by the period to roll over,
@@ -181,3 +214,10 @@ mutate(
 )
 ```
 
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+ 

@@ -1,6 +1,7 @@
 ---
 title: "Tuning a Supervised Text Model"
-tags: [recipes, textrecipes, glmnet, textfeatures, textrecipes, text data, classification models, model tuning, grid search, Bayesian optimization]
+tags: [textrecipes, recipes, parsnip]
+categories: [model tuning]
 ---
   
 ```{r setup, include=FALSE}
@@ -22,10 +23,43 @@ registerDoMC(cores = parallel::detectCores())
 data("small_fine_foods")
 num_prod <- length(unique(training_data$product))
 
-theme_set(theme_bw())
+pkgs <- c("tidymodels", "textrecipes", "textfeatures", "glmnet", "modeldata")
+
+req_pkgs <- function(x, what = "This article") {
+  x <- sort(x)
+  x <- paste0("`", x, "`")
+  x <- knitr::combine_words(x, and = " and ")
+  paste0(
+    what,
+    " requires that you have the following packages installed: ",
+    x, "." 
+  )
+}
+
+small_session <- function(pkgs = NULL) {
+  pkgs <- c(pkgs, "recipes", "parsnip", "tune", "workflows", "dials", "dplyr",
+            "broom", "ggplot2", "purrr", "rlang", "rsample", "tibble", 
+            "yardstick", "tidymodels")
+  pkgs <- unique(pkgs)
+  library(sessioninfo)
+  library(dplyr)
+  sinfo <- sessioninfo::session_info()
+  cls <- class(sinfo$packages)
+  sinfo$packages <- 
+    sinfo$packages %>% 
+    dplyr::filter(package %in% pkgs)
+  class(sinfo$packages) <- cls
+  sinfo
+}
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+options(width = 100, digits = 3)
 ```
 
-In addition to the `tidymodels` package, this example uses the `glmnet`, `textfeatures`, `textrecipes`, and `modeldata` packages. 
+
+`r req_pkgs(pkgs)`
+
+# Introduction
 
 This advanced example shows how to process text data with recipes and use them in a predictive model. It also has an example of extracting information from each model fit for later use. 
 
@@ -47,7 +81,7 @@ training_data
 
 The idea is to process the text data into features and use these features to predict whether the review was five-star or not. 
 
-## Recipe and Model Specifications
+# Recipe and Model Specifications
 
 The data processing steps are: 
 
@@ -91,8 +125,6 @@ binary_hash <- function(x) {
 The recipe is:
 
 ```{r text-rec}
-# uses the devel version of textrecipes
-# devtools::install_github("tidymodels/textrecipes")
 library(textrecipes)
 
 pre_proc <-
@@ -135,7 +167,7 @@ lr_mod <-
 
 Three tuning parameters should be trained for this data analysis. 
 
-## Resampling
+# Resampling
 
 There are enough data here such that 10-fold resampling would hold out 400 reviews at a time to estimate performance. Performance estimates using this many observations have sufficiently low noise to measure and tune models.  
 
@@ -144,7 +176,7 @@ set.seed(8935)
 folds <- vfold_cv(training_data)
 ```
 
-## Grid Search
+# Grid Search
 
 A regular grid is used. For `glmnet` models, evaluating penalty values is fairly cheap due to the use of the "submodel-trick". The grid will use 20 penalty values, 5 mixture values, and 3 values for the number of hash features.  
 
@@ -211,7 +243,7 @@ It's clear from the panels at least 4096 features that there are several paramet
 
 We'll come back to the extracted `glmnet` components at the end of this example. 
 
-## Directed Search
+# Directed Search
 
 What if we had started with Bayesian optimization? Would a good set of conditions have been found more efficiently? 
 
@@ -281,12 +313,12 @@ autoplot(five_star_search, type = "performance")
 What would we do if we knew about the grid search results? In this case, we would restrict the range for the number of hash features to be larger (especially with more data). We might also restrict the penalty and mixture parameters to have a more restricted upper bound. 
 
 
-## Extracted Results
+# Extracted Results
 
 Jumping back to the grid search results, let's examine the results of our `extract` function. For each _fitted model_, a tibble was saved that has the relationship between the number of predictors and the penalty value. Let's look at these results for the best model:
 
 ```{r best-res}
-params <- select_best(five_star_glmnet)
+params <- select_best(five_star_glmnet, metric = "roc_auc")
 params
 ```
 
@@ -340,3 +372,11 @@ ggplot(extracted, aes(x = penalty, y = num_vars)) +
 ```
 
 These results might help guide the range of the `penalty` value if more optimization was conducted. 
+
+
+# Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
+

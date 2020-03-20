@@ -108,10 +108,10 @@ Since random sampling uses random numbers, it is important to set the random num
 ```{r cell-split}
 library(tidymodels) # Load the rsample package
 
-set.seed(2369)
-tr_te_split <- initial_split(cells %>% select(-case), prop = 3/4)
-cell_train <- training(tr_te_split)
-cell_test  <- testing(tr_te_split)
+set.seed(123)
+cell_split <- initial_split(cells %>% select(-case), strata = class)
+cell_train <- training(cell_split)
+cell_test  <- testing(cell_split)
 
 nrow(cell_train)
 nrow(cell_train)/nrow(cells)
