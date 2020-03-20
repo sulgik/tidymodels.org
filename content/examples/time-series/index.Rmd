@@ -176,8 +176,7 @@ What do these error estimates look like over time?
 ```{r plot}
 roll_rs %>%
   select(interpolation, extrapolation, start_date) %>%
-  as.data.frame %>%
-  gather(error, MAPE, -start_date) %>%
+  pivot_longer(cols = matches("ation"), names_to = "error", values_to = "MAPE") %>%
   ggplot(aes(x = start_date, y = MAPE, col = error)) + 
   geom_point() + 
   geom_line()
