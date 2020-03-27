@@ -71,6 +71,7 @@ func_tab <-
 htmlwidgets::saveWidget(func_tab, file = "table.html", selfcontained = TRUE)
 ```
 
+<iframe seamless src="table.html" width="100%" height="500"></iframe>
 
 Tidymodels use standardized parameter names to have some consistency between models and engines. The mapping between the `parsnip` arguments and their original names is: 
 
