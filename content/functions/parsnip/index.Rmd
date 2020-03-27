@@ -15,6 +15,8 @@ source(script)
 library(DT)
 pkgs <- c("parsnip", "discrim")
 library(discrim)
+library(htmlwidgets)
+library(htmltools)
 ```
 
 `parsnip` contains wrappers for a number of models. For example, the `parsnip` function `rand_forest()` can be used to create a random forest model. The **mode** of a model is related to its goal. Examples would be regression and classification. 
@@ -57,15 +59,18 @@ Models can be added by the user too. See the ["Making a {parsnip} model from scr
 
 
 ```{r table-display, echo = FALSE, results = "asis"}
-DT::datatable(
-  pkg_urls,
-  rownames = FALSE,
-  escape = FALSE,
-  filter = "top",
-  style = 'bootstrap',
-  width = 800
-)
+func_tab <- 
+  DT::datatable(
+    pkg_urls,
+    rownames = FALSE,
+    escape = FALSE,
+    filter = "top",
+    style = 'bootstrap',
+    width = 800
+  )
+htmlwidgets::saveWidget(func_tab, file = "table.html", selfcontained = TRUE)
 ```
+
 
 Tidymodels use standardized parameter names to have some consistency between models and engines. The mapping between the `parsnip` arguments and their original names is: 
 
@@ -81,7 +86,10 @@ args <-
   unnest(args) %>% 
   select(model:original)
 
-DT::datatable(args, filter = "top", style = 'bootstrap')
+mapping_tab <- DT::datatable(args, filter = "top", style = 'bootstrap')
+htmlwidgets::saveWidget(mapping_tab, file = "mapping.html", selfcontained = TRUE)
 ```
+
+<iframe seamless src="mapping.html" width="100%" height="500"></iframe>
 
 
