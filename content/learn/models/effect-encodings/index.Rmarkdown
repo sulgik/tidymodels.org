@@ -1,0 +1,319 @@
+---
+title: "Effect encodings for categorical predictors"
+tags: [embed, recipes]
+categories: [model fittings]
+type: learn-subsection
+weight: 2
+description: | 
+  Encode categorical predictors with many levels into a single numeric column.
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+source(here::here("content/learn/common.R"))
+```
+  
+```{r load, include=FALSE}
+library(tidymodels)
+library(ggrepel)
+library(embed)
+library(modeldata)
+library(rstanarm)
+library(kableExtra)
+data(okc)
+pkgs <- c("tidymodels", "ggrepel", "modeldata", "embed", "rstanarm")
+
+theme_set(theme_bw() + theme(legend.position = "top"))
+```
+
+# Introduction
+
+`r req_pkgs(pkgs)`
+
+Many types of models require the predictor data to be represented as numbers. When the predictor represents a category, the most common method to encode that data into a numeric format is to make _dummy variables_. For example, with the iris data, if the species were a predictor, the three types of flowers would be represented by two new numeric columns:
+
+```{r dummy, echo = FALSE, results = "asis"}
+iris_values <-
+  iris %>% 
+  slice(c(1, 51, 101)) %>% 
+  mutate(
+    versicolor = ifelse(Species == "versicolor", 1, 0),
+    virginica  = ifelse(Species == "virginica", 1, 0)
+  ) %>% 
+  select(-starts_with("Sepal"), -starts_with("Petal"))
+
+iris_values %>% 
+  kable() %>% 
+  kable_styling(full_width = FALSE) %>% 
+  add_header_above(c(" " = 1, "Dummy Variables" = 2))
+```
+
+One issue with this approach is that, for some predictors, the number of dummy variables could be very large and these predictors would be very sparse (i.e., mostly zero). 
+
+An alternative of dummy encodings, a different encoding that takes the outcome data into account. _Effect_ or _Likelihood Encoding_ can be used. This method replaces the original factor column with a single numeric column that represents the effect of the categories on the outcome. 
+
+For the iris data, suppose the sepal length were being predicted. The simplest approach for an effect encoding would be to replace each category with the _mean outcome value_ for that group. That would result this encoding: 
+
+
+```{r effects, echo = FALSE, results = "asis"}
+iris_means <-
+  iris %>% 
+  group_by(Species) %>% 
+  summarize(Effect = mean(Sepal.Length)) %>% 
+  ungroup()
+
+iris_means %>% 
+  kable() %>% 
+  kable_styling(full_width = FALSE)
+```
+
+However, there are different ways of estimate these values for different data sets, especially situations where some of the categories have very few values in the training set.  The article discussed different methods for estimating the effects and how to use this encoding method within a recipe. 
+
+# Generalized linear models
+
+Generalized linear models include linear and logistic regression. These models can be used to create the encodings, depending on the type of outcome type. 
+
+The example used here is the OkCupid data from [Kim and Escobedo-Land (2015)(pdf)](http://www.amstat.org/publications/jse/v23n2/kim.pdf). In [Kuhn and Johnson (2018)](http://feat.engineering), these data are used to predict whether a person is in the STEM fields (science, technology, engineering, and mathematics). One predictor, geographic location, is a factor variable. The frequencies of different locations vary between `r min(table(okc$location))` person and `r max(table(okc$location))` people. There are `r length(table(okc$location))` locations in the data. Rather than producing `r length(table(okc$location)) - 1` indicator variables for a model, a single numeric variable can be used to represent the _effect_ or _impact_ of the factor level on the outcome. In this case, where a factor outcome is being predicted (STEM or not), the effects are quantified by the log-odds of the location for being STEM. 
+
+To start, a split of the original data into training and test sets is created:
+
+```{r raw-data}
+library(tidymodels)
+library(embed)
+
+data(okc, package = "modeldata")
+
+# Make a training/test split
+set.seed(2642)
+split <- initial_split(okc, prop = 1/2)
+okc_tr <- training(split)
+okc_te <-  testing(split)
+```
+
+The simplest approach is to compute the raw log-odds for each location using the raw training set frequencies. 
+
+```{r raw-props}
+props <- 
+  okc_tr %>%
+  group_by(location) %>%
+  summarise(
+    prop = mean(Class == "stem"),
+    log_odds  = log(prop/(1-prop)),
+    n = length(Class)
+  )
+props 
+```
+
+This approach is not very effective since the locations with a single observed values have infinite log-odds. 
+
+In subsequent sections, a logistic regression model is used. When the outcome variable is numeric, the steps automatically use linear regression models to estimate effects (as was shown with the iris data in the introduction).
+
+Even within generalized linear models, there are some different estimation techniques that can be used. The main equation is how each of the locations affect the estimates. In the raw estimates shown above, only the data within a location are used to estimate that effect. The locations are not pooled in any way. However, there are some statistical techniques that can leverage all of the data to create the location-specific effects. 
+
+Now let's consider using logistic regression to produce the estimates without pooling.In this case, an ordinary generalized linear model is used to estimate the effects using the `step_lencode_glm()` function in the embed package:
+
+```{r simple-glm}
+okc_glm <- 
+  recipe(Class ~ ., data = okc_tr) %>%
+  # Specify the variable being encoded and the outcome
+  step_lencode_glm(location, outcome = vars(Class)) %>%
+  # Estimate the effects
+  prep()
+```
+
+The `tidy()` method can be used to extract the encodings and are merged with the raw estimates:
+
+```{r simple-glm-extract}
+glm_estimates <- 
+  tidy(okc_glm, number = 1) %>% 
+  select(-terms, -id) 
+glm_estimates
+
+# How do they compare to the raw log-odds?
+glm_estimates <- 
+  glm_estimates %>%
+  set_names(c("location", "no_pooling")) %>%
+    inner_join(props, by = "location") 
+```
+
+The locations with a single value in the training set have large negative numbers which is the logistic regression model attempting to approximate `1/0`. For the locations with `n > 1`, the model estimates are effectively the same as the raw statistics:
+
+```{r simple-glm-check}
+glm_estimates %>%
+  filter(is.finite(log_odds)) %>%
+  mutate(difference = log_odds - no_pooling) %>%
+  select(difference) %>%
+  summary()
+```
+
+Note that there is also a effect that is used for a novel location for future data sets that is the average effect:
+
+```{r simple-glm-new}
+tidy(okc_glm, number = 1) %>%
+  filter(level == "..new") %>%
+  select(-id)
+```
+
+This is the value that would be used when new data being predicted come from a new factor level (that was not in the training set). 
+
+## Partial pooling
+
+Partial pooling methods estimate the effects by using all of the locations at once using a [hierarchical model](https://en.wikipedia.org/wiki/Multilevel_model). The locations are treated as a random set that contributes a random intercept to the previously used logistic regression. Before modeling, the distribution that is assumed for these random effects is called the _prior distribution_. 
+
+Partial pooling estimates each effect as a combination of the individual empirical estimates of the log-odds and the prior distribution. For locations with small sample sizes, the final estimate is _shrunken_ towards the overall mean of the log-odds. This makes sense since we have poor information for estimating these locations. For locations with many data points, the estimates reply more on the empirical estimates. [This page](https://cran.r-project.org/web/packages/rstanarm/vignettes/pooling.html) has a good discussion of pooling using Bayesian models. 
+ 
+One approach to _partial pooling_ is the function `step_lencode_bayes()` uses the `stan_glmer()` function in the rstanarm package. There are a number of options that can be used to control the model estimation routine, including:
+
+```{r stan-options}
+library(rstanarm)
+
+opts <- 
+  list(
+    ## The number of chains
+    chains = 2,
+    ## How many cores to use 
+    cores = 2,
+    ## The total number of iterations per chain. 
+    ## For time, this is set very low
+    iter = 500,
+    ## Set the random number seed
+    seed = 8779,
+    ## Stop logging of results
+    refresh = 0,
+    ## Use a non-standard prior
+    prior_intercept = student_t(df = 1)
+  )
+```
+
+The model is estimated via:
+
+```{r stan-fit-defaults-compute, include = FALSE}
+bayes_timing <- 
+  system.time(
+    okc_glmer <- 
+      recipe(Class ~ ., data = okc_tr) %>%
+      step_lencode_bayes(
+        location,
+        outcome = vars(Class),
+        options = opts
+      ) %>% 
+      prep()
+  )
+```
+
+```{r stan-fit-defaults, eval = FALSE}
+library(embed)
+
+okc_glmer <- 
+  recipe(Class ~ ., data = okc_tr) %>%
+  step_lencode_bayes(location, outcome = vars(Class), options = opts) %>% 
+  prep()
+```
+
+This took more time (`r round(bayes_timing[3]/60, 1)` min) than the simple non-pooled model. The embeddings are extracted in the same way:
+
+```{r stan-extract}
+all_estimates <- 
+  tidy(okc_glmer, number = 1) %>% 
+  select(-terms, -id) %>%
+  set_names(c("location", "partial_pooling")) %>%
+  inner_join(glm_estimates, by = "location")
+
+all_estimates %>% 
+  select(location, n, log_odds, no_pooling, partial_pooling)
+```
+
+Note that the `n = 1` locations have estimates that are less extreme that the naive estimates. Also, 
+
+Let's see the effect of the shrinkage that was induced by partial pooling by plotting the naive results versus the new results (finite data only). We'll highlight a few locations that show meaningful differences in the methods:
+
+```{r stan-compare, fig.width=6, fig.height=6.1,  out.width = "80%"}
+library(ggrepel)
+
+# Create a label column that will highlight these locations: 
+cities <- c("santa cruz", "el sobrante", "san anselmo", 
+            'west oakland', 'mountain view')
+all_estimates <- 
+  all_estimates %>% 
+  mutate(
+    label = paste0(gsub("_", " ", location), "\n(n=", n, ")"),
+    label = ifelse(location %in% cities, label, "")
+  )
+
+rng <- extendrange(props$log_odds[is.finite(props$log_odds)], f = 0.1)
+
+all_estimates %>%
+  filter(is.finite(log_odds)) %>%
+  ggplot(aes(x = log_odds, y = partial_pooling)) + 
+  geom_abline(col = "red", alpha = .5) + 
+  geom_point(aes(size = sqrt(n)), alpha = .5) +
+  geom_text_repel(aes(label = label), size = 3) +
+  xlim(rng) + ylim(rng) + 
+  coord_equal()
+```
+
+Notice that a few locations with a handful of instances have some of the more extreme effect estimates (e.g., Santa Cruz and West Oakland). Partial pooling pulled them closer to the mean log-odds over all the locations. In contrast is Mountain View which, unsurprisingly, had a high rate of STEM professions and a large log-odds. Its effect estimate under partial pooling (`r round(all_estimates$partial_pooling[all_estimates$location == "mountain view"], 3)`) was only slightly shrunken away from the raw estimate (`r round(all_estimates$log_odds[all_estimates$location == "mountain view"], 3)`). This is due to the sample size from this location (n = `r all_estimates$n[all_estimates$location == "mountain view"]`) being large enough that the prior distribution had less influence relative to the observed data.  
+
+For partial pooling, any new levels are encoded with this value:
+
+```{r glmer-new}
+tidy(okc_glmer, number = 1) %>%
+  filter(level == "..new") %>%
+  select(-terms, -id)
+```
+
+The same generalized linear model can be fit using [mixed effect models](https://en.wikipedia.org/wiki/Mixed_model) via a random intercept whose distribution is constrained to be Gaussian. The lme4 package can also be used to get partially pooled estimates via `step_lencode_mixed()`.
+
+```{r mixed-rec-compute, include = FALSE}
+mixed_time <- 
+  system.time(
+    okc_mixed <- 
+      recipe(Class ~ ., data = okc_tr) %>%
+      step_lencode_mixed(location, outcome = vars(Class)) %>% 
+      prep()
+  )
+
+all_estimates <- 
+  tidy(okc_mixed, number = 1) %>% 
+  select(-terms, -id) %>%
+  set_names(c("location", "mixed")) %>%
+    inner_join(all_estimates, by = "location")
+all_estimates %>% 
+  select(location, n, log_odds, partial_pooling, mixed)
+```
+
+```{r mixed-rec, eval = FALSE}
+okc_mixed <- 
+  recipe(Class ~ ., data = okc_tr) %>%
+  step_lencode_mixed(location, outcome = vars(Class)) %>% 
+  prep()
+
+all_estimates <- 
+  tidy(okc_mixed, number = 1) %>% 
+  select(-terms, -id) %>%
+  set_names(c("location", "mixed")) %>%
+    inner_join(all_estimates, by = "location")
+all_estimates %>% 
+  select(location, log_odds, glm, partial_pooling, mixed)
+```
+
+Comparing the raw and mixed model estimates:
+
+```{r mixed-compare, fig.width=6, fig.height=6.1,  out.width = "80%"}
+all_estimates %>%
+  filter(is.finite(log_odds)) %>%
+  ggplot(aes(x = log_odds, y = mixed)) + 
+  geom_abline(col = "red", alpha = .5) + 
+  geom_point(aes(size = sqrt(n)), alpha = .5) +
+  geom_text_repel(aes(label = label), size = 3) +
+  xlim(rng) + ylim(rng) + 
+  coord_equal()
+```
+
+These values are very similar to the Bayesian estimates but this method took a fraction of the time to fit (`r round(mixed_time[3], 1)` sec). 
+ 
+
+## Session information
+
+```{r si, echo = FALSE}
+small_session(pkgs)
+```
