@@ -14,12 +14,12 @@ source(here::here("content/learn/common.R"))
   
 ```{r load, include=FALSE}
 library(tidymodels)
-library(mlbench)
+library(readr)
 library(kernlab)
 library(doMC)
 registerDoMC(cores = parallel::detectCores())
 
-pkgs <- c("tidymodels", "mlbench", "kernlab")
+pkgs <- c("tidymodels", "kernlab", "readr")
 
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
@@ -32,42 +32,26 @@ This article demonstrates how to tune a model using grid search. Many models hav
 
 ## Example data
 
-To demonstrate model tuning, we'll use the Ionosphere data in the mlbench package:
-
-```{r load-data}
-library(tidymodels)
-library(mlbench)
-data(Ionosphere)
-```
-
-From `?Ionosphere`:
+To demonstrate model tuning, we'll use the Ionosphere data from the UCI Machine Learning database. 
 
 > This radar data was collected by a system in Goose Bay, Labrador. This system consists of a phased array of 16 high-frequency antennas with a total transmitted power on the order of 6.4 kilowatts. See the paper for more details. The targets were free electrons in the ionosphere. "good" radar returns are those showing evidence of some type of structure in the ionosphere. "bad" returns are those that do not; their signals pass through the ionosphere.
 
 > Received signals were processed using an autocorrelation function whose arguments are the time of a pulse and the pulse number. There were 17 pulse numbers for the Goose Bay system. Instances in this databse are described by 2 attributes per pulse number, corresponding to the complex values returned by the function resulting from the complex electromagnetic signal. See cited below for more details.
 
-There are 43 predictors and a factor outcome. Two of the predictors are factors (`V1` and `V2`) and the rest are numeric variables that have been scaled to a range of -1 to 1. Note that the two factor predictors have sparse distributions:
+There are 34 predictors and a factor outcome. The predictors have been scaled to a range of -1 to 1. The second predictor has a single unique value (of zero) and was excluded from these data. 
 
-```{r factor-pred}
-table(Ionosphere$V1)
-table(Ionosphere$V2)
+Let's read the data into R, which we'll do by providing [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) with a url where our CSV data is located ("<https://tidymodels.org/learn/work/tune-svm/ionosphere.csv>"):
+
+
+```{r read-data}
+library(tidymodels)
+library(readr)
+
+ionosphere <- 
+  read_csv("https://tidymodels.org/learn/work/tune-svm/ionosphere.csv")  %>% 
+  mutate(class = factor(class))
 ```
 
-There's no point of putting `V2` into any model since is is a zero-variance predictor. `V1` is not but it _could_ be if the resampling process ends up sampling all of the same value. Is this an issue? It might be since the standard R formula infrastructure fails when there is only a single observed value:
-
-```{r glm-fail, error=TRUE}
-glm(Class ~ ., data = Ionosphere, family = binomial)
-
-# Surprisingly, this doesn't help: 
-
-glm(Class ~ . - V2, data = Ionosphere, family = binomial)
-```
-
-At a minimum, let's get rid of the most problematic variable:
-
-```{r ion-rm}
-Ionosphere <- Ionosphere %>% select(-V2)
-```
 
 ## Inputs for the search
 
@@ -80,29 +64,11 @@ svm_mod <-
   set_engine("kernlab")
 ```
 
-In this article, tuning will be demonstrated in two ways, using:
-
-- a standard R formula, and 
-- a recipe.
-
-Let's create the recipe here:
-
-```{r rec}
-iono_rec <-
-  recipe(Class ~ ., data = Ionosphere)  %>%
-  # In case V1 is has a single value sampled
-  step_zv(all_predictors()) %>% 
-  # convert it to a dummy variable
-  step_dummy(V1) %>%
-  # Scale it the same as the others
-  step_range(matches("V1_"))
-```
-
 The only other required item for tuning is a resampling strategy as defined by an rsample object. Let's demonstrate using basic bootstrapping:
 
 ```{r rs}
 set.seed(4943)
-iono_rs <- bootstraps(Ionosphere, times = 30)
+iono_rs <- bootstraps(ionosphere, times = 30)
 ```
 
 ## Optional inputs
@@ -121,16 +87,14 @@ Also, a control object can be passed that specifies different aspects of the sea
 ctrl <- control_grid(verbose = FALSE)
 ```
 
-## Executing with a formula
-
-First, we can use the formula interface:
+Since the predictors are on the same scale, we can use the formula interface:
 
 ```{r grid}
 set.seed(35)
 formula_res <-
   svm_mod %>% 
   tune_grid(
-    Class ~ .,
+    class ~ .,
     resamples = iono_rs,
     metrics = roc_vals,
     control = ctrl
@@ -159,30 +123,6 @@ The top combinations are:
 ```{r sorted-metrics}
 show_best(formula_res, metric = "roc_auc")
 ```
-
-##  Executing with a recipe
-
-Next, we can use the same syntax but pass a *recipe* in as the pre-processor argument:
-
-```{r recipe}
-set.seed(325)
-recipe_res <-
-  svm_mod %>% 
-  tune_grid(
-    iono_rec,
-    resamples = iono_rs,
-    metrics = roc_vals,
-    control = ctrl
-  )
-recipe_res
-```
-
-The best setting here is:
-
-```{r best-rec}
-show_best(recipe_res, metric = "roc_auc")
-```
-
 
 
 ## Session information
