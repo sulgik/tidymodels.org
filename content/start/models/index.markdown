@@ -1,5 +1,5 @@
 ---
-title: "Build a model"
+title: "모델 만들기"
 weight: 1
 tags: [parsnip, broom]
 categories: [model fitting]
@@ -13,7 +13,7 @@ description: |
 
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
 How do you create a statistical model using tidymodels? In this article, we will walk you through the steps. We start with data for modeling, learn how to specify and train models with different engines using the [parsnip package](https://tidymodels.github.io/parsnip/), and understand why these functions are designed this way.
 
@@ -49,13 +49,14 @@ urchins <-
   setNames(c("food_regime", "initial_volume", "width")) %>% 
   # Factors are very helpful for modeling, so we convert one column
   mutate(food_regime = factor(food_regime, levels = c("Initial", "Low", "High")))
-#> 
+#> Rows: 72 Columns: 3
 #> ── Column specification ──────────────────────────────────────────────
-#> cols(
-#>   TREAT = col_character(),
-#>   IV = col_double(),
-#>   SUTW = col_double()
-#> )
+#> Delimiter: ","
+#> chr (1): TREAT
+#> dbl (2): IV, SUTW
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 ```
 
 Let's take a quick look at the data:
@@ -63,7 +64,7 @@ Let's take a quick look at the data:
 
 ```r
 urchins
-#> # A tibble: 72 x 3
+#> # A tibble: 72 × 3
 #>    food_regime initial_volume width
 #>    <fct>                <dbl> <dbl>
 #>  1 Initial                3.5 0.01 
@@ -122,6 +123,8 @@ For this kind of model, ordinary least squares is a good initial approach. With 
 ```r
 linear_reg()
 #> Linear Regression Model Specification (regression)
+#> 
+#> Computational engine: lm
 ```
 
 That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, a method for _fitting_ or training the model can be stated using the **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. For example, to use ordinary least squares, we can set the engine to be `lm`:
@@ -154,7 +157,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  3ms 
+#> Fit time:  4ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -173,7 +176,7 @@ Perhaps our analysis requires a description of the model parameter estimates and
 
 ```r
 tidy(lm_fit)
-#> # A tibble: 6 x 5
+#> # A tibble: 6 × 5
 #>   term                            estimate std.error statistic  p.value
 #>   <chr>                              <dbl>     <dbl>     <dbl>    <dbl>
 #> 1 (Intercept)                     0.0331    0.00962      3.44  0.00100 
@@ -226,7 +229,7 @@ First, let's generate the mean body width values:
 ```r
 mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
-#> # A tibble: 3 x 1
+#> # A tibble: 3 × 1
 #>    .pred
 #>    <dbl>
 #> 1 0.0642
@@ -242,7 +245,7 @@ conf_int_pred <- predict(lm_fit,
                          new_data = new_points, 
                          type = "conf_int")
 conf_int_pred
-#> # A tibble: 3 x 2
+#> # A tibble: 3 × 2
 #>   .pred_lower .pred_upper
 #>         <dbl>       <dbl>
 #> 1      0.0555      0.0729
@@ -294,7 +297,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  8.5s 
+#> Fit time:  16.1s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -325,7 +328,7 @@ To update the parameter table, the `tidy()` method is once again used:
 
 ```r
 tidy(bayes_fit, conf.int = TRUE)
-#> # A tibble: 6 x 5
+#> # A tibble: 6 × 5
 #>   term                            estimate std.error  conf.low conf.high
 #>   <chr>                              <dbl>     <dbl>     <dbl>     <dbl>
 #> 1 (Intercept)                     0.0328    0.00992   0.0168    0.0488  
@@ -371,8 +374,7 @@ If you are familiar with the tidyverse, you may have noticed that our modeling c
 urchins %>% 
   group_by(food_regime) %>% 
   summarize(med_vol = median(initial_volume))
-#> `summarise()` ungrouping output (override with `.groups` argument)
-#> # A tibble: 3 x 2
+#> # A tibble: 3 × 2
 #>   food_regime med_vol
 #>   <fct>         <dbl>
 #> 1 Initial        20.5
@@ -406,37 +408,37 @@ ggplot(urchins,
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
+#>  version  R version 4.0.5 (2021-03-31)
+#>  os       macOS Big Sur 10.16         
 #>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-08                  
+#>  tz       Asia/Seoul                  
+#>  date     2021-10-23                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package     * version date       lib source        
-#>  broom       * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  broom.mixed * 0.2.6   2020-05-17 [1] CRAN (R 4.0.0)
-#>  dials       * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dotwhisker  * 0.5.0   2018-06-27 [1] CRAN (R 4.0.2)
-#>  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer       * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip     * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
-#>  recipes     * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang         0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample     * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
+#>  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  broom.mixed * 0.2.6   2020-05-17 [1] CRAN (R 4.0.2)
+#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.0.2)
+#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.2)
+#>  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.0.2)
+#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.0.2)
+#>  rsample     * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
 #>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.0.2)
-#>  tibble      * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels  * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune        * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows   * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick   * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick   * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
 #> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

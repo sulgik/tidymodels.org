@@ -1,5 +1,5 @@
 ---
-title: "Build a model"
+title: "모델 만들기"
 weight: 1
 tags: [parsnip, broom]
 categories: [model fitting]
@@ -25,7 +25,7 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
 How do you create a statistical model using tidymodels? In this article, we will walk you through the steps. We start with data for modeling, learn how to specify and train models with different engines using the [parsnip package](https://tidymodels.github.io/parsnip/), and understand why these functions are designed this way.
 
@@ -44,7 +44,7 @@ library(dotwhisker)  # for visualizing regression results
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
 
-## The Sea Urchins Data {#data}
+## 성게 데이터 {#data}
 
 Let's use the data from [Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) to explore how three different feeding regimes affect the size of sea urchins over time. The initial size of the sea urchins at the beginning of the experiment probably affects how big they grow as they are fed. 
 
