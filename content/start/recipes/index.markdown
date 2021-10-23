@@ -1,5 +1,5 @@
 ---
-title: "Preprocess your data with recipes"
+title: "recipe 로 데이터 전처리하기"
 weight: 2
 tags: [recipes, parsnip, workflows, yardstick, broom]
 categories: [pre-processing]
@@ -13,7 +13,7 @@ description: |
 
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
 In our [*Build a Model*](/start/models/) article, we learned how to specify and train models with different engines using the [parsnip package](https://parsnip.tidymodels.org/). In this article, we'll explore another tidymodels package, [recipes](https://recipes.tidymodels.org/), which is designed to help you preprocess your data *before* training your model. Recipes are built as a series of preprocessing steps, such as: 
 
@@ -201,7 +201,7 @@ flight_data %>%
 
 Because we'll be using a simple logistic regression model, the variables `dest` and `carrier` will be converted to [dummy variables](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html). However, some of these values do not occur very frequently and this could complicate our analysis. We'll discuss specific steps later in this article that we can add to our recipe to address this issue before modeling. 
 
-## Data splitting {#data-split}
+## 데이터 나누기 {#data-split}
 
 To get started, let's split this single dataset into two: a _training_ set and a _testing_ set. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _training_ set. The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
 
@@ -408,9 +408,9 @@ flights_rec <-
 
 Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
 
-## Recipe 로 model 적합하기 {#fit-workflow}
+## Recipe 로 모델 적합하기 {#fit-workflow}
 
-로지스틱 회귀를 사용하여 항공기 데이터를 모델링해 봅시다. As we saw in [*모델 만들기*](/start/models/) 에서 배웠듯이, parsnip 패키지를 사용하여  [모델 스펙 정의하기](/start/models/#build-model) 부터 시작합니다: 
+로지스틱 회귀를 사용하여 항공기 데이터를 모델링해 봅시다. [*모델 만들기*](/start/models/) 에서 배웠듯이, parsnip 패키지를 사용하여  [모델 스펙 정의하기](/start/models/#build-model) 부터 시작합니다: 
 
 
 ```r
@@ -420,15 +420,15 @@ lr_mod <-
 ```
 
 
-We will want to use our recipe across several steps as we train and test our model. We will: 
+우리 모델을 훈련하고 테스트하면서 몇 단계에 recipe 를 사용하게 될 것입니다. 
 
-1. **Process the recipe using the training set**: This involves any estimation or calculations based on the training set. For our recipe, the training set will be used to determine which predictors should be converted to dummy variables and which predictors will have zero-variance in the training set, and should be slated for removal. 
+1. **트레이닝셋을 사용하여 recipe 를 프로세스한다**: 트레이닝셋에 기반하여 추정이나 계산을 하는 것이 포함됩니다. 우리 recipe 에게 있어, 트레이닝셋을 사용하여 어떤 설명변수가 더미 변수로 변환되어야 하는지, 어떤 설명변수가 트레이닝셋에서 영분산이 되어 제거를 고려해야 하는지를 결정할 것입니다. 
  
-1. **Apply the recipe to the training set**: We create the final predictor set on the training set. 
+1. **트레이닝셋에 recipe 적용하기**: 트레이닝셋의 최종 설명변수를 만듭니다.
  
-1. **Apply the recipe to the test set**: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set. 
+1. **테스트셋에 recipe 적용하기**: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set. 
  
-To simplify this process, we can use a _model workflow_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. We'll use the [workflows package](https://workflows.tidymodels.org/) from tidymodels to bundle our parsnip model (`lr_mod`) with our recipe (`flights_rec`).
+To simplify this process, we can use a _모델 워크플로_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. We'll use the [workflows package](https://workflows.tidymodels.org/) from tidymodels to bundle our parsnip model (`lr_mod`) with our recipe (`flights_rec`).
 
 
 ```r
