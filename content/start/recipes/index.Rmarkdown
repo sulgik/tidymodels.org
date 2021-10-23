@@ -271,9 +271,9 @@ flights_rec <-
 
 Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
 
-## Fit a model with a recipe {#fit-workflow}
+## Recipe 로 model 적합하기 {#fit-workflow}
 
-Let's use logistic regression to model the flight data. As we saw in [*Build a Model*](/start/models/), we start by [building a model specification](/start/models/#build-model) using the parsnip package: 
+로지스틱 회귀를 사용하여 항공기 데이터를 모델링해 봅시다. As we saw in [*모델 만들기*](/start/models/) 에서 배웠듯이, parsnip 패키지를 사용하여  [모델 스펙 정의하기](/start/models/#build-model) 부터 시작합니다: 
 
 ```{r model}
 lr_mod <- 

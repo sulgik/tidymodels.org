@@ -408,9 +408,9 @@ flights_rec <-
 
 Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
 
-## Fit a model with a recipe {#fit-workflow}
+## Recipe 로 model 적합하기 {#fit-workflow}
 
-Let's use logistic regression to model the flight data. As we saw in [*Build a Model*](/start/models/), we start by [building a model specification](/start/models/#build-model) using the parsnip package: 
+로지스틱 회귀를 사용하여 항공기 데이터를 모델링해 봅시다. As we saw in [*모델 만들기*](/start/models/) 에서 배웠듯이, parsnip 패키지를 사용하여  [모델 스펙 정의하기](/start/models/#build-model) 부터 시작합니다: 
 
 
 ```r
@@ -570,35 +570,35 @@ Not too bad! We leave it to the reader to test out this workflow [*without*](htt
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.1.0 (2021-05-18)
-#>  os       macOS Big Sur 11.5.2        
-#>  system   aarch64, darwin20           
+#>  version  R version 4.0.5 (2021-03-31)
+#>  os       macOS Big Sur 10.16         
+#>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2021-08-16                  
+#>  tz       Asia/Seoul                  
+#>  date     2021-10-24                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package      * version date       lib source        
-#>  broom        * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-#>  dials        * 0.0.9   2020-09-16 [1] CRAN (R 4.1.0)
-#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer        * 0.5.4   2021-01-13 [1] CRAN (R 4.1.0)
-#>  nycflights13 * 1.0.2   2021-04-12 [1] CRAN (R 4.1.0)
-#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes      * 0.1.16  2021-04-16 [1] CRAN (R 4.1.0)
-#>  rlang          0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rsample      * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.1.0)
-#>  tibble       * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-#>  tidymodels   * 0.1.3   2021-04-19 [1] CRAN (R 4.1.0)
-#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows    * 0.2.3   2021-07-16 [1] CRAN (R 4.1.0)
-#>  yardstick    * 0.0.8   2021-03-28 [1] CRAN (R 4.1.0)
+#>  broom        * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  nycflights13 * 1.0.2   2021-04-12 [1] CRAN (R 4.0.2)
+#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.2)
+#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang          0.4.11  2021-04-30 [1] CRAN (R 4.0.2)
+#>  rsample      * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.0.2)
+#>  tibble       * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick    * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

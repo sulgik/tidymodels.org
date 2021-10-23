@@ -3,6 +3,7 @@
 
 # tidymodels.org
 
+한국어 번역 소스입니다.
 This repo is the source of <https://www.tidymodels.org>, and this readme tells you how it all works. 
 
 * If you spot any small problems with the website, please feel empowered to fix 
