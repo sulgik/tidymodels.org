@@ -23,17 +23,17 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 ## 들어가기 {#intro}
 
-In our [*Build a Model*](/start/models/) article, we learned how to specify and train models with different engines using the [parsnip package](https://parsnip.tidymodels.org/). In this article, we'll explore another tidymodels package, [recipes](https://recipes.tidymodels.org/), which is designed to help you preprocess your data *before* training your model. Recipes are built as a series of preprocessing steps, such as: 
+[*모델 만들기*](/start/models/) 챕터에서는 [parsnip 패키지](https://parsnip.tidymodels.org/) 를 사용하여 여러 엔진들로 모델을 정의하고 훈련시키는 법에 대해 배웠습니다. 이 챕터에서는 tidymodels 의 또 다른 패키지인 [recipes](https://recipes.tidymodels.org/) 패키지를 살펴볼 것인데, 트레이닝 *전*에 데이터를 전처리를 도와주기 위해 설계되었습니다. Recipes 는 다음과 같이 일련의 전처리 과정들로 구성됩니다:
 
-+ converting qualitative predictors to indicator variables (also known as dummy variables),
- 
-+ transforming data to be on a different scale (e.g., taking the logarithm of a variable), 
- 
-+ transforming whole groups of predictors together,
++ 정성 설명변수를 지시변수 (indicator variables 더미 변수로도 알려짐) 로 변환,
 
-+ extracting key features from raw variables (e.g., getting the day of the week out of a date variable),
- 
-and so on. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling. 
++ 데이터를 다른 스케일로 변환 (예, 변수에 로그를 취함),
+
++ 설명변수들의 그룹을 모두 변환,
+
++ 원 변수들로 부터 핵심 변수를 추출 (예, 날짜에서 요일을 추출),
+
+등입니다. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling. 
 
 `r req_pkgs(pkgs)`
 
@@ -47,7 +47,7 @@ library(skimr)           # for variable summaries
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The New York City flight data {#data}
+## 뉴욕시 항공기 데이터 {#data}
 
 ```{r flight-start, echo=FALSE}
 set.seed(123)
@@ -73,7 +73,7 @@ flight_data <-
   mutate_if(is.character, as.factor)
 ```
 
-Let's use the [nycflights13 data](https://github.com/hadley/nycflights13) to predict whether a plane arrives more than 30 minutes late. This data set contains information on `r scales::comma(nrow(flight_data))` flights departing near New York City in 2013. Let's start by loading the data and making a few changes to the variables:
+[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 여객기 `r scales::comma(nrow(flight_data))` 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 ```{r ref.label='flight-start'}
 
@@ -111,7 +111,7 @@ Because we'll be using a simple logistic regression model, the variables `dest` 
 
 ## 데이터 나누기 {#data-split}
 
-To get started, let's split this single dataset into two: a _training_ set and a _testing_ set. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _training_ set. The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
+이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _training_ set. The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
 
 To do this, we can use the [rsample](https://rsample.tidymodels.org/) package to create an object that contains the information on _how_ to split the data, and then two more rsample functions to create data frames for the training and testing sets: 
 
@@ -139,13 +139,13 @@ flights_rec <-
   recipe(arr_delay ~ ., data = train_data) 
 ```
 
-The [`recipe()` function](https://recipes.tidymodels.org/reference/recipe.html) as we used it here has two arguments:
+[`recipe()` 함수](https://recipes.tidymodels.org/reference/recipe.html) 는 인수 둘을 취하는 것을 볼 수 있습니다.
 
 + A **formula**. Any variable on the left-hand side of the tilde (`~`) is considered the model outcome (here, `arr_delay`). On the right-hand side of the tilde are the predictors. Variables may be listed by name, or you can use the dot (`.`) to indicate all other variables as predictors.
 
 + The **data**. A recipe is associated with the data set used to create the model. This will typically be the _training_ set, so `data = train_data` here. Naming a data set doesn't actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.
 
-Now we can add [roles](https://recipes.tidymodels.org/reference/roles.html) to this recipe. We can use the [`update_role()` function](https://recipes.tidymodels.org/reference/roles.html) to let recipes know that `flight` and `time_hour` are variables with a custom role that we called `"ID"` (a role can have any character value). Whereas our formula included all variables in the training set other than `arr_delay` as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.
+이제 이 recipe 에 [roles(역할)](https://recipes.tidymodels.org/reference/roles.html) 을 추가할 수 있습니다. [`update_role()` 함수](https://recipes.tidymodels.org/reference/roles.html) 를 사용하여 `flight` 와 `time_hour` 는 `"ID"` (역할은 임의의 문자값을 가질 수 있다) 라고 부른 커스텀 역할을 가진 변수라고 recipes 에 명시할 수 있습니다. Whereas our formula included all variables in the training set other than `arr_delay` as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.
 
 ```{r recipe-roles}
 flights_rec <- 
@@ -155,7 +155,7 @@ flights_rec <-
 
 This step of adding roles to a recipe is optional; the purpose of using it here is that those two variables can be retained in the data but not included in the model. This can be convenient when, after the model is fit, we want to investigate some poorly predicted value. These ID columns will be available and can be used to try to understand what went wrong.
 
-To get the current set of variables and roles, use the `summary()` function: 
+`summary()` 함수를 사용하여 현재의 변수와 역할을 봅시다:
 
 ```{r summary}
 summary(flights_rec)
@@ -173,13 +173,13 @@ flight_data %>%
   mutate(numeric_date = as.numeric(date)) 
 ```
 
-It's possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a late arrival and the numeric date variable. However, it might be better to add model terms _derived_ from the date that have a better potential to be important to the model. For example, we could derive the following meaningful features from the single `date` variable: 
+It's possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a late arrival and the numeric date variable. However, it might be better to add model terms _derived_ from the date that have a better potential to be important to the model. 예를 들어 `date` 변수 하나로부터 다음과 같이 의미있는 피쳐들을 도출할 수 있습니다: 
 
-* the day of the week,
+* 요일,
  
-* the month, and
+* 달,
  
-* whether or not the date corresponds to a holiday. 
+* 해당날짜가 공휴일인지 여부. 
  
 Let's do all three of these by adding steps to our recipe:
 
@@ -194,7 +194,7 @@ flights_rec <-
                keep_original_cols = FALSE)
 ```
 
-What do each of these steps do?
+각 단계가 어떤 작업을 한 걸까요?
 
 * With [`step_date()`](https://recipes.tidymodels.org/reference/step_date.html), we created two new factor columns with the appropriate day of the week and the month. 
 

@@ -15,7 +15,7 @@ description: |
 
 ## 들어가기 {#intro}
 
-How do you create a statistical model using tidymodels? In this article, we will walk you through the steps. We start with data for modeling, learn how to specify and train models with different engines using the [parsnip package](https://tidymodels.github.io/parsnip/), and understand why these functions are designed this way.
+tidymodels 를 사용해서 통계 모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아볼 것입니다. 데이터부터 시작해서 [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고 이러한 함수들을 설계하는 이유를 배울 것입니다. 
 
 To use code in this article,  you will need to install the following packages: broom.mixed, dotwhisker, readr, rstanarm, and tidymodels.
 
@@ -33,9 +33,9 @@ library(dotwhisker)  # for visualizing regression results
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
 
-## The Sea Urchins Data {#data}
+## 성게 데이터 {#data}
 
-Let's use the data from [Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) to explore how three different feeding regimes affect the size of sea urchins over time. The initial size of the sea urchins at the beginning of the experiment probably affects how big they grow as they are fed. 
+[Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기의 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
 
 To start, let's read our urchins data into R, which we'll do by providing [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) with a url where our CSV data is located ("<https://tidymodels.org/start/models/urchins.csv>"):
 
@@ -82,11 +82,12 @@ urchins
 
 The urchins data is a [tibble](https://tibble.tidyverse.org/index.html). If you are new to tibbles, the best place to start is the [tibbles chapter](https://r4ds.had.co.nz/tibbles.html) in *R for Data Science*. For each of the 72 urchins, we know their:
 
-+ experimental feeding regime group (`food_regime`: either `Initial`, `Low`, or `High`),
-+ size in milliliters at the start of the experiment (`initial_volume`), and
-+ suture width at the end of the experiment (`width`).
 
-As a first step in modeling, it's always a good idea to plot the data: 
++ 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
++ 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
++ 실험 마지막의 크기 (`width`).
+
+모델링의 첫단계로 데이터를 시각화해 보는 것은 좋은 방법입니다:
 
 
 ```r
@@ -105,7 +106,7 @@ ggplot(urchins,
 
 We can see that urchins that were larger in volume at the start of the experiment tended to have wider sutures at the end, but the slopes of the lines look different so this effect may depend on the feeding regime condition.
 
-## Build and fit a model {#build-model}
+## 모델 구축 및 적합 {#build-model}
 
 A standard two-way analysis of variance ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) model makes sense for this dataset because we have both a continuous predictor and a categorical predictor. Since the slopes appear to be different for at least two of the feeding regimes, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way: 
 
@@ -114,9 +115,9 @@ A standard two-way analysis of variance ([ANOVA](https://www.itl.nist.gov/div898
 width ~ initial_volume * food_regime
 ```
 
-allows our regression model depending on initial volume to have separate slopes and intercepts for each food regime. 
+를 하면, 회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
 
-For this kind of model, ordinary least squares is a good initial approach. With tidymodels, we start by specifying the _functional form_ of the model that we want using the [parsnip package](https://tidymodels.github.io/parsnip/). Since there is a numeric outcome and the model should be linear with slopes and intercepts, the model type is ["linear regression"](https://tidymodels.github.io/parsnip/reference/linear_reg.html). We can declare this with: 
+For this kind of model, ordinary least squares is a good initial approach. With tidymodels, we start by specifying the _functional form_ of the model that we want using the [parsnip package](https://tidymodels.github.io/parsnip/). 수치형 출력값이 있고, 모델이 기울기와 절편들에 대해 선형이므로, 이러한 모델 타잎은 ["linear regression (선형회귀)"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
 
 
 
@@ -127,7 +128,7 @@ linear_reg()
 #> Computational engine: lm
 ```
 
-That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, a method for _fitting_ or training the model can be stated using the **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. For example, to use ordinary least squares, we can set the engine to be `lm`:
+That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, a method for _fitting_ or training the model can be stated using the **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. 예를 들어, 엔진을 `lm` 으로 두어 ordinary least squares 를 사용합니다:
 
 
 ```r
@@ -138,7 +139,7 @@ linear_reg() %>%
 #> Computational engine: lm
 ```
 
-The [documentation page for `linear_reg()`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) lists the possible engines. We'll save this model object as `lm_mod`.
+[`linear_reg() 문서`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 에는 가능한 엔진들이 나열되어 있습니다. 이 모델 객체를 `lm_mod` 으로 저장할 것입니다.
 
 
 ```r
@@ -147,7 +148,7 @@ lm_mod <-
   set_engine("lm")
 ```
 
-From here, the model can be estimated or trained using the [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) function:
+이제 [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) 함수를 사용하여 모형을 추정하고 훈련할 수 있습니다:
 
 
 ```r
@@ -171,7 +172,7 @@ lm_fit
 #>                     -0.0012594                       0.0005254
 ```
 
-Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. Although the `summary()` function for `lm` objects can provide that, it gives the results back in an unwieldy format. Many models have a `tidy()` method that provides the summary results in a more predictable and useful format (e.g. a data frame with standard column names): 
+Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공한다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 
 ```r
@@ -187,7 +188,7 @@ tidy(lm_fit)
 #> 6 initial_volume:food_regimeHigh  0.000525  0.000702     0.748 0.457
 ```
 
-This kind of output can be used to generate a dot-and-whisker plot of our regression results using the dotwhisker package:
+이러한 종류의 출력은 dotwhisker 패키지를 사용하여 우리의 회귀 결과의 dot-and-whisker 플롯을 그려볼 수 있습니다:
 
 
 ```r
@@ -200,9 +201,9 @@ tidy(lm_fit) %>%
 <img src="figs/dwplot-1.svg" width="672" />
 
 
-## Use a model to predict {#predict-model}
+## 모델을 이용하여 예측하기 {#predict-model}
 
-This fitted object `lm_fit` has the `lm` model output built-in, which you can access with `lm_fit$fit`, but there are some benefits to using the fitted parsnip model object when it comes to predicting.
+적합된 객체 `lm_fit` 에는 `lm` model output built-in 이 있어, `lm_fit$fit` 로 접근할 수 있지만, 적합된 parsnip 모델 객체에는 예측에 관련하여 장점 몇 개가 있습니다. 
 
 Suppose that, for a publication, it would be particularly interesting to make a plot of the mean body size for urchins that started the experiment with an initial volume of 20ml. To create such a graph, we start with some new example data that we will make predictions for, to show in our graph:
 
@@ -217,13 +218,13 @@ new_points
 #> 3             20        High
 ```
 
-To get our predicted results, we can use the `predict()` function to find the mean values at 20ml. 
+예측 결과들을 얻기 위해, `predict()` 함수를 사용하여 20ml 에서 평균값을 구할 수 있습니다.
 
-It is also important to communicate the variability, so we also need to find the predicted confidence intervals. If we had used `lm()` to fit the model directly, a few minutes of reading the [documentation page](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/predict.lm.html) for `predict.lm()` would explain how to do this. However, if we decide to use a different model to estimate urchin size (_spoiler:_ we will!), it is likely that a completely different syntax would be required. 
+변동성에 대해 잘 전달하는 것도 중요하기 때문에, 예측 신뢰구간을 구할 필요가 있습니다. `lm()` 를 이용하여 모델을 직접 적합했다면, `predict.lm()` 의 [문서 페이지](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/predict.lm.html) 를 몇 분동안 읽으면 어떻게 하는지 알 수 있을 것입니다. 하지만, 성게 크기를 예측하기 위해 다른 모형을 사용하기를 결정했다면 (_스포일러:_ 예정됨), 완전히 다른 문법이 필요할 가능성이 매우 높습니다.
 
-Instead, with tidymodels, the types of predicted values are standardized so that we can use the same syntax to get these values. 
+tidymodels 에서는 예측값들의 타잎이 표준화되기 때문에 이러한 값을 얻기 위해 같은 문법을 사용할 수 있다.
 
-First, let's generate the mean body width values: 
+우선, 몸통폭 평균값을 만들어 보자:
 
 
 ```r
@@ -269,9 +270,11 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 <img src="figs/lm-all-pred-1.svg" width="672" />
 
-## Model with a different engine {#new-engine}
+## 다른 엔진을 사용한 모델 {#new-engine}
 
 Every one on your team is happy with that plot _except_ that one person who just read their first book on [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/). They are interested in knowing if the results would be different if the model were estimated using a Bayesian approach. In such an analysis, a [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7) needs to be declared for each model parameter that represents the possible values of the parameters (before being exposed to the observed data). After some discussion, the group agrees that the priors should be bell-shaped but, since no one has any idea what the range of values should be, to take a conservative approach and make the priors _wide_ using a Cauchy distribution (which is the same as a t-distribution with a single degree of freedom).
+
+`linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달된다. 
 
 The [documentation](https://mc-stan.org/rstanarm/articles/priors.html) on the rstanarm package shows us that the `stan_glm()` function can be used to estimate this model, and that the function arguments that need to be specified are called `prior` and `prior_intercept`. It turns out that `linear_reg()` has a [`stan` engine](https://tidymodels.github.io/parsnip/reference/linear_reg.html#details). Since these prior distribution arguments are specific to the Stan software, they are passed as arguments to [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html). After that, the same exact `fit()` call is used:
 
@@ -297,7 +300,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.1s 
+#> Fit time:  16.3s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -323,7 +326,7 @@ print(bayes_fit, digits = 5)
 
 This kind of Bayesian analysis (like many models) involves randomly generated numbers in its fitting procedure. We can use `set.seed()` to ensure that the same (pseudo-)random numbers are generated each time we run this code. The number `123` isn't special or related to our data; it is just a "seed" used to choose random numbers.
 
-To update the parameter table, the `tidy()` method is once again used: 
+파라미터 표를 새로 얻기 위해, 또 한번 `tidy()` 방법을 사용할 수 있습니다:
 
 
 ```r
@@ -416,7 +419,7 @@ ggplot(urchins,
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
 #>  tz       Asia/Seoul                  
-#>  date     2021-10-23                  
+#>  date     2021-10-24                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package     * version date       lib source        
