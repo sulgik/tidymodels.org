@@ -128,7 +128,7 @@ test_data  <- testing(data_split)
 ```
 
  
-## Create recipe and roles {#recipe}
+## recipe 와 role 생성하기 {#recipe}
 
 To get started, let's create a recipe for a simple logistic regression model. Before training the model, we can use a recipe to create a few new predictors and conduct some preprocessing required by the model. 
 
@@ -145,7 +145,7 @@ flights_rec <-
 
 + The **data**. A recipe is associated with the data set used to create the model. This will typically be the _training_ set, so `data = train_data` here. Naming a data set doesn't actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.
 
-이제 이 recipe 에 [roles(역할)](https://recipes.tidymodels.org/reference/roles.html) 을 추가할 수 있습니다. [`update_role()` 함수](https://recipes.tidymodels.org/reference/roles.html) 를 사용하여 `flight` 와 `time_hour` 는 `"ID"` (역할은 임의의 문자값을 가질 수 있다) 라고 부른 커스텀 역할을 가진 변수라고 recipes 에 명시할 수 있습니다. Whereas our formula included all variables in the training set other than `arr_delay` as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.
+이제 이 recipe 에 [roles(역할)](https://recipes.tidymodels.org/reference/roles.html) 을 추가할 수 있습니다. [`update_role()` 함수](https://recipes.tidymodels.org/reference/roles.html) 를 사용하여 `flight` 와 `time_hour` 는 `"ID"` (역할은 임의의 문자값을 가질 수 있음) 라는 이름의 커스텀 역할을 가진 변수라고 recipe 에 명시할 수 있습니다. 공식에서는 트레이닝셋에서 `arr_delay` 를 제외한 모든 변수들을 포함했지만, recipe 에게 이 두 변수들을 놓아두되, 종속변수나 설명변수로 사용하지 말라고 명시합니다.
 
 ```{r recipe-roles}
 flights_rec <- 
@@ -181,7 +181,7 @@ It's possible that the numeric date variable is a good option for modeling; perh
  
 * 해당날짜가 공휴일인지 여부. 
  
-Let's do all three of these by adding steps to our recipe:
+이 세 작업을 위해 우리 recipe 에 단계를 추가해 봅시다:
 
 
 ```{r date-recipe}
@@ -202,9 +202,10 @@ flights_rec <-
 
 * With `keep_original_cols = FALSE`, we remove the original `date` variable since we no longer want it in the model. Many recipe steps that create new variables have this argument.
 
-Next, we'll turn our attention to the variable types of our predictors. Because we plan to train a logistic regression model, we know that predictors will ultimately need to be numeric, as opposed to nominal data like strings and factor variables. In other words, there may be a difference in how we store our data (in factors inside a data frame), and how the underlying equations require them (a purely numeric matrix).
+다음으로, 설명변수들의 변수 타잎에 집중해 봅시다. 로지스틱 회귀 모형을 훈련할 것이기 때문에, 설명변수들이 궁극적으로는 문자열이나 요인 변수들 같은 명목형 데이터가 아닌 수치형 데이터가 될 것입니다. 다른 말로 하면, 데이터를 저장하는 방식(데이터프레임 안에서의 팩터형으로) 과  밑에서 돌아가는 공식들이 사용하는 방식 (수치형 행렬) 에서 차이가 있을 수 있습니다.
 
-For factors like `dest` and `origin`, [standard practice](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) is to convert them into _dummy_ or _indicator_ variables to make them numeric. These are binary values for each level of the factor. For example, our `origin` variable has values of `"EWR"`, `"JFK"`, and `"LGA"`. The standard dummy variable encoding, shown below, will create _two_ numeric columns of the data that are 1 when the originating airport is `"JFK"` or `"LGA"` and zero otherwise, respectively. 
+`dest` 와 `origin` 같은 팩터형에 대해, [표준 방법](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) 은 이 변수들을 _더미_ 나 _indicator_ 변수들로 변환하여 수치형으로 만드는 것입니다. 이 방법은 팩텨형의 각 수준에 대해 이진 값들입니다. 예를 들어 우리 `origin` 변수가 `"EWR"`, `"JFK"`, `"LGA"` 값을 갖습니다. 아래에 나온 표준 더미 변수 인코딩 방법은 각각, 본 공항이 `"JFK"` 나 `"LGA"` 이면 1, 그 외에는 0인 수치형 _두개_의 열이 만들어 질 것입니다.
+
 
 ```{r calc-dummy, include = FALSE}
 four_origins <- 
@@ -227,7 +228,7 @@ bake(origin_dummies, new_data = NULL, origin, starts_with("origin")) %>%
 ```
 
 
-But, unlike the standard model formula methods in R, a recipe **does not** automatically create these dummy variables for you; you'll need to tell your recipe to add this step. This is for two reasons. First, many models do not require [numeric predictors](https://bookdown.org/max/FES/categorical-trees.html), so dummy variables may not always be preferred. Second, recipes can also be used for purposes outside of modeling, where non-dummy versions of the variables may work better. For example, you may want to make a table or a plot with a variable as a single factor. For those reasons, you need to explicitly tell recipes to create dummy variables using `step_dummy()`: 
+하지만, 이러한 표준 모델 공식과 다르게 recipe 는 자동으로 이러한 더미 변수들을 만들어 제공하지 **않습니다**. recipe 에게 이 단계를 추가하라고 명시해야 합니다. 두가지 이유가 있습니다. 첫번째 이유는 [수치형 설명변수](https://bookdown.org/max/FES/categorical-trees.html) 를 필요로 하지 않는 모델들이 많기 때문에, 더미 변수들이 항상 선호되는 것은 아닐 수 있습니다. 두번째 이유는 recipe 는 모델링 이외의 목적으로 사용될 수 있는데, 더미 버전이 아닌 변수들이 더 좋을 수 있습니다. 예를 들어, 하나의 팩터형으로서 표나 플롯을 그리고 싶을 수 있습니다. 이러한 이유로 recipe 에게 `step_dummy()` 을 사용하여 더미 변수들을 만들라고 명시적으로 알려주어야 합니다. 
 
 ```{r dummy}
 flights_rec <- 
@@ -240,7 +241,7 @@ flights_rec <-
   step_dummy(all_nominal_predictors())
 ```
 
-Here, we did something different than before: instead of applying a step to an individual variable, we used [selectors](https://recipes.tidymodels.org/reference/selections.html) to apply this recipe step to several variables at once, `all_nominal_predictors()`. The [selector functions](https://recipes.tidymodels.org/reference/selections.html) can be combined to select intersections of variables.
+여기에서 전과 다르게 한 것이 있습니다. 개별 변수들에게 단계를 적용한 것 대신 [selectors](https://recipes.tidymodels.org/reference/selections.html), `all_nominal_predictors()` 를 사용하여 recipe 단계를 동시에 여러 변수들에게 적용했습니다. [selector 함수들](https://recipes.tidymodels.org/reference/selections.html) 을 조합하여 변수들의 교집합을 선택할 수 있습니다.
 
 At this stage in the recipe, this step selects the `origin`, `dest`, and `carrier` variables. It also includes two new variables, `date_dow` and `date_month`, that were created by the earlier `step_date()`. 
 
@@ -268,8 +269,7 @@ flights_rec <-
   step_zv(all_predictors())
 ```
 
-
-Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
+이제 데이터에 필요한 작업 _specification_ 을 생성했습니다. 우리가 만든 recipe 를 어떻게 사용할까요?
 
 ## Recipe 로 모델 적합하기 {#fit-workflow}
 
@@ -290,7 +290,7 @@ lr_mod <-
  
 1. **테스트셋에 recipe 적용하기**: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set. 
  
-To simplify this process, we can use a _모델 워크플로_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. We'll use the [workflows package](https://workflows.tidymodels.org/) from tidymodels to bundle our parsnip model (`lr_mod`) with our recipe (`flights_rec`).
+To simplify this process, we can use a _모델 워크플로_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. tidymodels 의 [workflows 패키지](https://workflows.tidymodels.org/) 를 사용하여 우리 parsnip 모델 (`lr_mod`) 과 우리 recipe (`flights_rec`) 를 묶을 것입니다.
 
 ```{r workflow}
 flights_wflow <- 
@@ -309,7 +309,7 @@ flights_fit <-
   fit(data = train_data)
 ```
  
-This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions `extract_fit_parsnip()` and `extract_recipe()`. For example, here we pull the fitted model object then use the `broom::tidy()` function to get a tidy tibble of model coefficients: 
+이 객체 내부에는 최종마무리된 recipe 와 적합된 model 객체가 있습니다. 이 워크플로에서 모델이나 recipe 를 추출하고자 할 수 있습니다. 도우미 함수들, `extract_fit_parsnip()` 와 `extract_recipe()` 를 사용하면 됩니다. 예를 들어, 여기서 적합된 모델 객체를 추출한 후 `broom::tidy()` 함수를 사용하여 모델 계수의 타이디 티블을 얻습니다.
 
 ```{r fit-glance, R.options = list(tibble.print_min = 5)}
 flights_fit %>% 
@@ -317,25 +317,25 @@ flights_fit %>%
   tidy()
 ```
 
-## Use a trained workflow to predict {#predict-workflow}
+## 훈련된 워크플로를 사용하여 예측하기 {#predict-workflow}
 
-Our goal was to predict whether a plane arrives more than 30 minutes late. We have just:
+우리 목적은 한 여객기가 30분 이상 연착할지를 예측하는 것이었습니다. 우리는 방금 끝낸 일은:
 
-1. Built the model (`lr_mod`),
+1. 모델 만들기 (`lr_mod`),
 
-1. Created a preprocessing recipe (`flights_rec`),
+1. 전처리 recipe 생성하기 (`flights_rec`),
 
-1. Bundled the model and recipe (`flights_wflow`), and 
+1. model 과 recipe 묶기 (`flights_wflow`),
 
-1. Trained our workflow using a single call to `fit()`. 
+1. `fit()` 호출 하나를 이용하여 우리 워크플로 훈련하기. 
 
-The next step is to use the trained workflow (`flights_fit`) to predict with the unseen test data, which we will do with a single call to `predict()`. The `predict()` method applies the recipe to the new data, then passes them to the fitted model. 
+다음 단계는 훈련된 워크플로 (`flights_fit`) 를 사용하여 사용하지 않은 테스트 데이터에 대해 예측을 하는 것인데, 단일 호출 `predict()` 로 할 수 있습니다. `predict()` 를 하면 recipe 가 새 데이터에 적용된 후, 이가 적합된 모델에 전달됩니다. 
 
 ```{r pred-class, R.options = list(tibble.print_min = 5)}
 predict(flights_fit, test_data)
 ```
 
-Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `late` versus `on_time`. But, let's say we want the predicted class probabilities for each flight instead. To return those, we can specify `type = "prob"` when we use `predict()` or use `augment()` with the model plus test data to save them together:
+Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `late` 대 `on_time`. But, let's say we want the predicted class probabilities for each flight instead. To return those, we can specify `type = "prob"` when we use `predict()` or use `augment()` with the model plus test data to save them together:
 
 ```{r test-pred, R.options = list(tibble.print_min = 5)}
 flights_aug <- 
