@@ -335,7 +335,7 @@ flights_fit %>%
 predict(flights_fit, test_data)
 ```
 
-Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `late` 대 `on_time`. But, let's say we want the predicted class probabilities for each flight instead. To return those, we can specify `type = "prob"` when we use `predict()` or use `augment()` with the model plus test data to save them together:
+종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터로 with the model plus test data to save them together:
 
 ```{r test-pred, R.options = list(tibble.print_min = 5)}
 flights_aug <- 
