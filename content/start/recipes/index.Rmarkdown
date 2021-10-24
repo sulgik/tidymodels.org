@@ -163,7 +163,7 @@ summary(flights_rec)
 
 
 
-## Create features {#features}
+## 피쳐 생성하기 {#features}
 
 Now we can start adding steps onto our recipe using the pipe operator. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of **feature engineering** might go a long way to improving our model. How should the date be encoded into the model? The `date` column has an R `date` object so including that column "as is" will mean that the model will convert it to a numeric format equal to the number of days after a reference date: 
 
