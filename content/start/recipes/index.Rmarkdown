@@ -73,7 +73,7 @@ flight_data <-
   mutate_if(is.character, as.factor)
 ```
 
-[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 여객기 `r scales::comma(nrow(flight_data))` 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
+[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 항공편 `r scales::comma(nrow(flight_data))` 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 ```{r ref.label='flight-start'}
 
@@ -335,7 +335,7 @@ flights_fit %>%
 predict(flights_fit, test_data)
 ```
 
-종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터로 with the model plus test data to save them together:
+종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. 이들을 반환받는 법으로는 `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터와 함께 사용하여 이들을 함께 저장하면 됩니다.
 
 ```{r test-pred, R.options = list(tibble.print_min = 5)}
 flights_aug <- 
@@ -365,7 +365,7 @@ flights_aug %>%
   roc_auc(truth = arr_delay, .pred_late)
 ```
 
-Not too bad! We leave it to the reader to test out this workflow [*without*](https://workflows.tidymodels.org/reference/add_formula.html) this recipe. You can use `workflows::add_formula(arr_delay ~ .)` instead of `add_recipe()` (remember to remove the identification variables first!), and see whether our recipe improved our model's ability to predict late arrivals.
+그리 나쁘지 않네요! 이 recipe 를 [*사용하지 않은*](https://workflows.tidymodels.org/reference/add_formula.html) 워크 플로를 한 번 시도해보길 바랍니다. `workflows::add_formula(arr_delay ~ .)` 를 `add_recipe()` 대신 사용하고 (식별 변수를 먼저 제거하는 걸 잊지 말 것!), 우리의 recipe 가 모델의 연착 예측력을 개선했는지 보면 됩니다.
 
 ```{r eval = FALSE, include = FALSE}
 set.seed(555)

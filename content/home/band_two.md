@@ -2,5 +2,5 @@
 title: tidymodels 배우기
 ---
 
-Whether you are just starting out today or have years of experience with modeling, tidymodels offers a consistent, flexible framework for your work.
+오늘 시작하는 초심자에게도, 수 년의 모델링 경력자에게도, tidymodels 는 일관성있고, 유연한 프레임워크를 제공합니다.
    

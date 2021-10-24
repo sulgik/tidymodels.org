@@ -1,5 +1,5 @@
 ---
-title: "Tune model parameters"
+title: "모델 파라미터 튜닝하기"
 weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
@@ -23,9 +23,9 @@ pkgs <- c("tidymodels", "rpart", "rpart.plot", "vip")
 ```
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
-Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **hyperparameters**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **하이퍼파라미터**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
 
 `r req_pkgs(pkgs)`
 
@@ -39,7 +39,7 @@ library(vip)         # for variable importance plots
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The cell image data, revisited {#data}
+## 세포 이미지 데이터, 계속 {#data}
 
 In our previous [*Evaluate your model with resampling*](/start/resampling/) article, we introduced a data set of images of cells that were labeled by experts as well-segmented (`WS`) or poorly segmented (`PS`). We trained a [random forest model](/start/resampling/#modeling) to predict which images are segmented well vs. poorly, so that a biologist could filter out poorly segmented cell images in their analysis. We used [resampling](/start/resampling/#resampling) to estimate the performance of our model on this data.
 

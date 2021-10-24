@@ -1,5 +1,5 @@
 ---
-title: "Tune model parameters"
+title: "모델 파라미터 튜닝하기"
 weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
@@ -12,9 +12,9 @@ description: |
 
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
-Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **hyperparameters**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **하이퍼파라미터**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
 
 To use code in this article,  you will need to install the following packages: rpart, rpart.plot, tidymodels, and vip.
 
@@ -29,7 +29,7 @@ library(vip)         # for variable importance plots
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The cell image data, revisited {#data}
+## 세포 이미지 데이터, 계속 {#data}
 
 In our previous [*Evaluate your model with resampling*](/start/resampling/) article, we introduced a data set of images of cells that were labeled by experts as well-segmented (`WS`) or poorly segmented (`PS`). We trained a [random forest model](/start/resampling/#modeling) to predict which images are segmented well vs. poorly, so that a biologist could filter out poorly segmented cell images in their analysis. We used [resampling](/start/resampling/#resampling) to estimate the performance of our model on this data.
 
@@ -413,36 +413,36 @@ You could tune the other hyperparameter we didn't use here, `min_n`, which sets 
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 11.5.2        
-#>  system   aarch64, darwin20           
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
+#>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2021-08-24                  
+#>  tz       Asia/Seoul                  
+#>  date     2021-10-24                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.1.0)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.16  2021-04-16 [1] CRAN (R 4.1.0)
-#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rpart      * 4.1-15  2019-04-12 [1] CRAN (R 4.1.1)
-#>  rpart.plot * 3.1.0   2021-07-24 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  tibble     * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-#>  tidymodels * 0.1.3   2021-04-19 [1] CRAN (R 4.1.0)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.3   2021-07-16 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rpart      * 4.1-15  2019-04-12 [1] CRAN (R 4.0.3)
+#>  rpart.plot * 3.1.0   2021-07-24 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

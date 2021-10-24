@@ -1,5 +1,5 @@
 ---
-title: "Evaluate your model with resampling"
+title: "Resampling 으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
@@ -26,9 +26,9 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
-So far, we have [built a model](/start/models/) and [preprocessed data with a recipe](/start/recipes/). We also introduced [workflows](/start/recipes/#fit-workflow) as a way to bundle a [parsnip model](https://tidymodels.github.io/parsnip/) and [recipe](https://tidymodels.github.io/recipes/) together. Once we have a model trained, we need a way to measure how well that model predicts new data. This tutorial explains how to characterize model performance based on **resampling** statistics. 
+지금까지 [모델을 만들고](/start/models/) [recipe 로 데이터 전처리](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [workflows](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
 
 `r req_pkgs(pkgs)`
 
@@ -41,9 +41,9 @@ library(modeldata)  # for the cells data
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The cell image data {#data}
+## 세포 이미지 데이터 {#data}
 
-Let's use data from [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340), available in the [modeldata package](https://cran.r-project.org/web/packages/modeldata/index.html), to predict cell image segmentation quality with resampling. To start, we load this data into R:
+[modeldata 패키지](https://cran.r-project.org/web/packages/modeldata/index.html) 에 있는 [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340) 데이터를 사용하여, resampling 으로 세포 이미지 세그멘테이션 품질을 예측해 봅시다. 이 데이터를 R 에 로드합니다:
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
@@ -129,7 +129,7 @@ The majority of the modeling work is then conducted on the training set data.
 
 ## Modeling
 
-[Random forest models](https://en.wikipedia.org/wiki/Random_forest) are [ensembles](https://en.wikipedia.org/wiki/Ensemble_learning) of [decision trees](https://en.wikipedia.org/wiki/Decision_tree). A large number of decision tree models are created for the ensemble based on slightly different versions of the training set. When creating the individual decision trees, the fitting process encourages them to be as diverse as possible. The collection of trees are combined into the random forest model and, when a new sample is predicted, the votes from each tree are used to calculate the final predicted value for the new sample. For categorical outcome variables like `class` in our `cells` data example, the majority vote across all the trees in the random forest determines the predicted class for the new sample.
+[랜덤포레스트 모델](https://en.wikipedia.org/wiki/Random_forest) 은 [decision trees](https://en.wikipedia.org/wiki/Decision_tree) 의  [앙상블](https://en.wikipedia.org/wiki/Ensemble_learning) 입니다. 약간 다른 트레이닝 셋에 기반하여 많은 수의 decision tree 모델이 생성됩니다. 각 decision tree 가 생성될 때, 적합과정은 최대한 decision tree 들이 다양하게 되길 유도합니다. 트리의 집합은 랜덤포레스트 모델로 조합되고, 새로운 샘플이 예측될 때, 각 트리로 부터의 투표가 최종 예측값을 계산하는데 사용됩니다. 우리의 `cells` 예시 데이터의 `class` 와 같은 범주형 종속변수에 대해, 랜덤포레스트 의 모든 트리를 통틀어 가장 많은 투표를 받은 모델이 새로운 샘플의 예측 범주를 결정합니다. 
 
 One of the benefits of a random forest model is that it is very low maintenance;  it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won't create a recipe for the `cells` data.
 
@@ -157,7 +157,7 @@ rf_fit
 This new `rf_fit` object is our fitted model, trained on our training data set. 
 
 
-## Estimating performance {#performance}
+## 성능 추정하기 {#performance}
 
 During a modeling project, we might create a variety of different models. To choose between them, we need to consider how well these models do, as measured by some performance statistics. In our example in this article, some options we could use are: 
 
@@ -167,7 +167,7 @@ During a modeling project, we might create a variety of different models. To cho
  
 The ROC curve uses the class probability estimates to give us a sense of performance across the entire set of potential probability cutoffs. Overall accuracy uses the hard class predictions to measure performance. The hard class predictions tell us whether our model predicted `PS` or `WS` for each cell. But, behind those predictions, the model is actually estimating a probability. A simple 50% probability cutoff is used to categorize a cell as poorly segmented.
 
-The [yardstick package](https://tidymodels.github.io/yardstick/) has functions for computing both of these measures called `roc_auc()` and `accuracy()`. 
+[yardstick 패키지](https://tidymodels.github.io/yardstick/) 에는 이러한 두 측정값들을 계산하는 함수, `roc_auc()` 와 `accuracy()` 가 있습니다. 
 
 At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let's see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
 
@@ -180,7 +180,7 @@ rf_training_pred <-
               select(class))
 ```
 
-Using the yardstick functions, this model has spectacular results, so spectacular that you might be starting to get suspicious: 
+yardstick 함수들을 사용하여, 이 모델은 엄청난 결과를 보여주는데, 결과가 너무 엄청나서 의심되기 시작할 것입니다: 
 
 ```{r rf-train-perf}
 rf_training_pred %>%                # training set predictions
@@ -205,7 +205,7 @@ rf_testing_pred %>%                   # test set predictions
   accuracy(truth = class, .pred_class)
 ```
 
-### What happened here?
+### 무슨일이 일어난 거야?
 
 There are several reasons why training set statistics like the ones shown in this section can be unrealistically optimistic: 
 
@@ -217,9 +217,9 @@ To understand that second point better, think about an analogy from teaching. Su
 
 
 
-## Resampling to the rescue {#resampling}
+## Resampling 를 이용한 문제해결 {#resampling}
 
-Resampling methods, such as cross-validation and the bootstrap, are empirical simulation systems. They create a series of data sets similar to the training/testing split discussed previously; a subset of the data are used for creating the model and a different subset is used to measure performance. Resampling is always used with the _training set_. This schematic from [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) illustrates data usage for resampling methods:
+cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬레이션 시스템입니다. They create a series of data sets similar to the training/testing split discussed previously; a subset of the data are used for creating the model and a different subset is used to measure performance. Resampling is always used with the _training set_. This schematic from [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) illustrates data usage for resampling methods:
 
 ```{r resampling-fig, echo = FALSE, fig.align='center', out.width="85%"}
 knitr::include_graphics("img/resampling.svg")

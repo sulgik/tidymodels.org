@@ -1,11 +1,13 @@
 ---
-title: "Evaluate your model with resampling"
+title: "Resampling 으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
 description: | 
   Measure model performance by generating different versions of the training data through resampling.
 ---
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
 
 
 
@@ -13,9 +15,9 @@ description: |
 
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
-So far, we have [built a model](/start/models/) and [preprocessed data with a recipe](/start/recipes/). We also introduced [workflows](/start/recipes/#fit-workflow) as a way to bundle a [parsnip model](https://tidymodels.github.io/parsnip/) and [recipe](https://tidymodels.github.io/recipes/) together. Once we have a model trained, we need a way to measure how well that model predicts new data. This tutorial explains how to characterize model performance based on **resampling** statistics. 
+지금까지 [모델 만들기](/start/models/) 와 [recipe 로 데이터 전처리하기](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [workflows](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
 
 To use code in this article,  you will need to install the following packages: modeldata, ranger, and tidymodels.
 
@@ -29,7 +31,9 @@ library(modeldata)  # for the cells data
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The cell image data {#data}
+## 세포 이미지 데이터 {#data}
+
+Let's use data from [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340), available in the [modeldata package](https://cran.r-project.org/web/packages/modeldata/index.html), to predict cell image segmentation quality with resampling. To start, we load this data into R:
 
 Let's use data from [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340), available in the [modeldata package](https://cran.r-project.org/web/packages/modeldata/index.html), to predict cell image segmentation quality with resampling. To start, we load this data into R:
 
@@ -37,7 +41,7 @@ Let's use data from [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral
 ```r
 data(cells, package = "modeldata")
 cells
-#> # A tibble: 2,019 x 58
+#> # A tibble: 2,019 × 58
 #>   case  class angle_ch_1 area_ch_1 avg_inten_ch_1 avg_inten_ch_2 avg_inten_ch_3
 #>   <fct> <fct>      <dbl>     <int>          <dbl>          <dbl>          <dbl>
 #> 1 Test  PS        143.         185           15.7           4.95           9.55
@@ -73,7 +77,7 @@ The `cells` data has `class` labels for 2019 cells &mdash; each cell is labeled 
 
 ```r
 cells
-#> # A tibble: 2,019 x 58
+#> # A tibble: 2,019 × 58
 #>   case  class angle_ch_1 area_ch_1 avg_inten_ch_1 avg_inten_ch_2 avg_inten_ch_3
 #>   <fct> <fct>      <dbl>     <int>          <dbl>          <dbl>          <dbl>
 #> 1 Test  PS        143.         185           15.7           4.95           9.55
@@ -93,7 +97,7 @@ The rates of the classes are somewhat imbalanced; there are more poorly segmente
 cells %>% 
   count(class) %>% 
   mutate(prop = n/sum(n))
-#> # A tibble: 2 x 3
+#> # A tibble: 2 × 3
 #>   class     n  prop
 #>   <fct> <int> <dbl>
 #> 1 PS     1300 0.644
@@ -129,29 +133,29 @@ cell_train <- training(cell_split)
 cell_test  <- testing(cell_split)
 
 nrow(cell_train)
-#> [1] 1515
+#> [1] 1514
 nrow(cell_train)/nrow(cells)
-#> [1] 0.7503715
+#> [1] 0.7498762
 
 # training set proportions by class
 cell_train %>% 
   count(class) %>% 
   mutate(prop = n/sum(n))
-#> # A tibble: 2 x 3
+#> # A tibble: 2 × 3
 #>   class     n  prop
 #>   <fct> <int> <dbl>
 #> 1 PS      975 0.644
-#> 2 WS      540 0.356
+#> 2 WS      539 0.356
 
 # test set proportions by class
 cell_test %>% 
   count(class) %>% 
   mutate(prop = n/sum(n))
-#> # A tibble: 2 x 3
+#> # A tibble: 2 × 3
 #>   class     n  prop
 #>   <fct> <int> <dbl>
-#> 1 PS      325 0.645
-#> 2 WS      179 0.355
+#> 1 PS      325 0.644
+#> 2 WS      180 0.356
 ```
 
 The majority of the modeling work is then conducted on the training set data. 
@@ -186,7 +190,7 @@ rf_fit <-
 rf_fit
 #> parsnip model object
 #> 
-#> Fit time:  2.8s 
+#> Fit time:  3.8s 
 #> Ranger result
 #> 
 #> Call:
@@ -194,13 +198,13 @@ rf_fit
 #> 
 #> Type:                             Probability estimation 
 #> Number of trees:                  1000 
-#> Sample size:                      1515 
+#> Sample size:                      1514 
 #> Number of independent variables:  56 
 #> Mtry:                             7 
 #> Target node size:                 10 
 #> Variable importance mode:         none 
 #> Splitrule:                        gini 
-#> OOB prediction error (Brier s.):  0.1218873
+#> OOB prediction error (Brier s.):  0.1189338
 ```
 
 This new `rf_fit` object is our fitted model, trained on our training data set. 
@@ -236,16 +240,16 @@ Using the yardstick functions, this model has spectacular results, so spectacula
 ```r
 rf_training_pred %>%                # training set predictions
   roc_auc(truth = class, .pred_PS)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
 #> 1 roc_auc binary          1.00
 rf_training_pred %>%                # training set predictions
   accuracy(truth = class, .pred_class)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric  .estimator .estimate
 #>   <chr>    <chr>          <dbl>
-#> 1 accuracy binary         0.993
+#> 1 accuracy binary         0.991
 ```
 
 Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren't bad, they are certainly worse than what we initially thought based on predicting the training set: 
@@ -262,16 +266,16 @@ rf_testing_pred <-
 ```r
 rf_testing_pred %>%                   # test set predictions
   roc_auc(truth = class, .pred_PS)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
-#> 1 roc_auc binary         0.909
+#> 1 roc_auc binary         0.891
 rf_testing_pred %>%                   # test set predictions
   accuracy(truth = class, .pred_class)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric  .estimator .estimate
 #>   <chr>    <chr>          <dbl>
-#> 1 accuracy binary         0.837
+#> 1 accuracy binary         0.816
 ```
 
 ### What happened here?
@@ -294,9 +298,9 @@ Resampling methods, such as cross-validation and the bootstrap, are empirical si
 
 In the first level of this diagram, you see what happens when you use `rsample::initial_split()`, which splits the original data into training and test sets. Then, the training set is chosen for resampling, and the test set is held out.
 
-Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1515 cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
+Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1514 cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
 
-The other 90% of the data (about 1363 cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
+The other 90% of the data (about 1362 cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
 
 In this example, 10-fold CV moves iteratively through the folds and leaves a different 10% out each time for model assessment. At the end of this process, there are 10 sets of performance statistics that were created on 10 data sets that were not used in the modeling process. For the cell example, this means 10 accuracies and 10 areas under the ROC curve. While 10 models were created, these are not used further; we do not keep the models themselves trained on these folds because their only purpose is calculating performance metrics. 
 
@@ -316,68 +320,68 @@ The final resampling estimates for the model are the **averages** of the perform
 <tbody>
   <tr>
    <td style="text-align:left;"> Fold01 </td>
-   <td style="text-align:right;"> 0.7828947 </td>
-   <td style="text-align:right;"> 0.8443213 </td>
+   <td style="text-align:right;"> 0.8289474 </td>
+   <td style="text-align:right;"> 0.8937128 </td>
    <td style="text-align:right;"> 152 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold02 </td>
-   <td style="text-align:right;"> 0.8157895 </td>
-   <td style="text-align:right;"> 0.8930748 </td>
+   <td style="text-align:right;"> 0.7697368 </td>
+   <td style="text-align:right;"> 0.8768989 </td>
    <td style="text-align:right;"> 152 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold03 </td>
-   <td style="text-align:right;"> 0.8223684 </td>
-   <td style="text-align:right;"> 0.9165916 </td>
+   <td style="text-align:right;"> 0.8552632 </td>
+   <td style="text-align:right;"> 0.9017666 </td>
    <td style="text-align:right;"> 152 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold04 </td>
-   <td style="text-align:right;"> 0.8289474 </td>
-   <td style="text-align:right;"> 0.8922132 </td>
+   <td style="text-align:right;"> 0.8552632 </td>
+   <td style="text-align:right;"> 0.8928076 </td>
    <td style="text-align:right;"> 152 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold05 </td>
-   <td style="text-align:right;"> 0.8486842 </td>
-   <td style="text-align:right;"> 0.9074041 </td>
-   <td style="text-align:right;"> 152 </td>
+   <td style="text-align:right;"> 0.7947020 </td>
+   <td style="text-align:right;"> 0.8816342 </td>
+   <td style="text-align:right;"> 151 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold06 </td>
    <td style="text-align:right;"> 0.8476821 </td>
-   <td style="text-align:right;"> 0.9110065 </td>
+   <td style="text-align:right;"> 0.9244306 </td>
    <td style="text-align:right;"> 151 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold07 </td>
-   <td style="text-align:right;"> 0.8807947 </td>
-   <td style="text-align:right;"> 0.9381068 </td>
+   <td style="text-align:right;"> 0.8145695 </td>
+   <td style="text-align:right;"> 0.8960339 </td>
    <td style="text-align:right;"> 151 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold08 </td>
-   <td style="text-align:right;"> 0.7814570 </td>
-   <td style="text-align:right;"> 0.8925162 </td>
+   <td style="text-align:right;"> 0.8543046 </td>
+   <td style="text-align:right;"> 0.9267677 </td>
    <td style="text-align:right;"> 151 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold09 </td>
-   <td style="text-align:right;"> 0.8211921 </td>
-   <td style="text-align:right;"> 0.9092852 </td>
+   <td style="text-align:right;"> 0.8543046 </td>
+   <td style="text-align:right;"> 0.9231392 </td>
    <td style="text-align:right;"> 151 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Fold10 </td>
-   <td style="text-align:right;"> 0.8741722 </td>
-   <td style="text-align:right;"> 0.9327988 </td>
+   <td style="text-align:right;"> 0.8476821 </td>
+   <td style="text-align:right;"> 0.9266917 </td>
    <td style="text-align:right;"> 151 </td>
   </tr>
 </tbody>
 </table>
 
-From these resampling statistics, the final estimate of performance for this random forest model would be 0.904 for the area under the ROC curve and 0.83 for accuracy. 
+From these resampling statistics, the final estimate of performance for this random forest model would be 0.904 for the area under the ROC curve and 0.832 for accuracy. 
 
 These resampling statistics are an effective method for measuring model performance _without_ predicting the training set directly as a whole. 
 
@@ -391,19 +395,19 @@ set.seed(345)
 folds <- vfold_cv(cell_train, v = 10)
 folds
 #> #  10-fold cross-validation 
-#> # A tibble: 10 x 2
+#> # A tibble: 10 × 2
 #>    splits             id    
 #>    <list>             <chr> 
-#>  1 <split [1.4K/152]> Fold01
-#>  2 <split [1.4K/152]> Fold02
-#>  3 <split [1.4K/152]> Fold03
-#>  4 <split [1.4K/152]> Fold04
-#>  5 <split [1.4K/152]> Fold05
-#>  6 <split [1.4K/151]> Fold06
-#>  7 <split [1.4K/151]> Fold07
-#>  8 <split [1.4K/151]> Fold08
-#>  9 <split [1.4K/151]> Fold09
-#> 10 <split [1.4K/151]> Fold10
+#>  1 <split [1362/152]> Fold01
+#>  2 <split [1362/152]> Fold02
+#>  3 <split [1362/152]> Fold03
+#>  4 <split [1362/152]> Fold04
+#>  5 <split [1363/151]> Fold05
+#>  6 <split [1363/151]> Fold06
+#>  7 <split [1363/151]> Fold07
+#>  8 <split [1363/151]> Fold08
+#>  9 <split [1363/151]> Fold09
+#> 10 <split [1363/151]> Fold10
 ```
 
 The list column for `splits` contains the information on which rows belong in the analysis and assessment sets. There are functions that can be used to extract the individual resampled data called `analysis()` and `assessment()`. 
@@ -434,19 +438,19 @@ rf_fit_rs <-
 rf_fit_rs
 #> # Resampling results
 #> # 10-fold cross-validation 
-#> # A tibble: 10 x 4
+#> # A tibble: 10 × 4
 #>    splits             id     .metrics         .notes          
 #>    <list>             <chr>  <list>           <list>          
-#>  1 <split [1.4K/152]> Fold01 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  2 <split [1.4K/152]> Fold02 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  3 <split [1.4K/152]> Fold03 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  4 <split [1.4K/152]> Fold04 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  5 <split [1.4K/152]> Fold05 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  6 <split [1.4K/151]> Fold06 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  7 <split [1.4K/151]> Fold07 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  8 <split [1.4K/151]> Fold08 <tibble [2 × 4]> <tibble [0 × 1]>
-#>  9 <split [1.4K/151]> Fold09 <tibble [2 × 4]> <tibble [0 × 1]>
-#> 10 <split [1.4K/151]> Fold10 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  1 <split [1362/152]> Fold01 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  2 <split [1362/152]> Fold02 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  3 <split [1362/152]> Fold03 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  4 <split [1362/152]> Fold04 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  5 <split [1363/151]> Fold05 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  6 <split [1363/151]> Fold06 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  7 <split [1363/151]> Fold07 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  8 <split [1363/151]> Fold08 <tibble [2 × 4]> <tibble [0 × 1]>
+#>  9 <split [1363/151]> Fold09 <tibble [2 × 4]> <tibble [0 × 1]>
+#> 10 <split [1363/151]> Fold10 <tibble [2 × 4]> <tibble [0 × 1]>
 ```
 
 The results are similar to the `folds` results with some extra columns. The column `.metrics` contains the performance statistics created from the 10 assessment sets. These can be manually unnested but the tune package contains a number of simple functions that can extract these data: 
@@ -454,11 +458,11 @@ The results are similar to the `folds` results with some extra columns. The colu
 
 ```r
 collect_metrics(rf_fit_rs)
-#> # A tibble: 2 x 6
+#> # A tibble: 2 × 6
 #>   .metric  .estimator  mean     n std_err .config             
 #>   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
-#> 1 accuracy binary     0.830    10 0.0106  Preprocessor1_Model1
-#> 2 roc_auc  binary     0.904    10 0.00829 Preprocessor1_Model1
+#> 1 accuracy binary     0.832    10 0.00952 Preprocessor1_Model1
+#> 2 roc_auc  binary     0.904    10 0.00610 Preprocessor1_Model1
 ```
 
 Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let's remind ourselves of the results:
@@ -467,16 +471,16 @@ Think about these values we now have for accuracy and AUC. These performance met
 ```r
 rf_testing_pred %>%                   # test set predictions
   roc_auc(truth = class, .pred_PS)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
-#> 1 roc_auc binary         0.909
+#> 1 roc_auc binary         0.891
 rf_testing_pred %>%                   # test set predictions
   accuracy(truth = class, .pred_class)
-#> # A tibble: 1 x 3
+#> # A tibble: 1 × 3
 #>   .metric  .estimator .estimate
 #>   <chr>    <chr>          <dbl>
-#> 1 accuracy binary         0.837
+#> 1 accuracy binary         0.816
 ```
 
 The performance metrics from the test set are much closer to the performance metrics computed using resampling than our first ("bad idea") attempt. Resampling allows us to simulate how well our model will perform on new data, and the test set acts as the final, unbiased check for our model's performance.
@@ -490,34 +494,34 @@ The performance metrics from the test set are much closer to the performance met
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
 #>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
+#>  os       macOS Catalina 10.15.7      
 #>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-08                  
+#>  tz       Asia/Seoul                  
+#>  date     2021-10-24                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  modeldata  * 0.1.0   2020-10-22 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  ranger     * 0.12.1  2020-01-10 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang      * 0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  ranger     * 0.13.1  2021-07-14 [1] CRAN (R 4.0.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
 #> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
