@@ -12,7 +12,7 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
 To use the code in this article, you will need to install the following packages: mda, modeldata, and tidymodels.
 
@@ -25,7 +25,7 @@ A parsnip model function is itself very general. For example, the `logistic_reg(
 
 This article describes the process of creating a new model function. Before proceeding, take a minute and read our [guidelines on creating modeling packages](https://tidymodels.github.io/model-implementation-principles/) to understand the general themes and conventions that we use.  
 
-## An example model
+## 모델 예시
 
 As an example, we'll create a function for _mixture discriminant analysis_. There are [a few packages](http://search.r-project.org/cgi-bin/namazu.cgi?query=%22mixture+discriminant%22&max=100&result=normal&sort=score&idxname=functions) that implement this but we'll focus on `mda::mda`:
 
@@ -374,7 +374,7 @@ mda_fit <- mda_spec %>%
 mda_fit
 #> parsnip model object
 #> 
-#> Fit time:  52ms 
+#> Fit time:  31ms 
 #> Call:
 #> mda::mda(formula = Class ~ ., data = data, subclasses = ~2)
 #> 

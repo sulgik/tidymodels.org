@@ -21,20 +21,20 @@ pkgs <- c("tidymodels", "mda", "modeldata")
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
-The parsnip package constructs models and predictions by representing those actions in expressions. There are a few reasons for this:
+The parsnip 패키지는 모델과 예측의 행동을 공식으로 표현하여 이들을 만듭니다. 이유는 다음과 같습니다:
 
- * It eliminates a lot of duplicate code.
+ * 중복된 코드 다수가 제거됨
  * Since the expressions are not evaluated until fitting, it eliminates many package dependencies.
 
 A parsnip model function is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
 
 This article describes the process of creating a new model function. Before proceeding, take a minute and read our [guidelines on creating modeling packages](https://tidymodels.github.io/model-implementation-principles/) to understand the general themes and conventions that we use.  
 
-## An example model
+## 모델 예시
 
 As an example, we'll create a function for _mixture discriminant analysis_. There are [a few packages](http://search.r-project.org/cgi-bin/namazu.cgi?query=%22mixture+discriminant%22&max=100&result=normal&sort=score&idxname=functions) that implement this but we'll focus on `mda::mda`:
 
