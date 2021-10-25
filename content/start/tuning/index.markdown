@@ -14,7 +14,9 @@ description: |
 
 ## 들어가기 {#intro}
 
-Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **하이퍼파라미터**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+모델 파라미터 중 어떤 것들은 모델 트레이닝 중 데이터셋으로 부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 숫자 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+
+Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
 
 To use code in this article,  you will need to install the following packages: rpart, rpart.plot, tidymodels, and vip.
 
@@ -413,36 +415,38 @@ You could tune the other hyperparameter we didn't use here, `min_n`, which sets 
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       Ubuntu 18.04.5 LTS          
+#>  system   x86_64, linux-gnu           
 #>  ui       X11                         
 #>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2021-10-24                  
+#>  collate  C.UTF-8                     
+#>  ctype    C.UTF-8                     
+#>  tz       Etc/UTC                     
+#>  date     2021-10-25                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rpart      * 4.1-15  2019-04-12 [1] CRAN (R 4.0.3)
-#>  rpart.plot * 3.1.0   2021-07-24 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.0.2)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.1)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.1)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.1)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.1)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.1)
+#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
+#>  rpart      * 4.1-15  2019-04-12 [3] CRAN (R 4.0.0)
+#>  rpart.plot * 3.0.9   2020-09-17 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.1.1)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.1)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.1)
+#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.1)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.1)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.1)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> [1] /usr/local/lib/R/site-library
+#> [2] /usr/lib/R/site-library
+#> [3] /usr/lib/R/library
 ```

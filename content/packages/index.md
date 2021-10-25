@@ -12,7 +12,7 @@ title: Tidymodels 패키지
 
 <div class="package-section-info">
 
-## tidymodels 핵심 패키지
+## 핵심 패키지
 
   <p>The core tidymodels packages work together to enable a wide variety of modeling approaches:</p>
 </div>
@@ -90,7 +90,7 @@ title: Tidymodels 패키지
 
 Learn more about the tidymodels metapackage itself at <https://tidymodels.tidymodels.org/>.
 
-## 특수 패키지들
+## 특수 패키지
 
 The tidymodels framework also includes many other packages designed for specialized data analysis and modeling tasks. They are not loaded automatically with `library(tidymodels)`, so you'll need to load each one with its own call to `library()`. These packages include: 
 
