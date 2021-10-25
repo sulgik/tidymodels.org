@@ -30,7 +30,7 @@ The parsnip 패키지는 모델과 예측의 행동을 공식으로 표현하여
  * 중복된 코드 다수가 제거됨
  * Since the expressions are not evaluated until fitting, it eliminates many package dependencies.
 
-A parsnip model function is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
+parsnip 모델 함수는 is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
 
 This article describes the process of creating a new model function. Before proceeding, take a minute and read our [guidelines on creating modeling packages](https://tidymodels.github.io/model-implementation-principles/) to understand the general themes and conventions that we use.  
 

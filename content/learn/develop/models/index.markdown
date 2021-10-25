@@ -16,12 +16,12 @@ description: |
 
 To use the code in this article, you will need to install the following packages: mda, modeldata, and tidymodels.
 
-The parsnip package constructs models and predictions by representing those actions in expressions. There are a few reasons for this:
+The parsnip 패키지는 모델과 예측의 행동을 공식으로 표현하여 이들을 만듭니다. 이유는 다음과 같습니다:
 
- * It eliminates a lot of duplicate code.
+ * 중복된 코드 다수가 제거됨
  * Since the expressions are not evaluated until fitting, it eliminates many package dependencies.
 
-A parsnip model function is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
+parsnip 모델 함수는 is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
 
 This article describes the process of creating a new model function. Before proceeding, take a minute and read our [guidelines on creating modeling packages](https://tidymodels.github.io/model-implementation-principles/) to understand the general themes and conventions that we use.  
 
@@ -392,7 +392,7 @@ mda_fit
 
 predict(mda_fit, new_data = example_test, type = "prob") %>%
   bind_cols(example_test %>% select(Class))
-#> # A tibble: 8 × 3
+#> # A tibble: 8 x 3
 #>   .pred_Class1 .pred_Class2 Class 
 #>          <dbl>        <dbl> <fct> 
 #> 1       0.679         0.321 Class1
@@ -406,7 +406,7 @@ predict(mda_fit, new_data = example_test, type = "prob") %>%
 
 predict(mda_fit, new_data = example_test) %>% 
  bind_cols(example_test %>% select(Class))
-#> # A tibble: 8 × 2
+#> # A tibble: 8 x 2
 #>   .pred_class Class 
 #>   <fct>       <fct> 
 #> 1 Class1      Class1
@@ -609,7 +609,7 @@ cv <- vfold_cv(example_train)
 mda_tune_res <- mda_spec %>%
   tune_grid(Class ~ ., cv, grid = 4)
 show_best(mda_tune_res, metric = "roc_auc")
-#> # A tibble: 4 × 7
+#> # A tibble: 4 x 7
 #>   sub_classes .metric .estimator  mean     n std_err .config             
 #>         <int> <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
 #> 1           2 roc_auc binary     0.890    10  0.0143 Preprocessor1_Model3
@@ -753,7 +753,7 @@ If you have a suggestion, please add a [GitHub issue](https://github.com/tidymod
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.0.5 (2021-03-31)
 #>  os       Ubuntu 18.04.5 LTS          
 #>  system   x86_64, linux-gnu           
 #>  ui       X11                         
@@ -765,27 +765,28 @@ If you have a suggestion, please add a [GitHub issue](https://github.com/tidymod
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.1)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.1)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.1)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
-#>  mda        * 0.5-2   2020-06-29 [1] CRAN (R 4.1.0)
-#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.1)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.1)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.1)
-#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.1.1)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.1)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.1)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.1)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.1)
+#>  broom      * 0.7.7   2021-06-13 [1] CRAN (R 4.0.5)
+#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.5)
+#>  dplyr      * 1.0.6   2021-05-05 [1] CRAN (R 4.0.5)
+#>  ggplot2    * 3.3.3   2020-12-30 [1] CRAN (R 4.0.5)
+#>  infer      * 0.5.4   2021-01-13 [1] CRAN (R 4.0.5)
+#>  mda        * 0.5-2   2020-06-29 [1] CRAN (R 4.0.5)
+#>  modeldata  * 0.1.0   2020-10-22 [1] CRAN (R 4.0.5)
+#>  parsnip    * 0.1.6   2021-05-27 [1] CRAN (R 4.0.5)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.5)
+#>  recipes    * 0.1.16  2021-04-16 [1] CRAN (R 4.0.5)
+#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.0.5)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.5)
+#>  tibble     * 3.1.2   2021-05-16 [1] CRAN (R 4.0.5)
+#>  tidymodels * 0.1.3   2021-04-19 [1] CRAN (R 4.0.5)
+#>  tune       * 0.1.5   2021-04-23 [1] CRAN (R 4.0.5)
+#>  workflows  * 0.2.2   2021-03-10 [1] CRAN (R 4.0.5)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.5)
 #> 
-#> [1] /usr/local/lib/R/site-library
-#> [2] /usr/lib/R/site-library
-#> [3] /usr/lib/R/library
+#> [1] /home/sgkim/R/x86_64-pc-linux-gnu-library/4.0
+#> [2] /usr/local/lib/R/site-library
+#> [3] /usr/lib/R/site-library
+#> [4] /usr/lib/R/library
 ```
 
 
