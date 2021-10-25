@@ -25,7 +25,9 @@ pkgs <- c("tidymodels", "rpart", "rpart.plot", "vip")
 
 ## 들어가기 {#intro}
 
-Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **하이퍼파라미터**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+모델 파라미터 중 어떤 것들은 모델 트레이닝 중 데이터셋으로 부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 숫자 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+
+Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
 
 `r req_pkgs(pkgs)`
 

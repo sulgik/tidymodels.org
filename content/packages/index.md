@@ -1,18 +1,18 @@
 ---
-title: Tidymodels packages
+title: Tidymodels 패키지
 ---
 
-## Installation and use
+## 설치 및 사용
 
-* Install many of the packages in the tidymodels ecosystem by running `install.packages("tidymodels")`.
+* `install.packages("tidymodels")` 을 실행하여 tidymodels 생태계의 다양한 패키지들을 설치하세요.
 
-* Run `library(tidymodels)` to load the core packages and make them available in your current R session.
+* `library(tidymodels)` 을 실행하여 현재 R 세션에 핵심 패키지들을 로드하고 접근가능하게 하세요.
 
 <div class="package-section">
 
 <div class="package-section-info">
 
-## Core tidymodels
+## tidymodels 핵심 패키지
 
   <p>The core tidymodels packages work together to enable a wide variety of modeling approaches:</p>
 </div>
@@ -90,7 +90,7 @@ title: Tidymodels packages
 
 Learn more about the tidymodels metapackage itself at <https://tidymodels.tidymodels.org/>.
 
-## Specialized packages
+## 특수 패키지들
 
 The tidymodels framework also includes many other packages designed for specialized data analysis and modeling tasks. They are not loaded automatically with `library(tidymodels)`, so you'll need to load each one with its own call to `library()`. These packages include: 
 
