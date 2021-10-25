@@ -129,7 +129,7 @@ lm_fit <-
 lm_fit
 ```
 
-Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공한다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
+Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 ```{r lm-table}
 tidy(lm_fit)
@@ -163,7 +163,7 @@ new_points
 
 tidymodels 에서는 예측값들의 타잎이 표준화되기 때문에 이러한 값을 얻기 위해 같은 문법을 사용할 수 있다.
 
-우선, 몸통폭 평균값을 만들어 보자:
+우선, 몸통폭 평균값을 만들어 봅시다:
 
 ```{r lm-pred-mean}
 mean_pred <- predict(lm_fit, new_data = new_points)

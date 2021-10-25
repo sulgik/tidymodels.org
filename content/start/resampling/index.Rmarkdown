@@ -1,5 +1,5 @@
 ---
-title: "Resampling 으로 모델 평가하기"
+title: "resampling 으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
@@ -28,7 +28,7 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 ## 들어가기 {#intro}
 
-지금까지 [모델을 만들고](/start/models/) [recipe 로 데이터 전처리](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [workflows](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
+지금까지 [모델을 만들고](/start/models/) [recipe 로 데이터 전처리](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [ 워크플로](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
 
 `r req_pkgs(pkgs)`
 
@@ -84,7 +84,7 @@ cells %>%
   mutate(prop = n/sum(n))
 ```
 
-## Data splitting {#data-split}
+## 데이터 나누기 {#data-split}
 
 In our previous [*Preprocess your data with recipes*](/start/recipes/#data-split) article, we started by splitting our data. It is common when beginning a modeling project to [separate the data set](https://bookdown.org/max/FES/data-splitting.html) into two partitions: 
 
@@ -127,7 +127,7 @@ cell_test %>%
 The majority of the modeling work is then conducted on the training set data. 
 
 
-## Modeling
+## 모델링
 
 [랜덤포레스트 모델](https://en.wikipedia.org/wiki/Random_forest) 은 [decision trees](https://en.wikipedia.org/wiki/Decision_tree) 의  [앙상블](https://en.wikipedia.org/wiki/Ensemble_learning) 입니다. 약간 다른 트레이닝 셋에 기반하여 많은 수의 decision tree 모델이 생성됩니다. 각 decision tree 가 생성될 때, 적합과정은 최대한 decision tree 들이 다양하게 되길 유도합니다. 트리의 집합은 랜덤포레스트 모델로 조합되고, 새로운 샘플이 예측될 때, 각 트리로 부터의 투표가 최종 예측값을 계산하는데 사용됩니다. 우리의 `cells` 예시 데이터의 `class` 와 같은 범주형 종속변수에 대해, 랜덤포레스트 의 모든 트리를 통틀어 가장 많은 투표를 받은 모델이 새로운 샘플의 예측 범주를 결정합니다. 
 
