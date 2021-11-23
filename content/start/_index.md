@@ -8,11 +8,11 @@ tidymodels 를 시작하기 위한 필수 요소들을 다섯 섹션을 통해 �
 
 ## R 이나 tidyverse 가 처음이라면
 
-To get the most out of tidymodels, we recommend that you start by learning some basics about R and the [tidyverse](https://www.tidyverse.org/) first, then return here when you feel ready. Here are some resources to start learning:
+tidymodels 를 잘 사용하기 위해서, R 과 [tidyverse](https://www.tidyverse.org/) 기초를 우선 학습할 것을 추천합니다. 그리고 나서 준비가 되었다고 생각될 때 이곳으로 돌아오세요. 학습을 시작하는 데 도움을 주는 자료들이 있습니다:
 
-* [Finding Your Way To R](https://education.rstudio.com/learn/), from the RStudio Education team.
+* [Finding Your Way To R](https://education.rstudio.com/learn/), RStudio 교육팀.
 
-* [Learn the tidyverse](https://www.tidyverse.org/learn/), from the tidyverse team.
+* [Learn the tidyverse](https://www.tidyverse.org/learn/), tidyverse 팀
 
 * [Statistical Inference via Data Science: A ModernDive into R and the Tidyverse](/books/moderndive/).
 
