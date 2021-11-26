@@ -7,6 +7,10 @@ weight: 5
 description: | 
   Write tidy(), glance(), and augment() methods for new model objects.
 ---
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
 
 
 
@@ -16,13 +20,13 @@ description: |
 
 To use the code in this article, you will need to install the following packages: generics, tidymodels, tidyverse, and usethis.
 
-The broom package provides tools to summarize key information about models in tidy `tibble()`s. The package provides three verbs, or "tidiers," to help make model objects easier to work with:
+broom 패키지의 도구들을 이용하면 타이디한 `tibble()` 에 있는 모델들에 대한 핵심 정보를 요약할 수 있습니다. 이 패키지에는 모델 객체를 다루기 쉽게 만들어 주는 동사, 혹은 "tidiers," 세 개를 제공합니다. 
 
-* `tidy()` summarizes information about model components
-* `glance()` reports information about the entire model
-* `augment()` adds information about observations to a dataset
+* `tidy()` 는 모델 컴포너느들에 대한 정보를 요약합니다
+* `glance()` 는 전체 모델에 대한 정보를 보고합니다
+* `augment()` 는 관측값들에 대한 정보를 데이터셋에 추가합니다
 
-Each of the three verbs above are _generic_, in that they do not define a procedure to tidy a given model object, but instead redirect to the relevant _method_ implemented to tidy a specific type of model object. The broom package provides methods for model objects from over 100 modeling packages along with nearly all of the model objects in the stats package that comes with base R. However, for maintainability purposes, the broom package authors now ask that requests for new methods be first directed to the parent package (i.e. the package that supplies the model object) rather than to broom. New methods will generally only be integrated into broom in the case that the requester has already asked the maintainers of the model-owning package to implement tidier methods in the parent package.
+위의 세 동사들은 모두 _제너릭_ 입니다. 왜냐하면, 이 동사들은 주어진 모델 객체를 타이디하게 하는 프로시져를 정의하지 않는 대신, 특정 모델 객체 관련된 _메서드_ (특별한 유형의 모델 객체를 타이디하게 하기 위해 구현한) 로 리디렉트하기 때문입니다. broom 패키지는 base R 의 stats 패키지의 거의 대부분의 모델 객체 package provides methods for model objects from over 100 modeling packages along with nearly all of the model objects in the stats package that comes with base R. However, for maintainability purposes, the broom package authors now ask that requests for new methods be first directed to the parent package (i.e. the package that supplies the model object) rather than to broom. New methods will generally only be integrated into broom in the case that the requester has already asked the maintainers of the model-owning package to implement tidier methods in the parent package.
 
 We'd like to make implementing external tidier methods as painless as possible. The general process for doing so is:
 
@@ -1290,6 +1294,10 @@ The currently acceptable column names by tidier method are:
   </tr>
   <tr>
    <td style="text-align:left;"> glance </td>
+   <td style="text-align:left;"> lag.order </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> glance </td>
    <td style="text-align:left;"> lambda </td>
   </tr>
   <tr>
@@ -1777,37 +1785,37 @@ The [alexpghayes/modeltests](https://github.com/alexpghayes/modeltests) package 
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
+#> - Session info ---------------------------------------------------------------
 #>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
+#>  version  R version 4.1.0 (2021-05-18)
+#>  os       Windows 10 x64              
+#>  system   x86_64, mingw32             
+#>  ui       RTerm                       
 #>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#>  collate  Korean_Korea.949            
+#>  ctype    Korean_Korea.949            
+#>  tz       Asia/Seoul                  
+#>  date     2021-11-26                  
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
+#> - Packages -------------------------------------------------------------------
 #>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  generics   * 0.1.0   2020-10-31 [1] CRAN (R 4.0.3)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tidyverse  * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  generics   * 0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.2)
+#>  rlang        0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.2)
+#>  tibble     * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.2)
+#>  tidyverse  * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.2)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.2)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> [1] C:/Program Files/R/R-4.1.0/library
 ```
