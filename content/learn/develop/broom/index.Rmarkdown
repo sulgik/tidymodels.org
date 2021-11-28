@@ -20,7 +20,7 @@ library(kableExtra)
 pkgs <- c("tidymodels", "tidyverse", "generics", "usethis")
 ```
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
@@ -35,8 +35,8 @@ broom 패키지의 도구들을 이용하면 타이디한 `tibble()` 에 있는 
 We'd like to make implementing external tidier methods as painless as possible. The general process for doing so is:
 
 * tidier 제네릭을 다시 익스포트하기
-* implement tidying methods
-* document the new methods
+* tidy 메소드를 구현하기
+* 새 메소드를 문서화하기
 
 In this article, we'll walk through each of the above steps in detail, giving examples and pointing out helpful functions when possible.
 
@@ -66,7 +66,7 @@ generics::glance
 
 위 단계에서 익스포트한 제네릭 각각에 대한 타이디 메소드들을 구현해야 합니다. `tidy()`, `glance()`, and `augment()` 각각에 대해, 큰 그림, 예시, 유용한 자원들을 살펴볼 것입니다.
 
-In this article, we'll use the 베이스 R 데이터셋 `trees` 를 사용할 것인데, 이 데이터셋의 나무 두께 (Girth, 인치단위), 키 (Height, 피트단위), 부피 (Volume, 큐빅피트단위) 으로 base R `lm()` 함수를 사용하여 선형모형을 예로 적합할 것입니다. 
+여기서 베이스 R 데이터셋 `trees` 를 사용할 것인데, 이 데이터셋의 나무 둘레 (Girth, 인치단위), 키 (Height, 피트단위), 부피 (Volume, 큐빅피트단위) 으로 base R `lm()` 함수를 사용하여 선형모형을 예로 적합할 것입니다. 
 
 ```{r}
 # load in the trees dataset

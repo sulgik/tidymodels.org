@@ -46,7 +46,7 @@ library(dotwhisker)  # for visualizing regression results
 
 ## 성게 데이터 {#data}
 
-[Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기의 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
+[Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
 
 이제, 성게 데이터를 R 로 읽어봅시다. [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 CSV 데이터 위치의 url ("<https://tidymodels.org/start/models/urchins.csv>") 을 입력하면 됩니다:
 
@@ -86,17 +86,17 @@ ggplot(urchins,
   scale_color_viridis_d(option = "plasma", end = .7)
 ```
 
-We can see that urchins that were larger in volume at the start of the experiment tended to have wider sutures at the end, but the slopes of the lines look different so this effect may depend on the feeding regime condition.
+실험 시작시점에 부피가 큰 성계들은 실험종료시점에 더 넓은 성체를 갖는 경향이 있음을 알 수 있지만, 기울기들이 다르기 때문에 이러한 효과가 사육법 조건에 따라 다른 것 같습니다.
 
 ## 모델 구축 및 적합 {#build-model}
 
-A standard two-way analysis of variance ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) model makes sense for this dataset because we have both a continuous predictor and a categorical predictor. Since the slopes appear to be different for at least two of the feeding regimes, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way: 
+이러한 데이터셋에 two way 분산분석 ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) 모델을 사용할 수 있는데, 연속형 설명변수와 명목형 설명변수가 있기 때문입니다. 직선의 기울기가 적어도 두 개 이상의 사육법에 대해 달라 보이기 때문에, two-way interaction 을 가진 모델을 만들어 봅시다. 다음과 같이 변수들로 R 공식을 선언합니다.
 
 ```{r two-way-int, eval = FALSE}
 width ~ initial_volume * food_regime
 ```
 
-를 하면, 회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
+회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
 
 For this kind of model, ordinary least squares is a good initial approach. With tidymodels, we start by specifying the _functional form_ of the model that we want using the [parsnip package](https://tidymodels.github.io/parsnip/). 수치형 출력값이 있고, 모델이 기울기와 절편들에 대해 선형이므로, 이러한 모델 타잎은 ["linear regression (선형회귀)"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
 

@@ -35,9 +35,9 @@ library(dotwhisker)  # for visualizing regression results
 
 ## 성게 데이터 {#data}
 
-[Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기의 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
+[Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
 
-To start, let's read our urchins data into R, which we'll do by providing [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) with a url where our CSV data is located ("<https://tidymodels.org/start/models/urchins.csv>"):
+이제, 성게 데이터를 R 로 읽어봅시다. [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 CSV 데이터 위치의 url ("<https://tidymodels.org/start/models/urchins.csv>") 을 입력하면 됩니다:
 
 
 ```r
@@ -49,17 +49,16 @@ urchins <-
   setNames(c("food_regime", "initial_volume", "width")) %>% 
   # Factors are very helpful for modeling, so we convert one column
   mutate(food_regime = factor(food_regime, levels = c("Initial", "Low", "High")))
-#> Rows: 72 Columns: 3
-#> ── Column specification ──────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): TREAT
-#> dbl (2): IV, SUTW
 #> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> ── Column specification ──────────────────────────────────────────────
+#> cols(
+#>   TREAT = col_character(),
+#>   IV = col_double(),
+#>   SUTW = col_double()
+#> )
 ```
 
-Let's take a quick look at the data:
+데이터를 빠르게 한 번 봅시다.
 
 
 ```r
@@ -80,8 +79,7 @@ urchins
 #> # … with 62 more rows
 ```
 
-The urchins data is a [tibble](https://tibble.tidyverse.org/index.html). If you are new to tibbles, the best place to start is the [tibbles chapter](https://r4ds.had.co.nz/tibbles.html) in *R for Data Science*. For each of the 72 urchins, we know their:
-
+성게 데이터는 [tibble](https://tibble.tidyverse.org/index.html) 입니다. tibble 이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://sulgik.github.io/r4ds/tibble.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 72 개 성게 각각에 대해 다음의 정보가 있습니다:
 
 + 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
 + 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
@@ -104,18 +102,18 @@ ggplot(urchins,
 
 <img src="figs/urchin-plot-1.svg" width="672" />
 
-We can see that urchins that were larger in volume at the start of the experiment tended to have wider sutures at the end, but the slopes of the lines look different so this effect may depend on the feeding regime condition.
+실험 시작시점에 부피가 큰 성계들은 실험종료시점에 더 넓은 성체를 갖는 경향이 있음을 알 수 있지만, 기울기들이 다르기 때문에 이러한 효과가 사육법 조건에 따라 다른 것 같습니다.
 
 ## 모델 구축 및 적합 {#build-model}
 
-A standard two-way analysis of variance ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) model makes sense for this dataset because we have both a continuous predictor and a categorical predictor. Since the slopes appear to be different for at least two of the feeding regimes, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way: 
+이러한 데이터셋에 two way 분산분석 ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) 모델을 사용할 수 있는데, 연속형 설명변수와 명목형 설명변수가 있기 때문입니다. 직선의 기울기가 적어도 두 개 이상의 사육법에 대해 달라 보이기 때문에, two-way interaction 을 가진 모델을 만들어 봅시다. 다음과 같이 변수들로 R 공식을 선언합니다.
 
 
 ```r
 width ~ initial_volume * food_regime
 ```
 
-를 하면, 회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
+회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
 
 For this kind of model, ordinary least squares is a good initial approach. With tidymodels, we start by specifying the _functional form_ of the model that we want using the [parsnip package](https://tidymodels.github.io/parsnip/). 수치형 출력값이 있고, 모델이 기울기와 절편들에 대해 선형이므로, 이러한 모델 타잎은 ["linear regression (선형회귀)"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
 
@@ -172,7 +170,7 @@ lm_fit
 #>                     -0.0012594                       0.0005254
 ```
 
-Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공한다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
+Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 
 ```r
@@ -224,7 +222,7 @@ new_points
 
 tidymodels 에서는 예측값들의 타잎이 표준화되기 때문에 이러한 값을 얻기 위해 같은 문법을 사용할 수 있다.
 
-우선, 몸통폭 평균값을 만들어 보자:
+우선, 몸통폭 평균값을 만들어 봅시다:
 
 
 ```r
@@ -300,7 +298,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.3s 
+#> Fit time:  21.3s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -411,30 +409,30 @@ ggplot(urchins,
 ```
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.0.5 (2021-03-31)
-#>  os       macOS Big Sur 10.16         
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
 #>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
 #>  tz       Asia/Seoul                  
-#>  date     2021-10-24                  
+#>  date     2021-11-21                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package     * version date       lib source        
 #>  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  broom.mixed * 0.2.6   2020-05-17 [1] CRAN (R 4.0.2)
+#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.0.2)
 #>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
 #>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.0.2)
 #>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
 #>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
 #>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
 #>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.2)
-#>  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.0.2)
+#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 #>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.0.2)
+#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
 #>  rsample     * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
 #>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.0.2)
 #>  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
