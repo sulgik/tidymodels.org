@@ -89,17 +89,15 @@ This output gives some summary statistics on the residuals (which would be descr
 
 ### `tidy()` 메소드 구현하기
 
-`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 are an optional argument to supply additional information to any calls inside your method. New `tidy()` methods can take additional arguments, but _must_ include the `x` and `...` arguments to be compatible with the generic function. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  Examples of model components include regression coefficients (for regression models), clusters (for classification/clustering models), etc. These `tidy()` methods are useful for inspecting model details and creating custom model visualizations.
+`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
 
-The `tidy(x, ...)` method will return a tibble where each row contains information about a component of the model. The `x` input is a model object, and the dots (`...`) are an optional argument to supply additional information to any calls inside your method. New `tidy()` methods can take additional arguments, but _must_ include the `x` and `...` arguments to be compatible with the generic function. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  Examples of model components include regression coefficients (for regression models), clusters (for classification/clustering models), etc. These `tidy()` methods are useful for inspecting model details and creating custom model visualizations.
-
-Returning to the example of our linear model on timber volume, we'd like to extract information on the model components. In this example, the components are the regression coefficients. After taking a look at the model object and its `summary()`, you might notice that you can extract the regression coefficients as follows:
+목재 부피에 관한 선형 모형 예로 돌아가서, 모델 구성요소에 관한 정보를 추출하려고 합니다. 이 예에서, 구성요소는 회귀 계수들입니다. 모델 객체와 이에 대한 `summary()` 를 살펴보면 다음과 같이 회귀 계수를 추출할 수 있음을 알 수 있을 것입니다:
 
 ```{r}
 summary(trees_model)$coefficients
 ```
 
-This object contains the model coefficients as a table, where the information giving which coefficient is being described in each row is given in the row names. Converting to a tibble where the row names are contained in a column, you might write:
+이 객체는 테이블 형태로 모델 계수를 포함하는데, This object contains the model coefficients as a table, where the information giving which coefficient is being described in each row is given in the row names. 티블로 변환하기 Converting to a tibble where the row names are contained in a column, you might write:
 
 ```{r}
 trees_model_tidy <- summary(trees_model)$coefficients %>% 
