@@ -112,11 +112,9 @@ This output gives some summary statistics on the residuals (which would be descr
 
 ### `tidy()` 메소드 구현하기
 
-`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 are an optional argument to supply additional information to any calls inside your method. New `tidy()` methods can take additional arguments, but _must_ include the `x` and `...` arguments to be compatible with the generic function. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  Examples of model components include regression coefficients (for regression models), clusters (for classification/clustering models), etc. These `tidy()` methods are useful for inspecting model details and creating custom model visualizations.
+`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
 
-The `tidy(x, ...)` method will return a tibble where each row contains information about a component of the model. The `x` input is a model object, and the dots (`...`) are an optional argument to supply additional information to any calls inside your method. New `tidy()` methods can take additional arguments, but _must_ include the `x` and `...` arguments to be compatible with the generic function. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  Examples of model components include regression coefficients (for regression models), clusters (for classification/clustering models), etc. These `tidy()` methods are useful for inspecting model details and creating custom model visualizations.
-
-Returning to the example of our linear model on timber volume, we'd like to extract information on the model components. In this example, the components are the regression coefficients. After taking a look at the model object and its `summary()`, you might notice that you can extract the regression coefficients as follows:
+목재 부피에 관한 선형 모형 예로 돌아가서, 모델 구성요소에 관한 정보를 추출하려고 합니다. 이 예에서, 구성요소는 회귀 계수들입니다. 모델 객체와 이에 대한 `summary()` 를 살펴보면 다음과 같이 회귀 계수를 추출할 수 있음을 알 수 있을 것입니다:
 
 
 ```r
@@ -127,7 +125,7 @@ summary(trees_model)$coefficients
 #> Height         0.339      0.130    2.61 1.45e-02
 ```
 
-This object contains the model coefficients as a table, where the information giving which coefficient is being described in each row is given in the row names. Converting to a tibble where the row names are contained in a column, you might write:
+이 객체는 테이블 형태로 모델 계수를 포함하는데, This object contains the model coefficients as a table, where the information giving which coefficient is being described in each row is given in the row names. 티블로 변환하기 Converting to a tibble where the row names are contained in a column, you might write:
 
 
 ```r
@@ -1787,37 +1785,42 @@ The [alexpghayes/modeltests](https://github.com/alexpghayes/modeltests) package 
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2021-11-28                  
+#> ─ Session info  👱🏽  🦶🏽  🖖🏽   ───────────────────────────────────────
+#>  hash: person: medium skin tone, blond hair, foot: medium skin tone, vulcan salute: medium skin tone
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  generics   * 0.1.0   2020-10-31 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tidyverse  * 1.3.0   2019-11-21 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-11-30
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  generics   * 0.1.1   2021-10-25 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tidyverse  * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
