@@ -28,6 +28,7 @@ Imports:
     embed,
     forecast,
     fs,
+    generics,
     furrr,
     glmnet,
     glue,

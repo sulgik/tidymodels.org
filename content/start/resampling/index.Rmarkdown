@@ -50,9 +50,9 @@ data(cells, package = "modeldata")
 cells
 ```
 
-We have data for `r nrow(cells)` cells, with `r ncol(cells)` variables. The main outcome variable of interest for us here is called `class`, which you can see is a factor. But before we jump into predicting the `class` variable, we need to understand it better. Below is a brief primer on cell image segmentation.
+`r nrow(cells)` 개의 세포와 `r ncol(cells)` 개의 변수가 있는 데이터가 있습니다. 여기에서 우리가 관심있는 주 반응변수는 `class` 인데, 팩터형임을 알 수 있습니다. 하지만 `class` 변수 예측을 시작하기에 앞서 이 변수에 대해 더 이해할 필요가 있습니다. 아래는 세포 이미지 세그멘테이션에 대한 간략한 서문입니다.
 
-### Predicting image segmentation quality
+### 이미지 세그멘테이션 품질 예측하기
 
 Some biologists conduct experiments on cells. In drug discovery, a particular type of cell can be treated with either a drug or control and then observed to see what the effect is (if any). A common approach for this kind of measurement is cell imaging. Different parts of the cells can be colored so that the locations of a cell can be determined. 
 
@@ -129,7 +129,7 @@ The majority of the modeling work is then conducted on the training set data.
 
 ## 모델링
 
-[랜덤포레스트 모델](https://en.wikipedia.org/wiki/Random_forest) 은 [decision tree](https://en.wikipedia.org/wiki/Decision_tree) 의  [앙상블](https://en.wikipedia.org/wiki/Ensemble_learning) 입니다. 약간 다른 트레이닝 셋에 기반하여 많은 수의 decision tree 모델이 생성됩니다. 각 decision tree 가 생성될 때, 적합과정은 최대한 decision tree 들이 다양하게 되길 유도합니다. 트리의 집합은 랜덤포레스트 모델로 조합되고, 새로운 샘플이 예측될 때, 각 트리로 부터의 투표가 최종 예측값을 계산하는데 사용됩니다. 우리의 `cells` 예시 데이터의 `class` 와 같은 범주형 종속변수에 대해, 랜덤포레스트 의 모든 트리를 통틀어 가장 많은 투표를 받은 모델이 새로운 샘플의 예측 범주를 결정합니다. 
+[랜덤포레스트 모델](https://en.wikipedia.org/wiki/Random_forest) 은 [decision tree](https://en.wikipedia.org/wiki/Decision_tree) 의  [앙상블](https://en.wikipedia.org/wiki/Ensemble_learning) 입니다. 약간 다른 트레이닝 셋에 기반하여 많은 수의 decision tree 모델이 생성됩니다. 각 decision tree 가 생성될 때, 적합과정은 최대한 decision tree 들이 다양하게 되길 유도합니다. 트리의 집합은 랜덤포레스트 모델로 조합되고, 새로운 샘플이 예측될 때, 각 트리로 부터의 투표가 최종 예측값을 계산하는데 사용됩니다. 우리의 `cells` 예시 데이터의 `class` 와 같은 범주형 종속변수에 대해, 랜덤포레스트의 모든 트리를 통틀어 가장 많은 투표를 받은 모델이 새로운 샘플의 예측 범주를 결정합니다. 
 
 One of the benefits of a random forest model is that it is very low maintenance;  it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won't create a recipe for the `cells` data.
 
@@ -180,7 +180,7 @@ rf_training_pred <-
               select(class))
 ```
 
-yardstick 함수들을 사용하여, 이 모델은 엄청난 결과를 보여주는데, 결과가 너무 엄청나서 의심되기 시작할 것입니다: 
+yardstick 함수들을 사용하여, 이 모델은 엄청난 결과를 보여주는데, 결과가 너무 엄청나서 의심이 생기기 시작할 것입니다: 
 
 ```{r rf-train-perf}
 rf_training_pred %>%                # training set predictions
@@ -209,7 +209,7 @@ rf_testing_pred %>%                   # test set predictions
 
 There are several reasons why training set statistics like the ones shown in this section can be unrealistically optimistic: 
 
- * Models like random forests, neural networks, and other black-box methods can essentially memorize the training set. Re-predicting that same set should always result in nearly perfect results.
+* Models like random forests, neural networks, and other black-box methods can essentially memorize the training set. Re-predicting that same set should always result in nearly perfect results.
 
 * The training set does not have the capacity to be a good arbiter of performance. It is not an independent piece of information; predicting the training set can only reflect what the model already knows. 
 
