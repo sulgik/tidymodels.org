@@ -28,17 +28,17 @@ broom 패키지의 도구들을 이용하면 타이디한 `tibble()` 에 있는 
 
 위의 세 동사들은 모두 _제너릭_ 입니다. 왜냐하면, 이 동사들은 주어진 모델 객체를 타이디하게 하는 프로시져를 정의하지 않는 대신, 특정 모델 객체 관련된 _메서드_ (특별한 유형의 모델 객체를 타이디하게 하기 위해 구현한) 로 리디렉트하기 때문입니다. broom 패키지에는 base R 의 stats 패키지를 포함하여 100 개가 넘는 모델링 패키지에 있는 모델 객체에 적용할 수 있는 메소드들이 있습니다. 하지만, 관리상의 이유로 broom 패키지 저자들은 새로운 메소드 요청이 broom 이 아닌 부모 패키지에 지시될 것을 요구합니다. (즉 해당 모델 객체를 제공한 패키지) 새로운 메소드는 요청자가 모델소유 패키지의 관리자에게 부모 패키지의 tidier 메소드들을 구현해 달라고 요청한 경우에만 broom 에 일반적으로 만들어질 것입니다.
 
-We'd like to make implementing external tidier methods as painless as possible. The general process for doing so is:
+외부 tidier 메소드들을 가능한한 가장 힘들지 않게 구현하려고 합니다. 일반적인 과정은 다음과 같습니다:
 
 * tidier 제네릭을 다시 익스포트하기
 * tidy 메소드를 구현하기
 * 새 메소드를 문서화하기
 
-In this article, we'll walk through each of the above steps in detail, giving examples and pointing out helpful functions when possible.
+이번 문서에서는 위에서 언급한 각 단계를 자세히 따라가면서 예를 살펴보고 도움이 되는 함수들을 볼 것입니다.
 
 ##  tidier 제네릭을 다시 익스포트하기
 
-첫번째 단계는 `tidy()`, `glance()`, `augment()` 에 대한 제네릭 함수들을 다시 익스포트 하는 것입니다. You could do so from `broom` 에서 직접할 수도 있지만, `generics` 으로 부르는 더 가벼운 의존성을 가진 다른 방법을 제시합니다.
+첫번째 단계는 `tidy()`, `glance()`, `augment()` 에 대한 제네릭 함수들을 다시 익스포트 하는 것입니다. `broom` 에서 직접할 수도 있지만, `generics` 으로 부르는 더 가벼운 의존성을 가진 다른 방법을 제시합니다.
 
 우선 `Imports` 에 [generics](https://github.com/r-lib/generics) 패키지를 추가해야 합니다. [usethis](https://github.com/r-lib/usethis) 패키지를 사용할 것을 추천합니다:
 
