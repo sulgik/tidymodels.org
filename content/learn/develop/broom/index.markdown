@@ -64,7 +64,7 @@ generics::glance
 
 위 단계에서 익스포트한 제네릭 각각에 대한 타이디 메소드들을 구현해야 합니다. `tidy()`, `glance()`, and `augment()` 각각에 대해, 큰 그림, 예시, 유용한 자원들을 살펴볼 것입니다.
 
-여기서 베이스 R 데이터셋 `trees` 를 사용할 것인데, 이 데이터셋의 나무 둘레 (Girth, 인치단위), 키 (Height, 피트단위), 부피 (Volume, 큐빅피트단위) 으로 base R `lm()` 함수를 사용하여 선형모형을 예로 적합할 것입니다. 
+여기서 베이스 R 데이터셋 `trees` 를 사용할 것인데, 이 데이터셋의 나무 둘레 (Girth, 인치단위), 키 (Height, 피트단위), 부피 (Volume, 큐빅피트단위) 으로 베이스 R `lm()` 함수를 사용하여 선형모형을 예로 적합할 것입니다. 
 
 
 ```r
@@ -108,7 +108,7 @@ summary(trees_model)
 #> F-statistic:  255 on 2 and 28 DF,  p-value: <2e-16
 ```
 
-This output gives some summary statistics on the residuals (which would be described more fully in an `augment()` output), model coefficients (which, in this case, make up the `tidy()` output), and some model-level summarizations such as RSE, `\(R^2\)`, etc. (which make up the `glance()` output.)
+이 결과물에는 잔차에 요약 통계량 (`augment()` 출력에 전체 목록이 있음) 과 모형 계수 (이 경우 `tidy()` 출력을 완성함), RSE, `\(R^2\)` 같은 모델 레벨의 요약 (`glance()` 출력이 보충함) 이 나옵니다. 
 
 ### `tidy()` 메소드 구현하기
 
@@ -150,7 +150,7 @@ colnames(trees_model_tidy) <- c("term", "estimate", "std.error", "statistic", "p
 
 `tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막에](#glossary) 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
 
-Finally, it is common for `tidy()` methods to include an option to calculate confidence/credible intervals for each component based on the model, when possible. In this example, the `confint()` function can be used to calculate confidence intervals from a model object resulting from `lm()`:
+마지막으로, 대부분 `tidy()` 메소드에는 모델에 기반한 각 구성요소에 대한 신뢰/credible 구간을 포함됩니다. 우리 예에서, `confint()` 함수를 사용하여 `lm()` 이 제공하는 모델 객체로 부터 신뢰 구간을 계산할 수 있습니다.
 
 
 ```r
@@ -185,9 +185,9 @@ tidy.lm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 
 {{% note %}}  If you're interested, the actual `tidy.lm()` source can be found [here](https://github.com/tidymodels/broom/blob/master/R/stats-lm-tidiers.R)! It's not too different from the version above except for some argument checking and additional columns. {{%/ note %}}
 
-With this method exported, then, if a user calls `tidy(fit)`, where `fit` is an output from `lm()`, the `tidy()` generic would "redirect" the call to the `tidy.lm()` function above.
+이렇게 익스포트된 방법으로 `fit` 이 `lm()` 의 출력인, `tidy(fit)` 가 호출되면, `tidy()` 제네릭은 위의 `tidy.lm()` 함수 호출로 "리디렉션" 합니다.
 
-Some things to keep in mind while writing your `tidy()` method:
+`tidy()` 메소드를 작성할 때 명심해야할 것들입니다:
 
 * Sometimes a model will have several different types of components. For example, in mixed models, there is different information associated with fixed effects and random effects. Since this information doesn't have the same interpretation, it doesn't make sense to summarize the fixed and random effects in the same table. In cases like this you should add an argument that allows the user to specify which type of information they want. For example, you might implement an interface along the lines of:
 
@@ -206,7 +206,7 @@ tidy(model, effects = "random")
 
 ### `glance()` 메소드 구현하기
 
-`glance()` returns a one-row tibble providing model-level summarizations (e.g. goodness of fit measures and related statistics). This is useful to check for model misspecification and to compare many models. Again, the `x` input is a model object, and the `...` is an optional argument to supply additional information to any calls inside your method. New `glance()` methods can also take additional arguments and _must_ include the `x` and `...` arguments. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
+`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 추가적인 methods can also take additional arguments and _must_ include the `x` and `...` arguments. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
 
 `trees_model` 예로 돌아와서, 다음의 코드로 `\(R^2\)` 값을 추출할 수 있을 것이다:
 
@@ -409,7 +409,7 @@ tidy.lm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 
 Once you've documented each of your new methods and executed `devtools::document()`, you're done! Congrats on implementing your own broom tidier methods for a new model object!
 
-## Glossaries: argument and column names {#glossary}
+## 용어집: 인수와 열이름 {#glossary}
 
 
 
@@ -1797,7 +1797,7 @@ The [alexpghayes/modeltests](https://github.com/alexpghayes/modeltests) package 
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-11-30
+#>  date     2021-12-02
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
