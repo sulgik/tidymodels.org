@@ -25,7 +25,7 @@ description: |
 
 + 원 변수들로 부터 핵심 변수를 추출 (예, 날짜에서 요일을 추출),
 
-등입니다. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling. 
+등입니다. R 의 공식 인터페이스에 익숙하다면, 이러한 것들 대부분이 친숙하게 들릴 것이고 공식이 이미 하고 있는 것입니다. 레시피들은 이러한 것들 대부분을 수행하는데 사용할 수 있지만, 가능성이 이 것보다 더 넓습니다. 이번 장에서는 레시피들을 사용하여 모델링 하는 법을 보여줄 것입니다.
 
 To use code in this article,  you will need to install the following packages: nycflights13, skimr, and tidymodels.
 
@@ -200,9 +200,9 @@ flight_data %>%
 
 ## 데이터 나누기 {#data-split}
 
-이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _트레이닝_ 셋 . The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
+이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. 원본 데이터셋  _트레이닝_ 셋 (임의로 선택한 서브셋) 의 대부분 행들을 유지시킬 것 입니다. 트레이닝 데이터는 모델을 *적합(fit)* 하는데 사용할 것이고 _테스팅_ 셋은 모델 성능을 측정하는데에 사용될 것입니다.
 
-To do this, we can use the [rsample](https://rsample.tidymodels.org/) package to create an object that contains the information on _how_ to split the data, and then two more rsample functions to create data frames for the training and testing sets: 
+[rsample](https://rsample.tidymodels.org/) 패키지를 사용하여 데이터를 어떻게 나눌 것인지에 대한 정보를 포함하는 객체를 생성할 것입니다. 그리고 rsample 함수 두 개를 사용하여 트레이닝 셋과 테스팅셋을 위한 데이터프레임을 생성할 것입니다.
 
 
 ```r
@@ -220,9 +220,9 @@ test_data  <- testing(data_split)
  
 ## recipe 와 role 생성하기 {#recipe}
 
-To get started, let's create a recipe for a simple logistic regression model. Before training the model, we can use a recipe to create a few new predictors and conduct some preprocessing required by the model. 
+단순 로지스틱 회귀 모델 레시피를 생성하는 것으로 시작해 봅시다. 모델을 훈련시키기 전에 레시피를 사용하여 새로운 설명변수 몇개를 생성하고 모델이 요구하는 전처리들을 수행할 수 있습니다.
 
-Let's initiate a new recipe: 
+새로운 레시피를 만들어 봅시다: 
 
 
 ```r
@@ -230,11 +230,11 @@ flights_rec <-
   recipe(arr_delay ~ ., data = train_data) 
 ```
 
-[`recipe()` 함수](https://recipes.tidymodels.org/reference/recipe.html) 는 인수 둘을 취하는 것을 볼 수 있습니다.
+[`recipe()` 함수](https://recipes.tidymodels.org/reference/recipe.html) 는 다음과 같이 두 개의 인수를 취하는 것을 볼 수 있습니다.
 
-+ A **formula**. Any variable on the left-hand side of the tilde (`~`) is considered the model outcome (here, `arr_delay`). On the right-hand side of the tilde are the predictors. Variables may be listed by name, or you can use the dot (`.`) to indicate all other variables as predictors.
++ **공식**. 틸더 (`~`) 왼쪽의 모든 변수들은 모델 종속변수 (here, `arr_delay`) 로 간주됩니다. 틸더의 오른쪽에는 설명변수들이 있습니다. 변수들은 이름으로 나열하거나, 나머지 변수 모드를 가리키기 위해 점 (`.`) 을 사용할 수 있습니다.
 
-+ The **data**. A recipe is associated with the data set used to create the model. This will typically be the _training_ set, so `data = train_data` here. Naming a data set doesn't actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.
++ **데이터**. 레시피는 모델을 생성하기 위해 사용하는 데이터셋과 연관됩니다. 일반적으로 _트레이닝_ 셋이 되는데, 따라서 여기에서는 `data = train_data` 이 됩니다. 데이터셋의 이름을 바꾸는 것은 실제로 데이터를 변형하지는 않습니다: 변수의 이름과, 팩터형, 정수형, 데이트형 등과 같은 유형을 카탈로그 하는데 사용됩니다.
 
 이제 이 recipe 에 [roles(역할)](https://recipes.tidymodels.org/reference/roles.html) 을 추가할 수 있습니다. [`update_role()` 함수](https://recipes.tidymodels.org/reference/roles.html) 를 사용하여 `flight` 와 `time_hour` 는 `"ID"` (역할은 임의의 문자값을 가질 수 있음) 라는 이름의 커스텀 역할을 가진 변수라고 recipe 에 명시할 수 있습니다. 공식에서는 트레이닝셋에서 `arr_delay` 를 제외한 모든 변수들을 포함했지만, recipe 에게 이 두 변수들을 놓아두되, 종속변수나 설명변수로 사용하지 말라고 명시합니다.
 
@@ -245,7 +245,7 @@ flights_rec <-
   update_role(flight, time_hour, new_role = "ID") 
 ```
 
-This step of adding roles to a recipe is optional; the purpose of using it here is that those two variables can be retained in the data but not included in the model. This can be convenient when, after the model is fit, we want to investigate some poorly predicted value. These ID columns will be available and can be used to try to understand what went wrong.
+레시피에 롤을 추가하는 이러한 단계는 선택적입니다. 여기에서 롤을 사용하는 목적은 이러한 두개의 변수들은 데이터에 포함되지만 모델에 포함되지는 않을 것이기 때문입니다. 모델이 적합된 이후에 예측값이 잘 맞지 않는 값들을 조사하고 싶을 때 편리할 수 있습니다. 이러한 ID 열들을 사용할 수 있을 것이고, 잘못된 점을 이해하는 데에 사용될 수 있습니다.
 
 `summary()` 함수를 사용하여 현재의 변수와 역할을 봅시다:
 
