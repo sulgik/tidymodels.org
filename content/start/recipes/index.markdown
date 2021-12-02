@@ -44,7 +44,7 @@ library(skimr)           # for variable summaries
 
 
 
-[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 여객기 325,819 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
+[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 항공편 325,819 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 
 ```r
@@ -71,8 +71,7 @@ flight_data <-
   mutate_if(is.character, as.factor)
 ```
 
-
-We can see that about 16% of the flights in this data set arrived more than 30 minutes late. 
+이 데이터셋의 16% 항공편이 30 분보다 더 늦게 도착했다는 것을 볼 수 있습니다.
 
 
 ```r
@@ -86,10 +85,9 @@ flight_data %>%
 #> 2 on_time   273279 0.839
 ```
 
+recipe 를 작성하기 전에 전처리와 모델링에 중요한 변수들 몇 개를 빠르게 살펴봅시다.
 
-Before we start building up our recipe, let's take a quick look at a few specific variables that will be important for both preprocessing and modeling.
-
-First, notice that the variable we created called `arr_delay` is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.
+첫째로, `arr_delay` 라는 이름의 우리가 생성한 변수가 팩터형 변수임을 주목하세요; 훈련시킬 로지스틱 회귀 모형의 출력 변수가 팩터형이라는 것이 중요합니다.
 
 
 ```r
@@ -108,9 +106,9 @@ glimpse(flight_data)
 #> $ time_hour <dttm> 2013-01-01 05:00:00, 2013-01-01 05:00:00, 2013-01-01 05:00:…
 ```
 
-Second, there are two variables that we don't want to use as predictors in our model, but that we would like to retain as identification variables that can be used to troubleshoot poorly predicted data points. These are `flight`, a numeric value, and `time_hour`, a date-time value.
+두번째로, 우리 모델에 설명변수로 사용하지 않을 것이지만, 잘 맞지 않는 데이터포인트들을 살펴보는데 사용하는 식별 변수로 포함시키고 싶은 변수가 두 개가 있습니다. 수치형 값인 `flight` 와, 데이트-타임형 값인 `time_hour` 입니다.
 
-Third, there are 104 flight destinations contained in `dest` and 16 distinct `carrier`s. 
+세번째로, Third, there are 104 flight destinations contained in `dest` and 16 distinct `carrier`s. 
 
 
 ```r
@@ -511,7 +509,7 @@ predict(flights_fit, test_data)
 #> # … with 81,450 more rows
 ```
 
-종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터로 with the model plus test data to save them together:
+종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. 이들을 반환받는 법으로는 `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터와 함께 사용하여 이들을 함께 저장하면 됩니다.
 
 
 ```r
@@ -559,7 +557,7 @@ flights_aug %>%
 #> 1 roc_auc binary         0.764
 ```
 
-Not too bad! We leave it to the reader to test out this workflow [*without*](https://workflows.tidymodels.org/reference/add_formula.html) this recipe. You can use `workflows::add_formula(arr_delay ~ .)` instead of `add_recipe()` (remember to remove the identification variables first!), and see whether our recipe improved our model's ability to predict late arrivals.
+그리 나쁘지 않네요! 이 recipe 를 [*사용하지 않은*](https://workflows.tidymodels.org/reference/add_formula.html) 워크 플로를 한 번 시도해보길 바랍니다. `workflows::add_formula(arr_delay ~ .)` 를 `add_recipe()` 대신 사용하고 (식별 변수를 먼저 제거하는 걸 잊지 말 것!), 우리의 recipe 가 모델의 연착 예측력을 개선했는지 보면 됩니다.
 
 
 
@@ -568,37 +566,42 @@ Not too bad! We leave it to the reader to test out this workflow [*without*](htt
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2021-10-24                  
+#> ─ Session info  😊  🦟  🖍️   ────────────────────────────────────────
+#>  hash: smiling face with smiling eyes, mosquito, crayon
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package      * version date       lib source        
-#>  broom        * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  nycflights13 * 1.0.1   2019-09-16 [1] CRAN (R 4.0.2)
-#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang          0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample      * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.0.2)
-#>  tibble       * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick    * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-02
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package      * version date (UTC) lib source
+#>  broom        * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  nycflights13 * 1.0.2   2021-04-12 [1] CRAN (R 4.1.0)
+#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang          0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample      * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.1.0)
+#>  tibble       * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick    * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```

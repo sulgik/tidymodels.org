@@ -79,8 +79,7 @@ flight_data <-
 
 ```
 
-
-We can see that about `r percent(mean(flight_data$arr_delay == "late"))` of the flights in this data set arrived more than 30 minutes late. 
+이 데이터셋의 `r percent(mean(flight_data$arr_delay == "late"))` 항공편이 30 분보다 더 늦게 도착했다는 것을 볼 수 있습니다.
 
 ```{r count-delays}
 flight_data %>% 
@@ -88,30 +87,28 @@ flight_data %>%
   mutate(prop = n/sum(n))
 ```
 
+recipe 를 작성하기 전에 전처리와 모델링에 중요한 변수들 몇 개를 빠르게 살펴봅시다.
 
-Before we start building up our recipe, let's take a quick look at a few specific variables that will be important for both preprocessing and modeling.
-
-First, notice that the variable we created called `arr_delay` is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.
+첫째로, `arr_delay` 라는 이름의 우리가 생성한 변수가 팩터형 변수임을 주목하세요; 훈련시킬 로지스틱 회귀 모형의 출력 변수가 팩터형이라는 것이 중요합니다.
 
 ```{r glimpse-flights}
 glimpse(flight_data)
 ```
 
-Second, there are two variables that we don't want to use as predictors in our model, but that we would like to retain as identification variables that can be used to troubleshoot poorly predicted data points. These are `flight`, a numeric value, and `time_hour`, a date-time value.
+두번째로, 우리 모델에 설명변수로 사용하지 않을 것이지만, 잘 맞지 않는 데이터포인트들을 살펴보는데 사용하는 식별 변수로 포함시키고 싶은 변수가 두 개가 있습니다. 수치형 값인 `flight` 와, 데이트-타임형 값인 `time_hour` 입니다.
 
-Third, there are `r length(levels(flight_data$dest))` flight destinations contained in `dest` and `r length(levels(flight_data$carrier))` distinct `carrier`s. 
+세번째로, `r length(levels(flight_data$dest))` 개의 도착지가 `dest` 에 포함되어 있고 `r length(levels(flight_data$carrier))` 개의 다른 항공사 정보가 `carrier` 에 포함되어 있습니다. 
 
 ```{r skim-flights}
 flight_data %>% 
   skimr::skim(dest, carrier) 
 ```
 
-
-Because we'll be using a simple logistic regression model, the variables `dest` and `carrier` will be converted to [dummy variables](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html). However, some of these values do not occur very frequently and this could complicate our analysis. We'll discuss specific steps later in this article that we can add to our recipe to address this issue before modeling. 
+단순 로지스틱 회귀 모형을 사용할 것이기 때문에 `dest`, `carrier` 변수는 [더미 변수](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) 로 변환될 것입니다. 하지만, 몇몇 값들은 자주 나타나지는 않기 때문에, 분석이 복잡해질 수 있습니다. 이번 장 뒤에서 모델링 하기 전에 이러한 이슈를 해결할 수 있는 특수한 단계들에 대해 논의할 것입니다.
 
 ## 데이터 나누기 {#data-split}
 
-이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _training_ set. The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
+이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _트레이닝_ 셋 . The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
 
 To do this, we can use the [rsample](https://rsample.tidymodels.org/) package to create an object that contains the information on _how_ to split the data, and then two more rsample functions to create data frames for the training and testing sets: 
 
