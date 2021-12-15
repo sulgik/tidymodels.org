@@ -1,10 +1,10 @@
 ---
-title: "A predictive modeling case study"
+title: "예측 모델링 케이스 스터디"
 weight: 5
 tags: [parsnip, recipes, rsample, workflows, tune]
 categories: [model fitting, tuning]
 description: | 
-  Develop, from beginning to end, a predictive model using best practices.
+  Best Practice 를 이용하여 처음부터 끝까지 예측 모델 개발하기.
 ---
 
 
@@ -58,29 +58,29 @@ In the original paper, the [authors](https://doi.org/10.1016/j.dib.2018.11.126) 
 glimpse(hotels)
 #> Rows: 50,000
 #> Columns: 23
-#> $ hotel                          <fct> City_Hotel, City_Hotel, Resort_Hotel, …
-#> $ lead_time                      <dbl> 217, 2, 95, 143, 136, 67, 47, 56, 80, …
-#> $ stays_in_weekend_nights        <dbl> 1, 0, 2, 2, 1, 2, 0, 0, 0, 2, 1, 0, 1,…
-#> $ stays_in_week_nights           <dbl> 3, 1, 5, 6, 4, 2, 2, 3, 4, 2, 2, 1, 2,…
-#> $ adults                         <dbl> 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 1, 2,…
-#> $ children                       <fct> none, none, none, none, none, none, ch…
-#> $ meal                           <fct> BB, BB, BB, HB, HB, SC, BB, BB, BB, BB…
-#> $ country                        <fct> DEU, PRT, GBR, ROU, PRT, GBR, ESP, ESP…
-#> $ market_segment                 <fct> Offline_TA/TO, Direct, Online_TA, Onli…
-#> $ distribution_channel           <fct> TA/TO, Direct, TA/TO, TA/TO, Direct, T…
-#> $ is_repeated_guest              <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-#> $ previous_cancellations         <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-#> $ previous_bookings_not_canceled <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-#> $ reserved_room_type             <fct> A, D, A, A, F, A, C, B, D, A, A, D, A,…
-#> $ assigned_room_type             <fct> A, K, A, A, F, A, C, A, D, A, D, D, A,…
-#> $ booking_changes                <dbl> 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-#> $ deposit_type                   <fct> No_Deposit, No_Deposit, No_Deposit, No…
-#> $ days_in_waiting_list           <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-#> $ customer_type                  <fct> Transient-Party, Transient, Transient,…
-#> $ average_daily_rate             <dbl> 80.75, 170.00, 8.00, 81.00, 157.60, 49…
-#> $ required_car_parking_spaces    <fct> none, none, none, none, none, none, no…
-#> $ total_of_special_requests      <dbl> 1, 3, 2, 1, 4, 1, 1, 1, 1, 1, 0, 1, 0,…
-#> $ arrival_date                   <date> 2016-09-01, 2017-08-25, 2016-11-19, 2…
+#> $ hotel                          <fct> City_Hotel, City_Hotel, Resort_Hotel, R~
+#> $ lead_time                      <dbl> 217, 2, 95, 143, 136, 67, 47, 56, 80, 6~
+#> $ stays_in_weekend_nights        <dbl> 1, 0, 2, 2, 1, 2, 0, 0, 0, 2, 1, 0, 1, ~
+#> $ stays_in_week_nights           <dbl> 3, 1, 5, 6, 4, 2, 2, 3, 4, 2, 2, 1, 2, ~
+#> $ adults                         <dbl> 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 1, 2, ~
+#> $ children                       <fct> none, none, none, none, none, none, chi~
+#> $ meal                           <fct> BB, BB, BB, HB, HB, SC, BB, BB, BB, BB,~
+#> $ country                        <fct> DEU, PRT, GBR, ROU, PRT, GBR, ESP, ESP,~
+#> $ market_segment                 <fct> Offline_TA/TO, Direct, Online_TA, Onlin~
+#> $ distribution_channel           <fct> TA/TO, Direct, TA/TO, TA/TO, Direct, TA~
+#> $ is_repeated_guest              <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ~
+#> $ previous_cancellations         <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ~
+#> $ previous_bookings_not_canceled <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ~
+#> $ reserved_room_type             <fct> A, D, A, A, F, A, C, B, D, A, A, D, A, ~
+#> $ assigned_room_type             <fct> A, K, A, A, F, A, C, A, D, A, D, D, A, ~
+#> $ booking_changes                <dbl> 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ~
+#> $ deposit_type                   <fct> No_Deposit, No_Deposit, No_Deposit, No_~
+#> $ days_in_waiting_list           <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ~
+#> $ customer_type                  <fct> Transient-Party, Transient, Transient, ~
+#> $ average_daily_rate             <dbl> 80.75, 170.00, 8.00, 81.00, 157.60, 49.~
+#> $ required_car_parking_spaces    <fct> none, none, none, none, none, none, non~
+#> $ total_of_special_requests      <dbl> 1, 3, 2, 1, 4, 1, 1, 1, 1, 1, 0, 1, 0, ~
+#> $ arrival_date                   <date> 2016-09-01, 2017-08-25, 2016-11-19, 20~
 ```
 
 We will build a model to predict which actual hotel stays included children and/or babies, and which did not. Our outcome variable `children` is a factor variable with two levels:
@@ -118,8 +118,8 @@ hotel_other %>%
 #> # A tibble: 2 x 3
 #>   children     n   prop
 #>   <fct>    <int>  <dbl>
-#> 1 children  3048 0.0813
-#> 2 none     34452 0.919
+#> 1 children  3027 0.0807
+#> 2 none     34473 0.919
 
 # test set proportions by children
 hotel_test  %>% 
@@ -128,8 +128,8 @@ hotel_test  %>%
 #> # A tibble: 2 x 3
 #>   children     n   prop
 #>   <fct>    <int>  <dbl>
-#> 1 children   990 0.0792
-#> 2 none     11510 0.921
+#> 1 children  1011 0.0809
+#> 2 none     11489 0.919
 ```
 
 In our articles so far, we've relied on 10-fold cross-validation as the primary resampling method using [`rsample::vfold_cv()`](https://tidymodels.github.io/rsample/reference/vfold_cv.html). This has created 10 different resamples of the training set (which we further split into _analysis_ and _assessment_ sets), producing 10 different performance metrics that we then aggregated.
@@ -153,9 +153,9 @@ val_set <- validation_split(hotel_other,
 val_set
 #> # Validation Set Split (0.8/0.2)  using stratification 
 #> # A tibble: 1 x 2
-#>   splits             id        
-#>   <list>             <chr>     
-#> 1 <split [30K/7.5K]> validation
+#>   splits               id        
+#>   <list>               <chr>     
+#> 1 <split [30000/7500]> validation
 ```
 
 This function, like `initial_split()`, has the same `strata` argument, which uses stratified sampling to create the resample. This means that we'll have roughly the same proportions of hotel stays with and without children in our new validation and training sets, as compared to the original `hotel_other` proportions.
@@ -301,30 +301,30 @@ top_models
 #> # A tibble: 15 x 7
 #>     penalty .metric .estimator  mean     n std_err .config              
 #>       <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>                
-#>  1 0.0001   roc_auc binary     0.880     1      NA Preprocessor1_Model01
-#>  2 0.000127 roc_auc binary     0.881     1      NA Preprocessor1_Model02
-#>  3 0.000161 roc_auc binary     0.881     1      NA Preprocessor1_Model03
-#>  4 0.000204 roc_auc binary     0.881     1      NA Preprocessor1_Model04
-#>  5 0.000259 roc_auc binary     0.881     1      NA Preprocessor1_Model05
-#>  6 0.000329 roc_auc binary     0.881     1      NA Preprocessor1_Model06
-#>  7 0.000418 roc_auc binary     0.881     1      NA Preprocessor1_Model07
-#>  8 0.000530 roc_auc binary     0.881     1      NA Preprocessor1_Model08
-#>  9 0.000672 roc_auc binary     0.881     1      NA Preprocessor1_Model09
-#> 10 0.000853 roc_auc binary     0.881     1      NA Preprocessor1_Model10
-#> 11 0.00108  roc_auc binary     0.881     1      NA Preprocessor1_Model11
-#> 12 0.00137  roc_auc binary     0.881     1      NA Preprocessor1_Model12
-#> 13 0.00174  roc_auc binary     0.881     1      NA Preprocessor1_Model13
-#> 14 0.00221  roc_auc binary     0.880     1      NA Preprocessor1_Model14
-#> 15 0.00281  roc_auc binary     0.879     1      NA Preprocessor1_Model15
+#>  1 0.000127 roc_auc binary     0.872     1      NA Preprocessor1_Model02
+#>  2 0.000161 roc_auc binary     0.872     1      NA Preprocessor1_Model03
+#>  3 0.000204 roc_auc binary     0.873     1      NA Preprocessor1_Model04
+#>  4 0.000259 roc_auc binary     0.873     1      NA Preprocessor1_Model05
+#>  5 0.000329 roc_auc binary     0.874     1      NA Preprocessor1_Model06
+#>  6 0.000418 roc_auc binary     0.874     1      NA Preprocessor1_Model07
+#>  7 0.000530 roc_auc binary     0.875     1      NA Preprocessor1_Model08
+#>  8 0.000672 roc_auc binary     0.875     1      NA Preprocessor1_Model09
+#>  9 0.000853 roc_auc binary     0.876     1      NA Preprocessor1_Model10
+#> 10 0.00108  roc_auc binary     0.876     1      NA Preprocessor1_Model11
+#> 11 0.00137  roc_auc binary     0.876     1      NA Preprocessor1_Model12
+#> 12 0.00174  roc_auc binary     0.876     1      NA Preprocessor1_Model13
+#> 13 0.00221  roc_auc binary     0.876     1      NA Preprocessor1_Model14
+#> 14 0.00281  roc_auc binary     0.875     1      NA Preprocessor1_Model15
+#> 15 0.00356  roc_auc binary     0.873     1      NA Preprocessor1_Model16
 ```
 
 
 
-Every candidate model in this tibble likely includes more predictor variables than the model in the row below it. If we used `select_best()`, it would return candidate model 8 with a penalty value of 0.00053, shown with the dotted line below. 
+Every candidate model in this tibble likely includes more predictor variables than the model in the row below it. If we used `select_best()`, it would return candidate model 11 with a penalty value of 0.00137, shown with the dotted line below. 
 
 <img src="figs/lr-plot-lines-1.svg" width="576" />
 
-However, we may want to choose a penalty value further along the x-axis, closer to where we start to see the decline in model performance. For example, candidate model 12 with a penalty value of 0.00137 has effectively the same performance as the numerically best model, but might eliminate more predictors. This penalty value is marked by the solid line above. In general, fewer irrelevant predictors is better. If performance is about the same, we'd prefer to choose a higher penalty value. 
+However, we may want to choose a penalty value further along the x-axis, closer to where we start to see the decline in model performance. For example, candidate model 12 with a penalty value of 0.00174 has effectively the same performance as the numerically best model, but might eliminate more predictors. This penalty value is marked by the solid line above. In general, fewer irrelevant predictors is better. If performance is about the same, we'd prefer to choose a higher penalty value. 
 
 Let's select this value and visualize the validation set ROC curve:
 
@@ -338,7 +338,7 @@ lr_best
 #> # A tibble: 1 x 7
 #>   penalty .metric .estimator  mean     n std_err .config              
 #>     <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>                
-#> 1 0.00137 roc_auc binary     0.881     1      NA Preprocessor1_Model12
+#> 1 0.00137 roc_auc binary     0.876     1      NA Preprocessor1_Model12
 ```
 
 
@@ -472,14 +472,14 @@ rf_res %>%
 #> # A tibble: 5 x 8
 #>    mtry min_n .metric .estimator  mean     n std_err .config              
 #>   <int> <int> <chr>   <chr>      <dbl> <int>   <dbl> <chr>                
-#> 1     8     7 roc_auc binary     0.933     1      NA Preprocessor1_Model13
-#> 2     3     3 roc_auc binary     0.933     1      NA Preprocessor1_Model21
-#> 3     6    18 roc_auc binary     0.932     1      NA Preprocessor1_Model24
-#> 4     7    25 roc_auc binary     0.932     1      NA Preprocessor1_Model03
-#> 5     5    35 roc_auc binary     0.931     1      NA Preprocessor1_Model12
+#> 1     8     7 roc_auc binary     0.926     1      NA Preprocessor1_Model13
+#> 2    12     7 roc_auc binary     0.925     1      NA Preprocessor1_Model01
+#> 3     9    12 roc_auc binary     0.925     1      NA Preprocessor1_Model19
+#> 4     7    25 roc_auc binary     0.924     1      NA Preprocessor1_Model03
+#> 5    13     4 roc_auc binary     0.924     1      NA Preprocessor1_Model05
 ```
 
-Right away, we see that these values for area under the ROC look more promising than our top model using penalized logistic regression, which yielded an ROC AUC of 0.881.
+Right away, we see that these values for area under the ROC look more promising than our top model using penalized logistic regression, which yielded an ROC AUC of 0.876.
 
 Plotting the results of the tuning process highlights that both `mtry` (number of predictors at each node) and `min_n` (minimum number of data points required to keep splitting) should be fairly small to optimize performance. However, the range of the y-axis indicates that the model is very robust to the choice of these parameter values &mdash; all but one of the ROC AUC values are greater than 0.90.
 
@@ -510,15 +510,15 @@ To calculate the data needed to plot the ROC curve, we use `collect_predictions(
 ```r
 rf_res %>% 
   collect_predictions()
-#> # A tibble: 187,475 x 8
-#>   id        .pred_children .pred_none  .row  mtry min_n children .config        
-#>   <chr>              <dbl>      <dbl> <int> <int> <int> <fct>    <chr>          
-#> 1 validati…       0.00247       0.998    11    12     7 none     Preprocessor1_…
-#> 2 validati…       0             1        13    12     7 none     Preprocessor1_…
-#> 3 validati…       0             1        31    12     7 none     Preprocessor1_…
-#> 4 validati…       0.000249      1.00     32    12     7 none     Preprocessor1_…
-#> 5 validati…       0.000167      1.00     36    12     7 none     Preprocessor1_…
-#> # … with 187,470 more rows
+#> # A tibble: 187,500 x 8
+#>   id         .pred_children .pred_none  .row  mtry min_n children .config       
+#>   <chr>               <dbl>      <dbl> <int> <int> <int> <fct>    <chr>         
+#> 1 validation        0.148        0.852    13    12     7 none     Preprocessor1~
+#> 2 validation        0.0262       0.974    20    12     7 none     Preprocessor1~
+#> 3 validation        0.472        0.528    22    12     7 children Preprocessor1~
+#> 4 validation        0.00918      0.991    23    12     7 none     Preprocessor1~
+#> 5 validation        0.0110       0.989    31    12     7 none     Preprocessor1~
+#> # ... with 187,495 more rows
 ```
 
 To filter the predictions for only our best random forest model, we can use the `parameters` argument and pass it our tibble with the best hyperparameter values from tuning, which we called `rf_best`:
@@ -577,9 +577,9 @@ last_rf_fit
 #> # Resampling results
 #> # Manual resampling 
 #> # A tibble: 1 x 6
-#>   splits         id          .metrics     .notes      .predictions     .workflow
-#>   <list>         <chr>       <list>       <list>      <list>           <list>   
-#> 1 <split [37.5K… train/test… <tibble [2 … <tibble [0… <tibble [12,500… <workflo…
+#>   splits                id               .metrics  .notes .predictions .workflow
+#>   <list>                <chr>            <list>    <list> <list>       <list>   
+#> 1 <split [37500/12500]> train/test split <tibble ~ <tibb~ <tibble [12~ <workflo~
 ```
 
 This fitted workflow contains _everything_, including our final metrics based on the test set. So, how did this model do on the test set? Was the validation set a good estimate of future performance? 
@@ -591,8 +591,8 @@ last_rf_fit %>%
 #> # A tibble: 2 x 4
 #>   .metric  .estimator .estimate .config             
 #>   <chr>    <chr>          <dbl> <chr>               
-#> 1 accuracy binary         0.948 Preprocessor1_Model1
-#> 2 roc_auc  binary         0.922 Preprocessor1_Model1
+#> 1 accuracy binary         0.946 Preprocessor1_Model1
+#> 2 roc_auc  binary         0.924 Preprocessor1_Model1
 ```
 
 This ROC AUC value is pretty close to what we saw when we tuned the random forest model with the validation set, which is good news. That means that our estimate of how well our model would perform with new data was not too far off from how well our model actually performed with the unseen test data.
@@ -605,6 +605,8 @@ last_rf_fit %>%
   pluck(".workflow", 1) %>%   
   pull_workflow_fit() %>% 
   vip(num_features = 20)
+#> Warning: `pull_workflow_fit()` was deprecated in workflows 0.2.3.
+#> Please use `extract_fit_parsnip()` instead.
 ```
 
 <img src="figs/rf-importance-1.svg" width="672" />
@@ -645,39 +647,44 @@ Here are some more ideas for where to go next:
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-08                  
+#> - Session info  ----------------------------------------------------
+#>  hash: unamused face, person in tuxedo: medium-dark skin tone, toilet
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  glmnet     * 4.0-2   2020-06-16 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  ranger     * 0.12.1  2020-01-10 [1] CRAN (R 4.0.0)
-#>  readr      * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang      * 0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  vip        * 0.2.2   2020-04-06 [1] CRAN (R 4.0.0)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       Windows 10 x64 (build 19042)
+#>  system   x86_64, mingw32
+#>  ui       RTerm
+#>  language (EN)
+#>  collate  Korean_Korea.949
+#>  ctype    Korean_Korea.949
+#>  tz       Asia/Seoul
+#>  date     2021-12-15
+#>  pandoc   2.11.4 @ C:/Program Files/RStudio/bin/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> - Packages ---------------------------------------------------------
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.1)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.2)
+#>  glmnet     * 4.1-3   2021-11-02 [1] CRAN (R 4.1.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.2)
+#>  ranger     * 0.13.1  2021-07-14 [1] CRAN (R 4.1.2)
+#>  readr      * 2.1.0   2021-11-11 [1] CRAN (R 4.1.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.2)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.2)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.2)
+#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.2)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.2)
+#> 
+#>  [1] C:/Program Files/R/R-4.1.2/library
+#> 
+#> --------------------------------------------------------------------
 ```
