@@ -4,7 +4,7 @@ weight: 1
 tags: [parsnip, broom]
 categories: [model fitting]
 description: | 
-  Get started by learning how to specify and train a model using tidymodels.
+  tidymodels 를 사용하여 모델을 명시하고 훈련하는 법을 배운다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}

@@ -4,7 +4,7 @@ weight: 5
 tags: [parsnip, recipes, rsample, workflows, tune]
 categories: [model fitting, tuning]
 description: | 
-  Develop, from beginning to end, a predictive model using best practices.
+  Best Practice 를 이용하여 처음부터 끝까지 예측 모델 개발하기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}

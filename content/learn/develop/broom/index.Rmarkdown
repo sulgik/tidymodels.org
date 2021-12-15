@@ -89,7 +89,7 @@ summary(trees_model)
 
 ### `tidy()` 메소드 구현하기
 
-`tidy(x, ...)` 메소드는 티블을 반환하는데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
+`tidy(x, ...)` 메소드는 티블을 반환하는데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (현재 허용되는 추가 인수들의 목록은 [이 장의 마지막](#glossary)에 정리되어 있습니다.) 모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
 
 목재 부피에 관한 선형 모형 예로 돌아가서, 모델 구성요소에 관한 정보를 추출하려고 합니다. 이 예에서, 구성요소는 회귀 계수들입니다. 모델 객체와 이에 대한 `summary()` 를 살펴보면 다음과 같이 회귀 계수를 추출할 수 있음을 알 수 있을 것입니다:
 
@@ -112,7 +112,7 @@ broom 패키지는 계수들을 기술하는 공통된 열 이름을 표준화�
 colnames(trees_model_tidy) <- c("term", "estimate", "std.error", "statistic", "p.value")
 ```
 
-`tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막에](#glossary) 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
+`tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막](#glossary)에 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
 
 마지막으로, 대부분 `tidy()` 메소드에는 모델에 기반한 각 구성요소에 대한 신뢰/credible 구간을 포함됩니다. 우리 예에서, `confint()` 함수를 사용하여 `lm()` 이 제공하는 모델 객체로 부터 신뢰 구간을 계산할 수 있습니다.
 
@@ -157,13 +157,13 @@ tidy(model, effects = "random")
 
 * 모델 객체와 이 객체의 `summary()` 에서 결측치들은 어떻게 인코딩 되는가? 연관된 모델 구성요소들이 없거나 rank deficient 해도 해당 행을 꼭 포함하세요.
 * 각 요소들의 요약에 포함되기를 기대되는 다른 measure 가 있는가? 다음은 `tidy()` 메소드의 공통적인 인수들입니다:
-  - `conf.int`: A logical indicating whether or not to calculate confidence/credible intervals. This should default to `FALSE`.
-  - `conf.level`: The confidence level to use for the interval when `conf.int = TRUE`. Typically defaults to `.95`.
-  - `exponentiate`: A logical indicating whether or not model terms should be presented on an exponential scale (typical for logistic regression).
+  - `conf.int`: A logical indicating whether or not to calculate confidence/credible intervals 를 계산해야할지 말지를 가리키는 논리형. 기본값은 `FALSE` 가 되어야함.
+  - `conf.level`: `conf.int = TRUE` 일 때 사용할 신뢰 수준. 일반적인 기본값은 `.95`.
+  - `exponentiate`: 모델 term 들을 exponential 스케일로 나타낼지 말지를 가리키는 논리형 (로지스틱 회귀에서 흔함).
 
 ### `glance()` 메소드 구현하기
 
-`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 `x` 와 `...` 인수들을 포함_해야하고_, 추가적인 인수들을 입력으로 할 수 있습니다. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
+`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 `x` 와 `...` 인수들을 포함_해야하고_, 추가적인 인수들을 입력으로 할 수 있습니다. (현재 허용되는 추가 인수들의 목록은 [이 장의 마지막](#glossary)에 정리되어 있습니다.)
 
 `trees_model` 예로 돌아와서, 다음의 코드로 $R^2$ 값을 추출할 수 있을 것입니다:
 
@@ -225,9 +225,9 @@ Some things to keep in mind while writing `glance()` methods:
 
 `augment()` 메소드는 fitted values, 잔차, 클러스터 할당과 같은 정보를 포함하는 데이터셋에 열들을 추가합니다. 데이터셋에 추가되는 모든 열들은 `.` prefix 를 가지는데, 기존의 열들이 덮어써지는 것을 막아주기 위함입니다. (Currently acceptable column names are given in [the glossary](#glossary)). `x` 와 `...` 인수들은 위에 기술한 두 함수들에서의 의미와 같습니다. `argument` 메소드는 선택적으로 관측값레벨 정보가 추가될 `data.frame` (혹은 `tibble`) 인 `data` 인수를 입력으로, `data` 와 같은 행수를 가진 `tibble` 객체를 반환합니다. 많은 `argument()` 메소드들은 `newdata` 인수를 입력으로하며, 모델이 데이터를 "보지" 않았다는 가정을 제외하고 `data` 인수와 같은 컨벤션을 따릅니다. 결과적으로 `newdata` 인수는 `data` 의 반응변수 열을 포함할 필요가 없습니다. `data` 나 `newdata` 중 어느 하나만 제공되어야 합니다. `argument()` 메소드에 허용되는 전체 인수 목록은 [이번 장의 마지막](#glossary)에 있습니다.
 
-If a `data` argument is not specified, `augment()` should try to reconstruct the original data as much as possible from the model object. This may not always be possible, and often it will not be possible to recover columns not used by the model.
+`data` 인수가 명시되지 않으면 `augment()` 는 원 데이터를 모델 객체에서 최대한 재구축하려고 노력할 것입니다. 이런 것이 항상 가능한 것은 아니고, 모델에서 사용되지 않는 열들을 복원하는 것은 가능하지 않을 수 있습니다.
 
-With this is mind, we can look back to our `trees_model` example. For one, the `model` element inside of the `trees_model` object will allow us to recover the original data:
+이를 명심하고, 우리 `trees_model` 예를 돌아가 봅니다. `trees_model` 객체 내부의 `model` 요소를 사용하면 원 데이터를 복원할 수 있습니다:
 
 ```{r, rows.print=5}
 trees_model$model
