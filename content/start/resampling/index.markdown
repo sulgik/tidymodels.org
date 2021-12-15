@@ -56,13 +56,13 @@ cells
 
 ### 이미지 세그멘테이션 품질 예측하기
 
-Some biologists conduct experiments on cells. In drug discovery, a particular type of cell can be treated with either a drug or control and then observed to see what the effect is (if any). A common approach for this kind of measurement is cell imaging. Different parts of the cells can be colored so that the locations of a cell can be determined. 
+세포 실험을 하는 생물학자들이 있습니다. 제약분야에서 특정유형의 세포가 약이나 대조군 으로 취급한 후 (나타나게 될) 효과를 관측합니다. 이러한 종류의 측정에 있어 보통의 방법은 세포 이미징입니다. 세포의 다른 부분들이 색칠이 칠해져서 세포의 위치가 결정될 수 있습니다.
 
-For example, in top panel of this image of five cells, the green color is meant to define the boundary of the cell (coloring something called the cytoskeleton) while the blue color defines the nucleus of the cell. 
+예를들어, 세포 다섯개가 있는 이미지의 위 패널에서 녹색은 세포 경계를 의미하지만 (cytoskeleton 이라고 하는 염색) 청색은 세포 핵을 보여줍니다.
 
 <img src="img/cells.png" width="70%" style="display: block; margin: auto;" />
 
-Using these colors, the cells in an image can be _segmented_ so that we know which pixels belong to which cell. If this is done well, the cell can be measured in different ways that are important to the biology. Sometimes the shape of the cell matters and different mathematical tools are used to summarize characteristics like the size or "oblongness" of the cell. 
+이러한 색깔을 이용해서 이미지 안의 세포는 _경계를 잡아 (segmented)_ 서 어떤 픽셀이 어떤 세포에 속하는지 알아낼 수 있습니다. 이 과정이 잘 된다면, 세포가 다양한 방법으로 측정이 되어 생물학 연구에 있어 중요할 수 있습니다. 세포 모양이 중요한 경우가 있어 크기나 "oblongness" 같은 특징들을 요약하는데 다양한 수학적 도구가 사용됩니다. 
 
 The bottom panel shows some segmentation results. Cells 1 and 5 are fairly well segmented. However, cells 2 to 4 are bunched up together because the segmentation was not very good. The consequence of bad segmentation is data contamination; when the biologist analyzes the shape or size of these cells, the data are inaccurate and could lead to the wrong conclusion. 
 
@@ -104,7 +104,7 @@ cells %>%
 
 ## 데이터 나누기 {#data-split}
 
-In our previous [*Preprocess your data with recipes*](/start/recipes/#data-split) article, we started by splitting our data. It is common when beginning a modeling project to [separate the data set](https://bookdown.org/max/FES/data-splitting.html) into two partitions: 
+이전의 [*recipe 로 데이터 전처리하기*](/start/recipes/#data-split) 장에서 데이터 나누기 부터 시작했었습니다. It is common when beginning a modeling project to [separate the data set](https://bookdown.org/max/FES/data-splitting.html) into two partitions: 
 
  * The _training set_ is used to estimate parameters, compare models and feature engineering techniques, tune models, etc.
 
@@ -489,8 +489,8 @@ The performance metrics from the test set are much closer to the performance met
 
 
 ```
-#> ─ Session info  🇬🇪  🔖  🚺   ───────────────────────────────────────
-#>  hash: flag: Georgia, bookmark, women’s room
+#> ─ Session info  🇨🇼  🇸🇭  🇭🇺   ───────────────────────────────────────
+#>  hash: flag: Curaçao, flag: St. Helena, flag: Hungary
 #> 
 #>  setting  value
 #>  version  R version 4.1.1 (2021-08-10)
@@ -501,7 +501,7 @@ The performance metrics from the test set are much closer to the performance met
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-11-30
+#>  date     2021-12-04
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

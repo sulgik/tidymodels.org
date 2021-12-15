@@ -10,12 +10,12 @@ knitr::opts_chunk$set(
 options(width = 80, digits = 3, cli.width = 70, dplyr.summarise.inform = FALSE)
 
 
-req_pkgs <- function(x, what = "To use the code in this article,") {
+req_pkgs <- function(x, what = "이 장의 코드를 사용하려면,") {
   x <- sort(x)
   x <- knitr::combine_words(x, and = " and ")
   paste0(
     what,
-    " you have to install the following packages: ",
+    " 다음의 패키지들을 인스톨해야합니다: ",
     x, "." 
   )
 }
