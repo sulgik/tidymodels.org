@@ -1,49 +1,53 @@
 ---
-title: "Create your own broom tidier methods"
+title: "broom tidier 메소드 만들기"
 tags: [broom]
 categories: []
 type: learn-subsection
 weight: 5
 description: | 
-  Write tidy(), glance(), and augment() methods for new model objects.
+  새로운 모델 객체에 해당하는 tidy(), glance(), augment() 메소드를 작성한다.
 ---
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
 
 
 
 
 
-## Introduction
+## 들어가기
 
 To use the code in this article, you will need to install the following packages: generics, tidymodels, tidyverse, and usethis.
 
-The broom package provides tools to summarize key information about models in tidy `tibble()`s. The package provides three verbs, or "tidiers," to help make model objects easier to work with:
+broom 패키지의 도구들을 이용하면 타이디한 `tibble()` 에 있는 모델들에 대한 핵심 정보를 요약할 수 있습니다. 이 패키지에는 모델 객체를 다루기 쉽게 만들어 주는 동사, 혹은 "tidiers" 세 개를 제공합니다. 
 
-* `tidy()` summarizes information about model components
-* `glance()` reports information about the entire model
-* `augment()` adds information about observations to a dataset
+* `tidy()` 는 모델 컴포넌트들에 대한 정보를 요약합니다
+* `glance()` 는 전체 모델에 대한 정보를 보고합니다
+* `augment()` 는 관측값들에 대한 정보를 데이터셋에 추가합니다
 
-Each of the three verbs above are _generic_, in that they do not define a procedure to tidy a given model object, but instead redirect to the relevant _method_ implemented to tidy a specific type of model object. The broom package provides methods for model objects from over 100 modeling packages along with nearly all of the model objects in the stats package that comes with base R. However, for maintainability purposes, the broom package authors now ask that requests for new methods be first directed to the parent package (i.e. the package that supplies the model object) rather than to broom. New methods will generally only be integrated into broom in the case that the requester has already asked the maintainers of the model-owning package to implement tidier methods in the parent package.
+위의 세 동사들은 모두 _제너릭_ 입니다. 왜냐하면, 이 동사들은 주어진 모델 객체를 타이디하게 하는 프로시져를 정의하지 않는 대신, 특정 모델 객체 관련된 _메서드_ (특별한 유형의 모델 객체를 타이디하게 하기 위해 구현한) 로 리디렉트하기 때문입니다. broom 패키지에는 base R 의 stats 패키지를 포함하여 100 개가 넘는 모델링 패키지에 있는 모델 객체에 적용할 수 있는 메소드들이 있습니다. 하지만, 관리상의 이유로 broom 패키지 저자들은 새로운 메소드 요청이 broom 이 아닌 부모 패키지에 지시될 것을 요구합니다. (즉 해당 모델 객체를 제공한 패키지) 새로운 메소드는 요청자가 모델소유 패키지의 관리자에게 부모 패키지의 tidier 메소드들을 구현해 달라고 요청한 경우에만 broom 에 일반적으로 만들어질 것입니다.
 
-We'd like to make implementing external tidier methods as painless as possible. The general process for doing so is:
+외부 tidier 메소드들을 가능한한 가장 힘들지 않게 구현하려고 합니다. 일반적인 과정은 다음과 같습니다:
 
-* re-export the tidier generics
-* implement tidying methods
-* document the new methods
+* tidier 제네릭을 다시 익스포트하기
+* tidy 메소드를 구현하기
+* 새 메소드를 문서화하기
 
-In this article, we'll walk through each of the above steps in detail, giving examples and pointing out helpful functions when possible.
+이번 문서에서는 위에서 언급한 각 단계를 자세히 따라가면서 예를 살펴보고 도움이 되는 함수들을 볼 것입니다.
 
-## Re-export the tidier generics
+##  tidier 제네릭을 다시 익스포트하기
 
-The first step is to re-export the generic functions for `tidy()`, `glance()`, and/or `augment()`. You could do so from `broom` itself, but we've provided an alternative, much lighter dependency called `generics`.
+첫번째 단계는 `tidy()`, `glance()`, `augment()` 에 대한 제네릭 함수들을 다시 익스포트 하는 것입니다. `broom` 에서 직접할 수도 있지만, `generics` 으로 부르는 더 가벼운 의존성을 가진 다른 방법을 제시합니다.
 
-First you'll need to add the [generics](https://github.com/r-lib/generics) package to `Imports`. We recommend using the [usethis](https://github.com/r-lib/usethis) package for this:
+우선 `Imports` 에 [generics](https://github.com/r-lib/generics) 패키지를 추가해야 합니다. [usethis](https://github.com/r-lib/usethis) 패키지를 사용할 것을 추천합니다:
 
 
 ```r
 usethis::use_package("generics", "Imports")
 ```
 
-Next, you'll need to re-export the appropriate tidying methods. If you plan to implement a `glance()` method, for example, you can re-export the `glance()` generic by adding the following somewhere inside the `/R` folder of your package:
+다음으로, 적절한 타이디 메소드들을 다시 익스포트 해야합니다. 예를 들어 `glance()` 메소드를 다시 구현하려고 한다면, 당신 패키지의 `/R`  폴더 내부 어딘가에 다음을 추가하여 `glance()` 제네릭을 다시 익스포트할 수 있습니다:
 
 
 ```r
@@ -52,15 +56,15 @@ Next, you'll need to re-export the appropriate tidying methods. If you plan to i
 generics::glance
 ```
 
-Oftentimes it doesn't make sense to define one or more of these methods for a particular model. In this case, only implement the methods that do make sense.
+특정 모델의 이러한 메소드들을 정의하는 것이 적절하지 않은 경우가 있습니다. 이런 경우에는 적절한 메소드만 구현하세요.
 
 {{% warning %}} Please do not define `tidy()`, `glance()`, or `augment()` generics in your package. This will result in namespace conflicts whenever your package is used along other packages that also export tidying methods. {{%/ warning %}}
 
-## Implement tidying methods
+## 타이디 메소드를 구현하기
 
-You'll now need to implement specific tidying methods for each of the generics you've re-exported in the above step. For each of `tidy()`, `glance()`, and `augment()`, we'll walk through the big picture, an example, and helpful resources.
+위 단계에서 익스포트한 제네릭 각각에 대한 타이디 메소드들을 구현해야 합니다. `tidy()`, `glance()`, and `augment()` 각각에 대해, 큰 그림, 예시, 유용한 자원들을 살펴볼 것입니다.
 
-In this article, we'll use the base R dataset `trees`, giving the tree girth (in inches), height (in feet), and volume (in cubic feet), to fit an example linear model using the base R `lm()` function. 
+여기서 베이스 R 데이터셋 `trees` 를 사용할 것인데, 이 데이터셋의 나무 둘레 (Girth, 인치단위), 키 (Height, 피트단위), 부피 (Volume, 큐빅피트단위) 으로 베이스 R `lm()` 함수를 사용하여 선형모형을 예로 적합할 것입니다. 
 
 
 ```r
@@ -78,7 +82,7 @@ str(trees)
 trees_model <- lm(Volume ~ Girth + Height, data = trees)
 ```
 
-Let's take a look at the `summary()` of our `trees_model` fit.
+`trees_model` 적합결과의 `summary()` 를 살펴봅시다.
 
 
 ```r
@@ -104,13 +108,13 @@ summary(trees_model)
 #> F-statistic:  255 on 2 and 28 DF,  p-value: <2e-16
 ```
 
-This output gives some summary statistics on the residuals (which would be described more fully in an `augment()` output), model coefficients (which, in this case, make up the `tidy()` output), and some model-level summarizations such as RSE, `\(R^2\)`, etc. (which make up the `glance()` output.)
+이 결과물에는 잔차에 요약 통계량 (`augment()` 출력에 전체 목록이 있음) 과 모형 계수 (이 경우 `tidy()` 출력을 완성함), RSE, `\(R^2\)` 같은 모델 레벨의 요약 (`glance()` 출력이 보충함) 이 나옵니다. 
 
-### Implementing the `tidy()` method
+### `tidy()` 메소드 구현하기
 
-The `tidy(x, ...)` method will return a tibble where each row contains information about a component of the model. The `x` input is a model object, and the dots (`...`) are an optional argument to supply additional information to any calls inside your method. New `tidy()` methods can take additional arguments, but _must_ include the `x` and `...` arguments to be compatible with the generic function. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  Examples of model components include regression coefficients (for regression models), clusters (for classification/clustering models), etc. These `tidy()` methods are useful for inspecting model details and creating custom model visualizations.
+`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
 
-Returning to the example of our linear model on timber volume, we'd like to extract information on the model components. In this example, the components are the regression coefficients. After taking a look at the model object and its `summary()`, you might notice that you can extract the regression coefficients as follows:
+목재 부피에 관한 선형 모형 예로 돌아가서, 모델 구성요소에 관한 정보를 추출하려고 합니다. 이 예에서, 구성요소는 회귀 계수들입니다. 모델 객체와 이에 대한 `summary()` 를 살펴보면 다음과 같이 회귀 계수를 추출할 수 있음을 알 수 있을 것입니다:
 
 
 ```r
@@ -121,7 +125,7 @@ summary(trees_model)$coefficients
 #> Height         0.339      0.130    2.61 1.45e-02
 ```
 
-This object contains the model coefficients as a table, where the information giving which coefficient is being described in each row is given in the row names. Converting to a tibble where the row names are contained in a column, you might write:
+이 객체는 테이블 형태로 모델 계수를 포함하는데, 각 행에서 어떤 계수가 기술되는지에 관한 정보가 행 이름에 나와있습니다. 행 이름이 하나의 열에 포함된 티블로 변환시키려면 다음과 같이 작성하면 됩니다:
 
 
 ```r
@@ -129,7 +133,7 @@ trees_model_tidy <- summary(trees_model)$coefficients %>%
   as_tibble(rownames = "term")
 
 trees_model_tidy
-#> # A tibble: 3 x 5
+#> # A tibble: 3 × 5
 #>   term        Estimate `Std. Error` `t value` `Pr(>|t|)`
 #>   <chr>          <dbl>        <dbl>     <dbl>      <dbl>
 #> 1 (Intercept)  -58.0          8.64      -6.71   2.75e- 7
@@ -137,16 +141,16 @@ trees_model_tidy
 #> 3 Height         0.339        0.130      2.61   1.45e- 2
 ```
 
-The broom package standardizes common column names used to describe coefficients. In this case, the column names are:
+broom 패키지는 계수들을 기술하는 공통된 열 이름을 표준화합니다. 이 경우, 열 이름은 다음과 같습니다:
 
 
 ```r
 colnames(trees_model_tidy) <- c("term", "estimate", "std.error", "statistic", "p.value")
 ```
 
-A glossary giving the currently acceptable column names outputted by `tidy()` methods can be found [at the end of this article](#glossary). As a rule of thumb, column names resulting from `tidy()` methods should be all lowercase and contain only alphanumerics or periods (though there are plenty of exceptions).
+`tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막에](#glossary) 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
 
-Finally, it is common for `tidy()` methods to include an option to calculate confidence/credible intervals for each component based on the model, when possible. In this example, the `confint()` function can be used to calculate confidence intervals from a model object resulting from `lm()`:
+마지막으로, 대부분 `tidy()` 메소드에는 모델에 기반한 각 구성요소에 대한 신뢰/credible 구간을 포함됩니다. 우리 예에서, `confint()` 함수를 사용하여 `lm()` 이 제공하는 모델 객체로 부터 신뢰 구간을 계산할 수 있습니다.
 
 
 ```r
@@ -157,7 +161,7 @@ confint(trees_model)
 #> Height        0.0726   0.606
 ```
 
-With these considerations in mind, a reasonable `tidy()` method for `lm()` might look something like:
+앞에서 살펴본 것들을 고려하여, `lm()` 의 적절한 `tidy()` 메소드는 예를 들어 다음과 같이 할 수 있습니다:
 
 
 ```r
@@ -181,9 +185,9 @@ tidy.lm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 
 {{% note %}}  If you're interested, the actual `tidy.lm()` source can be found [here](https://github.com/tidymodels/broom/blob/master/R/stats-lm-tidiers.R)! It's not too different from the version above except for some argument checking and additional columns. {{%/ note %}}
 
-With this method exported, then, if a user calls `tidy(fit)`, where `fit` is an output from `lm()`, the `tidy()` generic would "redirect" the call to the `tidy.lm()` function above.
+이렇게 익스포트된 방법으로 `fit` 이 `lm()` 의 출력인, `tidy(fit)` 가 호출되면, `tidy()` 제네릭은 위의 `tidy.lm()` 함수 호출로 "리디렉션" 합니다.
 
-Some things to keep in mind while writing your `tidy()` method:
+`tidy()` 메소드를 작성할 때 명심해야할 것들입니다:
 
 * Sometimes a model will have several different types of components. For example, in mixed models, there is different information associated with fixed effects and random effects. Since this information doesn't have the same interpretation, it doesn't make sense to summarize the fixed and random effects in the same table. In cases like this you should add an argument that allows the user to specify which type of information they want. For example, you might implement an interface along the lines of:
 
@@ -200,11 +204,11 @@ tidy(model, effects = "random")
   - `conf.level`: The confidence level to use for the interval when `conf.int = TRUE`. Typically defaults to `.95`.
   - `exponentiate`: A logical indicating whether or not model terms should be presented on an exponential scale (typical for logistic regression).
 
-### Implementing the `glance()` method
+### `glance()` 메소드 구현하기
 
-`glance()` returns a one-row tibble providing model-level summarizations (e.g. goodness of fit measures and related statistics). This is useful to check for model misspecification and to compare many models. Again, the `x` input is a model object, and the `...` is an optional argument to supply additional information to any calls inside your method. New `glance()` methods can also take additional arguments and _must_ include the `x` and `...` arguments. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
+`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 추가적인 methods can also take additional arguments and _must_ include the `x` and `...` arguments. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
 
-Returning to the `trees_model` example, we could pull out the `\(R^2\)` value with the following code:
+`trees_model` 예로 돌아와서, 다음의 코드로 `\(R^2\)` 값을 추출할 수 있을 것이다:
 
 
 ```r
@@ -227,7 +231,7 @@ Unfortunately, for many model objects, the extraction of model-level information
 with(summary(trees_model),
      tibble::tibble(r.squared = r.squared,
                     adj.r.squared = adj.r.squared))
-#> # A tibble: 1 x 2
+#> # A tibble: 1 × 2
 #>   r.squared adj.r.squared
 #>       <dbl>         <dbl>
 #> 1     0.948         0.944
@@ -270,7 +274,7 @@ Some things to keep in mind while writing `glance()` methods:
 * In some cases, you may wish to provide model-level diagnostics not returned by the original object. For example, the above `glance.lm()` calculates `AIC` and `BIC` from the model fit. If these are easy to compute, feel free to add them. However, tidier methods are generally not an appropriate place to implement complex or time consuming calculations.
 * The `glance` method should always return the same columns in the same order when given an object of a given model class. If a summary metric (such as `AIC`) is not defined in certain circumstances, use `NA`.
 
-### Implementing the `augment()` method
+### `augment()` 메소드 구현하기
 
 `augment()` methods add columns to a dataset containing information such as fitted values, residuals or cluster assignments. All columns added to a dataset have a `.` prefix to prevent existing columns from being overwritten. (Currently acceptable column names are given in [the glossary](#glossary).) The `x` and `...` arguments share their meaning with the two functions described above. `augment` methods also optionally accept a `data` argument that is a `data.frame` (or `tibble`) to add observation-level information to, returning a `tibble` object with the same number of rows as `data`. Many `augment()` methods also accept a `newdata` argument, following the same conventions as the `data` argument, except with the underlying assumption that the model has not "seen" the data yet. As a result, `newdata` arguments need not contain the response columns in `data`. Only one of `data` or `newdata` should be supplied. A full glossary of acceptable arguments to `augment()` methods can be found at [the end of this article](#glossary).
 
@@ -405,7 +409,7 @@ tidy.lm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 
 Once you've documented each of your new methods and executed `devtools::document()`, you're done! Congrats on implementing your own broom tidier methods for a new model object!
 
-## Glossaries: argument and column names {#glossary}
+## 용어집: 인수와 열이름 {#glossary}
 
 
 
@@ -1290,6 +1294,10 @@ The currently acceptable column names by tidier method are:
   </tr>
   <tr>
    <td style="text-align:left;"> glance </td>
+   <td style="text-align:left;"> lag.order </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> glance </td>
    <td style="text-align:left;"> lambda </td>
   </tr>
   <tr>
@@ -1777,37 +1785,42 @@ The [alexpghayes/modeltests](https://github.com/alexpghayes/modeltests) package 
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#> ─ Session info  👱🏽  🦶🏽  🖖🏽   ───────────────────────────────────────
+#>  hash: person: medium skin tone, blond hair, foot: medium skin tone, vulcan salute: medium skin tone
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  generics   * 0.1.0   2020-10-31 [1] CRAN (R 4.0.3)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tidyverse  * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-02
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  generics   * 0.1.1   2021-10-25 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tidyverse  * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```

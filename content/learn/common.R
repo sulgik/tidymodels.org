@@ -15,7 +15,7 @@ req_pkgs <- function(x, what = "To use the code in this article,") {
   x <- knitr::combine_words(x, and = " and ")
   paste0(
     what,
-    " you will need to install the following packages: ",
+    " 다음 패키지들을 설치해야 합니다: ",
     x, "." 
   )
 }

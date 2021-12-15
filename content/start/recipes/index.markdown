@@ -15,7 +15,7 @@ description: |
 
 ## 들어가기 {#intro}
 
-[*모델 만들기*](/start/models/) 챕터에서는 [parsnip 패키지](https://parsnip.tidymodels.org/) 를 사용하여 여러 엔진들로 모델을 정의하고 훈련시키는 법에 대해 배웠습니다. 이 챕터에서는 tidymodels 의 또 다른 패키지인 [recipes](https://recipes.tidymodels.org/) 패키지를 살펴볼 것인데, 트레이닝 *전*에 데이터를 전처리를 도와주기 위해 설계되었습니다. Recipes 는 다음과 같이 일련의 전처리 과정들로 구성됩니다:
+[*모델 만들기*](/start/models/) 챕터에서는 [parsnip 패키지](https://parsnip.tidymodels.org/) 를 사용하여 여러 엔진들로 모델을 정의하고 훈련시키는 법에 대해 배웠습니다. 이 챕터에서는 tidymodels 의 또 다른 패키지인 [recipes](https://recipes.tidymodels.org/) 패키지를 살펴볼 것인데, 트레이닝 *전*에 데이터를 전처리를 도와주기 위해 설계되었습니다. 레시피(recipe)는 다음과 같이 일련의 전처리 과정들로 구성됩니다:
 
 + 정성 설명변수를 지시변수 (indicator variables 더미 변수로도 알려짐) 로 변환,
 
@@ -25,7 +25,7 @@ description: |
 
 + 원 변수들로 부터 핵심 변수를 추출 (예, 날짜에서 요일을 추출),
 
-등입니다. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling. 
+등입니다. R 의 공식 인터페이스에 익숙하다면, 이러한 것들 대부분이 친숙하게 들릴 것이고 공식이 이미 하고 있는 것입니다. 레시피들은 이러한 것들 대부분을 수행하는데 사용할 수 있지만, 가능성이 이 것보다 더 넓습니다. 이번 장에서는 레시피들을 사용하여 모델링 하는 법을 보여줄 것입니다.
 
 To use code in this article,  you will need to install the following packages: nycflights13, skimr, and tidymodels.
 
@@ -44,7 +44,7 @@ library(skimr)           # for variable summaries
 
 
 
-[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 여객기 325,819 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
+[nycflights13 data](https://github.com/hadley/nycflights13) 를 사용하여 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발하는 항공편 325,819 편에 대한 정보가 있습니다. 우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 
 ```r
@@ -71,8 +71,7 @@ flight_data <-
   mutate_if(is.character, as.factor)
 ```
 
-
-We can see that about 16% of the flights in this data set arrived more than 30 minutes late. 
+이 데이터셋의 16% 항공편이 30 분보다 더 늦게 도착했다는 것을 볼 수 있습니다.
 
 
 ```r
@@ -86,10 +85,9 @@ flight_data %>%
 #> 2 on_time   273279 0.839
 ```
 
+recipe 를 작성하기 전에 전처리와 모델링에 중요한 변수들 몇 개를 빠르게 살펴봅시다.
 
-Before we start building up our recipe, let's take a quick look at a few specific variables that will be important for both preprocessing and modeling.
-
-First, notice that the variable we created called `arr_delay` is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.
+첫째로, `arr_delay` 라는 이름의 우리가 생성한 변수가 팩터형 변수임을 주목하세요; 훈련시킬 로지스틱 회귀 모형의 출력 변수가 팩터형이라는 것이 중요합니다.
 
 
 ```r
@@ -108,9 +106,9 @@ glimpse(flight_data)
 #> $ time_hour <dttm> 2013-01-01 05:00:00, 2013-01-01 05:00:00, 2013-01-01 05:00:…
 ```
 
-Second, there are two variables that we don't want to use as predictors in our model, but that we would like to retain as identification variables that can be used to troubleshoot poorly predicted data points. These are `flight`, a numeric value, and `time_hour`, a date-time value.
+두번째로, 우리 모델에 설명변수로 사용하지 않을 것이지만, 잘 맞지 않는 데이터포인트들을 살펴보는데 사용하는 식별 변수로 포함시키고 싶은 변수가 두 개가 있습니다. 수치형 값인 `flight` 와, 데이트-타임형 값인 `time_hour` 입니다.
 
-Third, there are 104 flight destinations contained in `dest` and 16 distinct `carrier`s. 
+세번째로, 104 개의 도착지가 `dest` 에 포함되어 있고 16 개의 다른 항공사 정보가 `carrier` 에 포함되어 있습니다. 
 
 
 ```r
@@ -198,14 +196,13 @@ flight_data %>%
 </tbody>
 </table>
 
-
-Because we'll be using a simple logistic regression model, the variables `dest` and `carrier` will be converted to [dummy variables](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html). However, some of these values do not occur very frequently and this could complicate our analysis. We'll discuss specific steps later in this article that we can add to our recipe to address this issue before modeling. 
+단순 로지스틱 회귀 모형을 사용할 것이기 때문에 `dest`, `carrier` 변수는 [더미 변수](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) 로 변환될 것입니다. 하지만, 몇몇 값들은 자주 나타나지는 않기 때문에, 분석이 복잡해질 수 있습니다. 이번 장 뒤에서 모델링 하기 전에 이러한 이슈를 해결할 수 있는 특수한 단계들에 대해 논의할 것입니다.
 
 ## 데이터 나누기 {#data-split}
 
-이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. We'll keep most of the rows in the original dataset (subset chosen randomly) in the _training_ set. The training data will be used to *fit* the model, and the _testing_ set will be used to measure model performance. 
+이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. 원본 데이터셋  _트레이닝_ 셋 (임의로 선택한 서브셋) 의 대부분 행들을 유지시킬 것 입니다. 트레이닝 데이터는 모델을 *적합(fit)* 하는데 사용할 것이고 _테스팅_ 셋은 모델 성능을 측정하는데에 사용될 것입니다.
 
-To do this, we can use the [rsample](https://rsample.tidymodels.org/) package to create an object that contains the information on _how_ to split the data, and then two more rsample functions to create data frames for the training and testing sets: 
+[rsample](https://rsample.tidymodels.org/) 패키지를 사용하여 데이터를 어떻게 나눌 것인지에 대한 정보를 포함하는 객체를 생성할 것입니다. 그리고 rsample 함수 두 개를 사용하여 트레이닝 셋과 테스팅셋을 위한 데이터프레임을 생성할 것입니다.
 
 
 ```r
@@ -223,9 +220,9 @@ test_data  <- testing(data_split)
  
 ## recipe 와 role 생성하기 {#recipe}
 
-To get started, let's create a recipe for a simple logistic regression model. Before training the model, we can use a recipe to create a few new predictors and conduct some preprocessing required by the model. 
+단순 로지스틱 회귀 모델 레시피를 생성하는 것으로 시작해 봅시다. 모델을 훈련시키기 전에 레시피를 사용하여 새로운 설명변수 몇개를 생성하고 모델이 요구하는 전처리들을 수행할 수 있습니다.
 
-Let's initiate a new recipe: 
+새로운 레시피를 만들어 봅시다: 
 
 
 ```r
@@ -233,11 +230,11 @@ flights_rec <-
   recipe(arr_delay ~ ., data = train_data) 
 ```
 
-[`recipe()` 함수](https://recipes.tidymodels.org/reference/recipe.html) 는 인수 둘을 취하는 것을 볼 수 있습니다.
+[`recipe()` 함수](https://recipes.tidymodels.org/reference/recipe.html) 는 다음과 같이 두 개의 인수를 취하는 것을 볼 수 있습니다.
 
-+ A **formula**. Any variable on the left-hand side of the tilde (`~`) is considered the model outcome (here, `arr_delay`). On the right-hand side of the tilde are the predictors. Variables may be listed by name, or you can use the dot (`.`) to indicate all other variables as predictors.
++ **공식**. 틸더 (`~`) 왼쪽의 모든 변수들은 모델 종속변수 (here, `arr_delay`) 로 간주됩니다. 틸더의 오른쪽에는 설명변수들이 있습니다. 변수들은 이름으로 나열하거나, 나머지 변수 모드를 가리키기 위해 점 (`.`) 을 사용할 수 있습니다.
 
-+ The **data**. A recipe is associated with the data set used to create the model. This will typically be the _training_ set, so `data = train_data` here. Naming a data set doesn't actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.
++ **데이터**. 레시피는 모델을 생성하기 위해 사용하는 데이터셋과 연관됩니다. 일반적으로 _트레이닝_ 셋이 되는데, 따라서 여기에서는 `data = train_data` 이 됩니다. 데이터셋의 이름을 바꾸는 것은 실제로 데이터를 변형하지는 않습니다: 변수의 이름과, 팩터형, 정수형, 데이트형 등과 같은 유형을 카탈로그 하는데 사용됩니다.
 
 이제 이 recipe 에 [roles(역할)](https://recipes.tidymodels.org/reference/roles.html) 을 추가할 수 있습니다. [`update_role()` 함수](https://recipes.tidymodels.org/reference/roles.html) 를 사용하여 `flight` 와 `time_hour` 는 `"ID"` (역할은 임의의 문자값을 가질 수 있음) 라는 이름의 커스텀 역할을 가진 변수라고 recipe 에 명시할 수 있습니다. 공식에서는 트레이닝셋에서 `arr_delay` 를 제외한 모든 변수들을 포함했지만, recipe 에게 이 두 변수들을 놓아두되, 종속변수나 설명변수로 사용하지 말라고 명시합니다.
 
@@ -248,7 +245,7 @@ flights_rec <-
   update_role(flight, time_hour, new_role = "ID") 
 ```
 
-This step of adding roles to a recipe is optional; the purpose of using it here is that those two variables can be retained in the data but not included in the model. This can be convenient when, after the model is fit, we want to investigate some poorly predicted value. These ID columns will be available and can be used to try to understand what went wrong.
+레시피에 롤을 추가하는 이러한 단계는 선택적입니다. 여기에서 롤을 사용하는 목적은 이러한 두개의 변수들은 데이터에 포함되지만 모델에 포함되지는 않을 것이기 때문입니다. 모델이 적합된 이후에 예측값이 잘 맞지 않는 값들을 조사하고 싶을 때 편리할 수 있습니다. 이러한 ID 열들을 사용할 수 있을 것이고, 잘못된 점을 이해하는 데에 사용될 수 있습니다.
 
 `summary()` 함수를 사용하여 현재의 변수와 역할을 봅시다:
 
@@ -511,7 +508,7 @@ predict(flights_fit, test_data)
 #> # … with 81,450 more rows
 ```
 
-종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터로 with the model plus test data to save them together:
+종속 변수가 팩터형이기 때문에, `predict()` 의 출력값은 예측 범주: `late` 대 `on_time` 를 반환합니다. 하지만, 각 여객편에 대해 예측 범주 확률을 원한다고 합시다. 이들을 반환받는 법으로는 `predict()` 를 사용할 때 `type = "prob"` 로 명시하거나 `augment()` 를 모델과 테스트 데이터와 함께 사용하여 이들을 함께 저장하면 됩니다.
 
 
 ```r
@@ -559,7 +556,7 @@ flights_aug %>%
 #> 1 roc_auc binary         0.764
 ```
 
-Not too bad! We leave it to the reader to test out this workflow [*without*](https://workflows.tidymodels.org/reference/add_formula.html) this recipe. You can use `workflows::add_formula(arr_delay ~ .)` instead of `add_recipe()` (remember to remove the identification variables first!), and see whether our recipe improved our model's ability to predict late arrivals.
+그리 나쁘지 않네요! 이 recipe 를 [*사용하지 않은*](https://workflows.tidymodels.org/reference/add_formula.html) 워크 플로를 한 번 시도해보길 바랍니다. `workflows::add_formula(arr_delay ~ .)` 를 `add_recipe()` 대신 사용하고 (식별 변수를 먼저 제거하는 걸 잊지 말 것!), 우리의 recipe 가 모델의 연착 예측력을 개선했는지 보면 됩니다.
 
 
 
@@ -568,37 +565,42 @@ Not too bad! We leave it to the reader to test out this workflow [*without*](htt
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2021-10-24                  
+#> ─ Session info  😊  🦟  🖍️   ────────────────────────────────────────
+#>  hash: smiling face with smiling eyes, mosquito, crayon
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package      * version date       lib source        
-#>  broom        * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  nycflights13 * 1.0.1   2019-09-16 [1] CRAN (R 4.0.2)
-#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang          0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample      * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.0.2)
-#>  tibble       * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick    * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-02
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package      * version date (UTC) lib source
+#>  broom        * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  nycflights13 * 1.0.2   2021-04-12 [1] CRAN (R 4.1.0)
+#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang          0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample      * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  skimr        * 2.1.3   2021-03-07 [1] CRAN (R 4.1.0)
+#>  tibble       * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick    * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
