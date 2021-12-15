@@ -4,7 +4,7 @@ subtitle: 환영합니다!
 description: "What do you need to know to start using tidymodels? Learn what you need in 5 articles."
 ---
 
-tidymodels 를 시작하기 위한 필수 요소들을 다섯 섹션을 통해 배워봅시다. 모델을 만드는 방법에서부터 시작하여, 처음부터 끝까지 모델링하는 케이스 스터디로 마무리 합니다. 기초적인 것에 익숙해 졌다면 [tidymodels 더 배우기](/learn/) 로 나아갈 수 있습니다.
+tidymodels 를 시작하기 위한 필수 요소들을 다섯 섹션을 통해 배워봅시다. 모델을 만드는 방법에서부터 시작하여, 처음부터 끝까지 모델링하는 케이스 스터디로 마무리 합니다. 기초적인 것에 익숙해 졌다면 [tidymodels 더 배우기](/learn/) 를 학습할 수 있습니다.
 
 ## R 이나 tidyverse 가 처음이라면
 
@@ -12,7 +12,7 @@ tidymodels 를 잘 사용하기 위해서, R 과 [tidyverse](https://www.tidyver
 
 * [Finding Your Way To R](https://education.rstudio.com/learn/), RStudio 교육팀.
 
-* [Learn the tidyverse](https://www.tidyverse.org/learn/), tidyverse 팀
+* [Learn the tidyverse](https://www.tidyverse.org/learn/), tidyverse 팀.
 
 * [Statistical Inference via Data Science: A ModernDive into R and the Tidyverse](/books/moderndive/).
 

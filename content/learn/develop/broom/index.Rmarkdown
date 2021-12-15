@@ -20,7 +20,7 @@ library(kableExtra)
 pkgs <- c("tidymodels", "tidyverse", "generics", "usethis")
 ```
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
