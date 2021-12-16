@@ -25,9 +25,9 @@ description: |
 
 + 원 변수들로 부터 핵심 변수를 추출 (예, 날짜에서 요일을 추출),
 
-등입니다. R 의 공식 인터페이스에 익숙하다면, 이러한 것들 대부분이 친숙하게 들릴 것이고 공식이 이미 하고 있는 것입니다. 레시피들은 이러한 것들 대부분을 수행하는데 사용할 수 있지만, 가능성이 이 것보다 더 넓습니다. 이번 장에서는 레시피들을 사용하여 모델링 하는 법을 보여줄 것입니다.
+등입니다. R 의 공식 인터페이스에 익숙하다면, 이러한 것들 대부분이 친숙하게 들릴 것이고 공식이 이미 하고 있는 것이라는 것을 이미 알 것입니다. 레시피들은 이러한 것들 대부분을 수행하는데 사용할 수 있지만, 더 넓은 범위의 것들을 할 수 있습니다. 이번 장에서는 레시피들을 사용하여 모델링 하는 법을 보여줄 것입니다.
 
-To use code in this article,  you will need to install the following packages: nycflights13, skimr, and tidymodels.
+이 장에 있는 코드를 사용하려면,  다음 패키지들을 인스톨해야 합니다: nycflights13, skimr, and tidymodels.
 
 
 ```r
@@ -271,7 +271,7 @@ summary(flights_rec)
 
 ## 피쳐 생성하기 {#features}
 
-Now we can start adding steps onto our recipe using the pipe operator. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of **feature engineering** might go a long way to improving our model. How should the date be encoded into the model? The `date` column has an R `date` object so including that column "as is" will mean that the model will convert it to a numeric format equal to the number of days after a reference date: 
+파이프 연산자를 사용하여 우리 레시피에 단계들을 추가할 수 있습니다. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of **feature engineering** might go a long way to improving our model. How should the date be encoded into the model? The `date` column has an R `date` object so including that column "as is" will mean that the model will convert it to a numeric format equal to the number of days after a reference date: 
 
 
 ```r
@@ -565,8 +565,8 @@ flights_aug %>%
 
 
 ```
-#> ─ Session info  😊  🦟  🖍️   ────────────────────────────────────────
-#>  hash: smiling face with smiling eyes, mosquito, crayon
+#> ─ Session info  🗡️  💅🏻  💟   ────────────────────────────────────────
+#>  hash: dagger, nail polish: light skin tone, heart decoration
 #> 
 #>  setting  value
 #>  version  R version 4.1.1 (2021-08-10)
@@ -577,7 +577,7 @@ flights_aug %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-02
+#>  date     2021-12-16
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

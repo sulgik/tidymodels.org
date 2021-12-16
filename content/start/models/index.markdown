@@ -15,7 +15,7 @@ description: |
 
 ## 들어가기 {#intro}
 
-tidymodels 를 사용해서 통계 모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아볼 것입니다. 데이터부터 시작해서 [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고 이러한 함수들을 설계하는 이유를 배울 것입니다. 
+tidymodels 를 사용해서 통계모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아볼 것입니다. 데이터부터 시작해서 [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고 이러한 함수들을 설계하는 이유를 배울 것입니다. 
 
 이 장에 있는 코드를 사용하려면,  다음 패키지들을 인스톨해야 합니다: broom.mixed, dotwhisker, readr, rstanarm, and tidymodels.
 
@@ -37,7 +37,7 @@ library(dotwhisker)  # for visualizing regression results
 
 [Constable (1993)](https://link.springer.com/article/10.1007/BF00349318) 데이터에서 사육법에 따른 성게 크기 차이를 살펴봅시다. 실험 시작점에서의 성게의 초기 크기가 아마도 얼마나 클 수 있는지에 대해 영향을 줄 것입니다.
 
-이제, 성게 데이터를 R 로 읽어봅시다. [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 CSV 데이터 위치의 url ("<https://tidymodels.org/start/models/urchins.csv>") 을 입력하면 됩니다:
+이제, 성게 데이터를 R 로 읽어봅시다. [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 CSV 데이터 위치의 url("<https://tidymodels.org/start/models/urchins.csv>")을 입력하면 됩니다:
 
 
 ```r
@@ -300,7 +300,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.3s 
+#> Fit time:  16.6s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
