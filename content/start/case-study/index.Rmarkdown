@@ -1,5 +1,5 @@
 ---
-title: "예측 모델링 케이스 스터디"
+title: "예측 모델링 사례 연구"
 weight: 5
 tags: [parsnip, recipes, rsample, workflows, tune]
 categories: [model fitting, tuning]
@@ -20,9 +20,10 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction {#intro}
+## 들어가기 {#intro}
 
-Each of the four previous [_Get Started_](/start/) articles has focused on a single task related to modeling. Along the way, we also introduced core packages in the tidymodels ecosystem and some of the key functions you'll need to start working with models. In this final case study, we will use all of the previous articles as a foundation to build a predictive model from beginning to end with data on hotel stays. 
+앞선 [_시작하기섹션_](/start/)의 네 장에서는 모델링에 집중했었다. 이러한 줄기에서 모델작업할 때 필요한 tidymodles 생태계의 핵심 패키지들과 핵심 함수들을 소개했었다. 여기 사례 연구에서 앞 장들에서 배운 모든 것들 사용하여 호텔 숙박에 관한 데이터로 처음부터 끝까지 예측 모델을 만들어 볼 것이다.
+
 
 ```{r echo=FALSE, out.width="90%"}
 knitr::include_graphics("img/hotel.jpg")
@@ -41,11 +42,11 @@ library(vip)         # for variable importance plots
 
 {{< test-drive url="https://rstudio.cloud/project/2674862" >}}
 
-## The Hotel Bookings Data {#data}
+## 호텔 부킹 데이터 {#data}
 
-Let’s use hotel bookings data from [Antonio, Almeida, and Nunes (2019)](https://doi.org/10.1016/j.dib.2018.11.126) to predict which hotel stays included children and/or babies, based on the other characteristics of the stays such as which hotel the guests stay at, how much they pay, etc. This was also a [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11) dataset with a [data dictionary](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11#data-dictionary) you may want to look over to learn more about the variables. We'll use a slightly [edited version of the dataset](https://gist.github.com/topepo/05a74916c343e57a71c51d6bc32a21ce) for this case study. 
+[Antonio, Almeida, and Nunes (2019)](https://doi.org/10.1016/j.dib.2018.11.126) 에 있는 호텔 부킹 데이터를 사용하여 여행객들이 어느 호텔에서 묵었는지, 가격은 얼마나였는지 등에 관한 특징들에 기반하여 어떤 호텔에서 어린이와 아기가 묵을 수 있는지를 예측해보자. 
 
-To start, let's read our hotel data into R, which we'll do by providing [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) with a url where our CSV data is located ("<https://tidymodels.org/start/case-study/hotels.csv>"):
+이 데이터셋은 [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11) 데이터셋이고 변수의 정보는 [data dictionary](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11#data-dictionary)에 담겨져 있다. 사례 연구를 위해 [해당 데이터셋의 편집버전 데이터셋](https://gist.github.com/topepo/05a74916c343e57a71c51d6bc32a21ce)을 사용할 것이다. 호텔 데이터를 R 로 불러와보자. 우리 CSV 데이터가 위치한 url ("<https://tidymodels.org/start/case-study/hotels.csv>") 을 [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 알려준다:
 
 ```{r hotel-import, message = FALSE}
 library(tidymodels)
@@ -58,7 +59,8 @@ hotels <-
 dim(hotels)
 ```
 
-In the original paper, the [authors](https://doi.org/10.1016/j.dib.2018.11.126) caution that the distribution of many variables (such as number of adults/children, room type, meals bought, country of origin of the guests, and so forth) is different for hotel stays that were canceled versus not canceled. This makes sense because much of that information is gathered (or gathered again more accurately) when guests check in for their stay, so canceled bookings are likely to have more missing data than non-canceled bookings, and/or to have different characteristics when data is not missing. Given this, it is unlikely that we can reliably detect meaningful differences between guests who cancel their bookings and those who do not with this dataset. To build our models here, we have already filtered the data to include only the bookings that did not cancel, so we'll be analyzing _hotel stays_ only.
+원 논문에서 [저자들](https://doi.org/10.1016/j.dib.2018.11.126)은 많은 변수(such as number of adults/children, room type, meals bought, country of origin of the guests, and so forth)의 분포들이 취소건과 취소하지 않은 건 사이에 차이가 있다고 경고한다.
+This makes sense because much of that information is gathered (or gathered again more accurately) when guests check in for their stay, so canceled bookings are likely to have more missing data than non-canceled bookings, and/or to have different characteristics when data is not missing. Given this, it is unlikely that we can reliably detect meaningful differences between guests who cancel their bookings and those who do not with this dataset. To build our models here, we have already filtered the data to include only the bookings that did not cancel, so we'll be analyzing _hotel stays_ only.
 
 ```{r glimpse-hotels}
 glimpse(hotels)
