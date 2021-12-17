@@ -103,7 +103,7 @@ ggplot(urchins,
 
 <img src="figs/urchin-plot-1.svg" width="672" />
 
-실험 시작시점에 부피가 큰 성계들은 실험종료시점에 더 넓은 성체를 갖는 경향이 있음을 알 수 있지만, 기울기들이 다르기 때문에 이러한 효과가 사육법 조건에 따라 다른 것 같습니다.
+실험 시작시점에 부피가 큰 성게들은 실험종료시점에 더 넓은 성체를 갖는 경향이 있음을 알 수 있지만, 기울기들이 다르기 때문에 이러한 효과가 사육법 조건에 따라 다른 것처럼 보입니다.
 
 ## 모델 구축 및 적합 {#build-model}
 
@@ -114,7 +114,7 @@ ggplot(urchins,
 width ~ initial_volume * food_regime
 ```
 
-회귀 모형이 각 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
+initial volume 에 따라 변하는 위의 회귀 모형은 각 사육법에 대해 다른 기울기와 절편을 갖게 됩니다.
 
 이러한 모델에 대해, ordinary least squares 는 처음으로 시도해보기 좋은 방법입니다. tidymodels 에서 원하는 모델의 _함수포맷_ 을 [parsnip package](https://tidymodels.github.io/parsnip/)를 사용하여 명시합니다. 수치형 출력값이 있고, 모델이 기울기와 절편들에 대해 선형이므로, 이러한 모델 타잎은 ["linear regression (선형회귀)"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
 
@@ -158,7 +158,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  3ms 
+#> Fit time:  2ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -172,7 +172,7 @@ lm_fit
 #>                     -0.0012594                       0.0005254
 ```
 
-Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
+아마도 우리 분석에서 모델 파라미터 추정값과 통계적 특징값들에 대해 descirption 이 필요합니다. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 
 ```r
@@ -300,7 +300,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.6s 
+#> Fit time:  16.5s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -364,7 +364,7 @@ This isn't very different from the non-Bayesian results (except in interpretatio
 
 {{% note %}} The [parsnip](https://parsnip.tidymodels.org/) package can work with many model types, engines, and arguments. Check out [tidymodels.org/find/parsnip](/find/parsnip/) to see what is available. {{%/ note %}}
 
-## Why does it work that way? {#why}
+## 어떤 작동원리를 가진것일까? {#why}
 
 The extra step of defining the model using a function like `linear_reg()` might seem superfluous since a call to `lm()` is much more succinct. However, the problem with standard modeling functions is that they don't separate what you want to do from the execution. For example, the process of executing a formula has to happen repeatedly across model calls even when the formula does not change; we can't recycle those computations. 
 
@@ -421,7 +421,7 @@ ggplot(urchins,
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-16
+#>  date     2021-12-17
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
