@@ -9,12 +9,12 @@ knitr::opts_chunk$set(
 )
 options(width = 80, cli.width = 70)
 
-req_pkgs <- function(x, what = "하려면, ") {
+req_pkgs <- function(x, what = "이 장에 있는 코드를 사용하려면, ") {
   x <- sort(x)
   x <- knitr::combine_words(x, and = " and ")
   paste0(
     what,
-    " you will need to install the following packages: ",
+    " 다음 패키지들을 인스톨해야 합니다: ",
     x, "." 
   )
 }

@@ -18,7 +18,7 @@ description: |
 
 ## 들어가기
 
-To use the code in this article, you will need to install the following packages: generics, tidymodels, tidyverse, and usethis.
+To use the code in this article, you have to install the following packages: generics, tidymodels, tidyverse, and usethis.
 
 broom 패키지의 도구들을 이용하면 타이디한 `tibble()` 에 있는 모델들에 대한 핵심 정보를 요약할 수 있습니다. 이 패키지에는 모델 객체를 다루기 쉽게 만들어 주는 동사, 혹은 "tidiers" 세 개를 제공합니다. 
 
@@ -112,7 +112,7 @@ summary(trees_model)
 
 ### `tidy()` 메소드 구현하기
 
-`tidy(x, ...)` 메소드는 티블을 반환할 것인데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)  모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
+`tidy(x, ...)` 메소드는 티블을 반환하는데, 이 티블의 각 행은 모델 구성요소에 대한 정보를 포함합니다. `x` 인풋은 모델 객체이고 점들 (`...`) 은 당신의 메소드 내부의 호출에 추가적인 정보를 제공하는 선택적 인수입니다. 새로운 `tidy()` 메소드는 추가적인 인수들을 취할 수 있지만 제네릭 함수와 호환되어야 하기 때문에 `x` 와 `...` 인수들을 포함 __해야합니다__. (현재 허용되는 추가 인수들의 목록은 [이 장의 마지막](#glossary)에 정리되어 있습니다.) 모델 구성요소들의 예로는 회귀 계수 (회귀 모델의 경우) 클러스터 (분류/클러스터 모델들) 등입니다. 이러한 `tidy()` 메소드들은 모델 세부사항들을 살펴보고 커스텀 모델 시각화를 생성하는 데에 유용합니다.
 
 목재 부피에 관한 선형 모형 예로 돌아가서, 모델 구성요소에 관한 정보를 추출하려고 합니다. 이 예에서, 구성요소는 회귀 계수들입니다. 모델 객체와 이에 대한 `summary()` 를 살펴보면 다음과 같이 회귀 계수를 추출할 수 있음을 알 수 있을 것입니다:
 
@@ -133,7 +133,7 @@ trees_model_tidy <- summary(trees_model)$coefficients %>%
   as_tibble(rownames = "term")
 
 trees_model_tidy
-#> # A tibble: 3 × 5
+#> # A tibble: 3 x 5
 #>   term        Estimate `Std. Error` `t value` `Pr(>|t|)`
 #>   <chr>          <dbl>        <dbl>     <dbl>      <dbl>
 #> 1 (Intercept)  -58.0          8.64      -6.71   2.75e- 7
@@ -148,7 +148,7 @@ broom 패키지는 계수들을 기술하는 공통된 열 이름을 표준화�
 colnames(trees_model_tidy) <- c("term", "estimate", "std.error", "statistic", "p.value")
 ```
 
-`tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막에](#glossary) 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
+`tidy()` 메소드 출력으로 인정되는 열 이름들이 포함된 용어집(glossary)은 [이 문서의 마지막](#glossary)에 있습니다. 쉬운 법칙으로, `tidy()` 메소드가 제공할 열이름은 모두 소문자이어야 하고, 알파벳, 숫자, 점 외에는 포함해서는 안됩니다 (비록 예외가 많이 있습니다).
 
 마지막으로, 대부분 `tidy()` 메소드에는 모델에 기반한 각 구성요소에 대한 신뢰/credible 구간을 포함됩니다. 우리 예에서, `confint()` 함수를 사용하여 `lm()` 이 제공하는 모델 객체로 부터 신뢰 구간을 계산할 수 있습니다.
 
@@ -189,7 +189,7 @@ tidy.lm <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 
 `tidy()` 메소드를 작성할 때 명심해야할 것들입니다:
 
-* Sometimes a model will have several different types of components. For example, in mixed models, there is different information associated with fixed effects and random effects. Since this information doesn't have the same interpretation, it doesn't make sense to summarize the fixed and random effects in the same table. In cases like this you should add an argument that allows the user to specify which type of information they want. For example, you might implement an interface along the lines of:
+* 어떤 모델은 구성요소들이 다른 유형들로 이루어져 있습니다. 예를 들어, mixed model 에서는, fixed 효과와 랜덤 효과들과 연관된 다른 정보들이 있습니다. 이 정보는 같은 해석을 가지지 않으므로, fixed 효과와 random 효과를 같은 테이블에 정리하는 것은 이상합니다. 이와 같은 경우 사용자에게 어떤 종류의 정보를 원하는지를 명시하도록 하는 인수를 추가해야 합니다. 예를 들어, 다음과 같은 선상에서 인터페이스를 구현할 수 있습니다:
 
 
 ```r
@@ -198,17 +198,17 @@ tidy(model, effects = "fixed")
 tidy(model, effects = "random")
 ```
 
-* How are missing values encoded in the model object and its `summary()`? Ensure that rows are included even when the associated model component is missing or rank deficient.
-* Are there other measures specific to each component that could reasonably be expected to be included in their summarizations? Some common arguments to `tidy()` methods include:
-  - `conf.int`: A logical indicating whether or not to calculate confidence/credible intervals. This should default to `FALSE`.
-  - `conf.level`: The confidence level to use for the interval when `conf.int = TRUE`. Typically defaults to `.95`.
-  - `exponentiate`: A logical indicating whether or not model terms should be presented on an exponential scale (typical for logistic regression).
+* 모델 객체와 이 객체의 `summary()` 에서 결측치들은 어떻게 인코딩 되는가? 연관된 모델 구성요소들이 없거나 rank deficient 해도 해당 행을 꼭 포함하세요.
+* 각 요소들의 요약에 포함되기를 기대되는 다른 measure 가 있는가? 다음은 `tidy()` 메소드의 공통적인 인수들입니다:
+  - `conf.int`: A logical indicating whether or not to calculate confidence/credible intervals 를 계산해야할지 말지를 가리키는 논리형. 기본값은 `FALSE` 가 되어야함.
+  - `conf.level`: `conf.int = TRUE` 일 때 사용할 신뢰 수준. 일반적인 기본값은 `.95`.
+  - `exponentiate`: 모델 term 들을 exponential 스케일로 나타낼지 말지를 가리키는 논리형 (로지스틱 회귀에서 흔함).
 
 ### `glance()` 메소드 구현하기
 
-`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 추가적인 methods can also take additional arguments and _must_ include the `x` and `...` arguments. (For a glossary of currently acceptable additional arguments, see [the end of this article](#glossary).)
+`glance()` 은 모델 레벨 요약값 (예. goodness of fit 측정값과 관련된 통계량) 을 제공하는 1행 티블을 반환합니다. 이는 모델을 잘못 만든 것을 체크하거나 많은 모델을 비교하는데 유용합니다. 여기서도, `x` 인풋은 모델 객체이고 `...` 은 메소드 내부의 모든 호출에 추가 정보를 제공하는 선택적 인자입니다. 새로운 `glance()` 메소드는 `x` 와 `...` 인수들을 포함_해야하고_, 추가적인 인수들을 입력으로 할 수 있습니다. (현재 허용되는 추가 인수들의 목록은 [이 장의 마지막](#glossary)에 정리되어 있습니다.)
 
-`trees_model` 예로 돌아와서, 다음의 코드로 `\(R^2\)` 값을 추출할 수 있을 것이다:
+`trees_model` 예로 돌아와서, 다음의 코드로 `\(R^2\)` 값을 추출할 수 있을 것입니다:
 
 
 ```r
@@ -216,7 +216,7 @@ summary(trees_model)$r.squared
 #> [1] 0.948
 ```
 
-Similarly, for the adjusted `\(R^2\)`:
+같은 방법으로, adjusted `\(R^2\)` 는 다음과 같이 합니다:
 
 
 ```r
@@ -231,7 +231,7 @@ Unfortunately, for many model objects, the extraction of model-level information
 with(summary(trees_model),
      tibble::tibble(r.squared = r.squared,
                     adj.r.squared = adj.r.squared))
-#> # A tibble: 1 × 2
+#> # A tibble: 1 x 2
 #>   r.squared adj.r.squared
 #>       <dbl>         <dbl>
 #> 1     0.948         0.944
@@ -276,11 +276,11 @@ Some things to keep in mind while writing `glance()` methods:
 
 ### `augment()` 메소드 구현하기
 
-`augment()` methods add columns to a dataset containing information such as fitted values, residuals or cluster assignments. All columns added to a dataset have a `.` prefix to prevent existing columns from being overwritten. (Currently acceptable column names are given in [the glossary](#glossary).) The `x` and `...` arguments share their meaning with the two functions described above. `augment` methods also optionally accept a `data` argument that is a `data.frame` (or `tibble`) to add observation-level information to, returning a `tibble` object with the same number of rows as `data`. Many `augment()` methods also accept a `newdata` argument, following the same conventions as the `data` argument, except with the underlying assumption that the model has not "seen" the data yet. As a result, `newdata` arguments need not contain the response columns in `data`. Only one of `data` or `newdata` should be supplied. A full glossary of acceptable arguments to `augment()` methods can be found at [the end of this article](#glossary).
+`augment()` 메소드는 fitted values, 잔차, 클러스터 할당과 같은 정보를 포함하는 데이터셋에 열들을 추가합니다. 데이터셋에 추가되는 모든 열들은 `.` prefix 를 가지는데, 기존의 열들이 덮어써지는 것을 막아주기 위함입니다. (Currently acceptable column names are given in [the glossary](#glossary)). `x` 와 `...` 인수들은 위에 기술한 두 함수들에서의 의미와 같습니다. `argument` 메소드는 선택적으로 관측값레벨 정보가 추가될 `data.frame` (혹은 `tibble`) 인 `data` 인수를 입력으로, `data` 와 같은 행수를 가진 `tibble` 객체를 반환합니다. 많은 `argument()` 메소드들은 `newdata` 인수를 입력으로하며, 모델이 데이터를 "보지" 않았다는 가정을 제외하고 `data` 인수와 같은 컨벤션을 따릅니다. 결과적으로 `newdata` 인수는 `data` 의 반응변수 열을 포함할 필요가 없습니다. `data` 나 `newdata` 중 어느 하나만 제공되어야 합니다. `argument()` 메소드에 허용되는 전체 인수 목록은 [이번 장의 마지막](#glossary)에 있습니다.
 
-If a `data` argument is not specified, `augment()` should try to reconstruct the original data as much as possible from the model object. This may not always be possible, and often it will not be possible to recover columns not used by the model.
+`data` 인수가 명시되지 않으면 `augment()` 는 원 데이터를 모델 객체에서 최대한 재구축하려고 노력할 것입니다. 이런 것이 항상 가능한 것은 아니고, 모델에서 사용되지 않는 열들을 복원하는 것은 가능하지 않을 수 있습니다.
 
-With this is mind, we can look back to our `trees_model` example. For one, the `model` element inside of the `trees_model` object will allow us to recover the original data:
+이를 명심하고, 우리 `trees_model` 예를 돌아가 봅니다. `trees_model` 객체 내부의 `model` 요소를 사용하면 원 데이터를 복원할 수 있습니다:
 
 
 ```r
@@ -1785,42 +1785,42 @@ The [alexpghayes/modeltests](https://github.com/alexpghayes/modeltests) package 
 
 
 ```
-#> ─ Session info  👱🏽  🦶🏽  🖖🏽   ───────────────────────────────────────
-#>  hash: person: medium skin tone, blond hair, foot: medium skin tone, vulcan salute: medium skin tone
+#> - Session info  ----------------------------------------------------
+#>  hash: man cook: light skin tone, ten o’clock, woman judge: light skin tone
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       Windows 10 x64 (build 19042)
+#>  system   x86_64, mingw32
+#>  ui       RTerm
 #>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
+#>  collate  Korean_Korea.949
+#>  ctype    Korean_Korea.949
 #>  tz       Asia/Seoul
-#>  date     2021-12-02
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#>  date     2021-12-15
+#>  pandoc   2.11.4 @ C:/Program Files/RStudio/bin/pandoc/ (via rmarkdown)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
+#> - Packages ---------------------------------------------------------
 #>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  generics   * 0.1.1   2021-10-25 [1] CRAN (R 4.1.0)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tidyverse  * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.1)
+#>  generics   * 0.1.1   2021-10-25 [1] CRAN (R 4.1.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.2)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.2)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.2)
+#>  tidyverse  * 1.3.1   2021-04-15 [1] CRAN (R 4.1.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.2)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.2)
 #> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#>  [1] C:/Program Files/R/R-4.1.2/library
 #> 
-#> ────────────────────────────────────────────────────────────────────
+#> --------------------------------------------------------------------
 ```
