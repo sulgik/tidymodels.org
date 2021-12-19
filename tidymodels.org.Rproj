@@ -15,4 +15,4 @@ LaTeX: XeLaTeX
 AutoAppendNewline: Yes
 
 BuildType: Website
-WebsitePath: C:/Users/user/tidymodels.org
+WebsitePath: ~/git_src/tidymodels.org

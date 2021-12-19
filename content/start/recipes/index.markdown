@@ -200,7 +200,7 @@ flight_data %>%
 
 ## 데이터 나누기 {#data-split}
 
-이제 본격적으로, 데이터셋을 _트레이닝_셋과 _테스팅_셋, 둘로 나누는 것으로 시작해봅시다. 원본 데이터셋  _트레이닝_ 셋 (임의로 선택한 서브셋) 의 대부분 행들을 유지시킬 것 입니다. 트레이닝 데이터는 모델을 *적합(fit)* 하는데 사용할 것이고 _테스팅_ 셋은 모델 성능을 측정하는데에 사용될 것입니다.
+이제 본격적으로, 데이터셋을 _트레이닝_ 셋과 _테스팅_ 셋, 둘로 나누는 것으로 시작해봅시다. 원본 데이터셋  _트레이닝_ 셋 (임의로 선택한 서브셋) 의 대부분 행들을 유지시킬 것 입니다. 트레이닝 데이터는 모델을 *적합(fit)* 하는데 사용할 것이고 _테스팅_ 셋은 모델 성능을 측정하는데에 사용될 것입니다.
 
 [rsample](https://rsample.tidymodels.org/) 패키지를 사용하여 데이터를 어떻게 나눌 것인지에 대한 정보를 포함하는 객체를 생성할 것입니다. 그리고 rsample 함수 두 개를 사용하여 트레이닝 셋과 테스팅셋을 위한 데이터프레임을 생성할 것입니다.
 
@@ -268,10 +268,9 @@ summary(flights_rec)
 ```
 
 
-
 ## 피쳐 생성하기 {#features}
 
-파이프 연산자를 사용하여 우리 레시피에 단계들을 추가할 수 있습니다. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of **feature engineering** might go a long way to improving our model. How should the date be encoded into the model? The `date` column has an R `date` object so including that column "as is" will mean that the model will convert it to a numeric format equal to the number of days after a reference date: 
+파이프 연산자를 사용하여 우리 레시피에 단계들을 추가할 수 있습니다. 항공편 날짜가 연착 가능성에 영향을 주는 것은 아마도 합리적일 것입니다. **feature engineering** 을 조금하는 것은 우리 모델을 개선하는데 중요한 작업일 것입니다. 그러면 날짜를 모델에 어떻게 인코딩해야 할까요? `date` 열은 R `date` 객체를 가지기 때문에, 이 컬럼을 "있는 그대로" 포함하면 모델이 이를 레퍼런스 날짜 이후의 일수와 같은 날짜 포맷으로 변환할 것입니다:
 
 
 ```r
@@ -289,7 +288,7 @@ flight_data %>%
 #> # … with 359 more rows
 ```
 
-It's possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a late arrival and the numeric date variable. However, it might be better to add model terms _derived_ from the date that have a better potential to be important to the model. 예를 들어 `date` 변수 하나로부터 다음과 같이 의미있는 피쳐들을 도출할 수 있습니다: 
+수치형 날짜 변수는 모델링에 좋은 방법일 수 있습니다: 이러한 모델은 연착의 로그오즈와 수치형 날짜변수 사이의 선형 경향성으로 부터 장점을 가질 수 있습니다. 하지만, 모델에 더 좋은 잠재성을 가진 날짜 _파생_ 항들을 추가하는 것이 더 좋을 것입니다. 예를 들어 `date` 변수 하나로부터 다음과 같이 의미있는 피쳐들을 도출할 수 있습니다: 
 
 * 요일,
  
@@ -321,7 +320,7 @@ flights_rec <-
 
 다음으로, 설명변수들의 변수 타잎에 집중해 봅시다. 로지스틱 회귀 모형을 훈련할 것이기 때문에, 설명변수들이 궁극적으로는 문자열이나 요인 변수들 같은 명목형 데이터가 아닌 수치형 데이터가 될 것입니다. 다른 말로 하면, 데이터를 저장하는 방식(데이터프레임 안에서의 팩터형으로) 과  밑에서 돌아가는 공식들이 사용하는 방식 (수치형 행렬) 에서 차이가 있을 수 있습니다.
 
-`dest` 와 `origin` 같은 팩터형에 대해, [표준 방법](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) 은 이 변수들을 _더미_ 나 _indicator_ 변수들로 변환하여 수치형으로 만드는 것입니다. 이 방법은 팩텨형의 각 수준에 대해 이진 값들입니다. 예를 들어 우리 `origin` 변수가 `"EWR"`, `"JFK"`, `"LGA"` 값을 갖습니다. 아래에 나온 표준 더미 변수 인코딩 방법은 각각, 본 공항이 `"JFK"` 나 `"LGA"` 이면 1, 그 외에는 0인 수치형 _두개_의 열이 만들어 질 것입니다.
+`dest` 와 `origin` 같은 팩터형에 대해, [표준 방법](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) 은 이 변수들을 _더미_ 나 _indicator_ 변수들로 변환하여 수치형으로 만드는 것입니다. 이 방법은 팩텨형의 각 수준에 대해 이진 값들입니다. 예를 들어 우리 `origin` 변수가 `"EWR"`, `"JFK"`, `"LGA"` 값을 갖습니다. 아래에 나온 표준 더미 변수 인코딩 방법은 각각, 본 공항이 `"JFK"` 나 `"LGA"` 이면 1, 그 외에는 0인 수치형 _두개_ 의 열이 만들어 질 것입니다.
 
 
 
@@ -370,11 +369,11 @@ flights_rec <-
 
 여기에서 전과 다르게 한 것이 있습니다. 개별 변수들에게 단계를 적용한 것 대신 [selectors](https://recipes.tidymodels.org/reference/selections.html), `all_nominal_predictors()` 를 사용하여 recipe 단계를 동시에 여러 변수들에게 적용했습니다. [selector 함수들](https://recipes.tidymodels.org/reference/selections.html) 을 조합하여 변수들의 교집합을 선택할 수 있습니다.
 
-At this stage in the recipe, this step selects the `origin`, `dest`, and `carrier` variables. It also includes two new variables, `date_dow` and `date_month`, that were created by the earlier `step_date()`. 
+recipe 의 이번 단계에서는 `origin`, `dest`, `carrier` 변수를 선택합니다. 이전의 `step_date()` 이 만든 두 개의 새로운 변수, `date_dow`, `date_mont` 가 포함됩니다.
 
-More generally, the recipe selectors mean that you don't always have to apply steps to individual variables one at a time. Since a recipe knows the _variable type_ and _role_ of each column, they can also be selected (or dropped) using this information. 
+더 일반적으로, 레시피 셀럭터는 단계를 한번에 변수 하나씩 적용할 필요는 없다는 것을 의미합니다. 레시피는 각 열의 _변수유형_ 과 _롤_ 을 알고 있기 때문에, 이 정보를 이용하여 변수들을 선택하거나 뺄 수 있습니다.
 
-We need one final step to add to our recipe. Since `carrier` and `dest` have some infrequently occurring factor values, it is possible that dummy variables might be created for values that don't exist in the training set. For example, there is one destination that is only in the test set: 
+마지막 단계를 우리 레시피에 추가해야 합니다. `carrier` 와 `dest` 는 가끔씩 일어나는 팩터형 값을 가지기 때문에, 훈련셋에 존재하지 않는 값에 대해 더미변수를 생성해야 할 수 있습니다. 예를 들어, 테스트셋에만 존재하는 목적지가 있습니다: 
 
 
 ```r
@@ -388,7 +387,7 @@ test_data %>%
 #> 1 LEX
 ```
 
-When the recipe is applied to the training set, a column is made for LEX because the factor levels come from `flight_data` (not the training set), but this column will contain all zeros. This is a "zero-variance predictor" that has no information within the column. While some R functions will not produce an error for such predictors, it usually causes warnings and other issues. `step_zv()` will remove columns from the data when the training set data have a single value, so it is added to the recipe *after* `step_dummy()`: 
+레시피가 훈련셋에 적용될 때, 팩터 레벨이 `flight_data` (트레이닝 셋이 아님) 으로 부터 오지만, 이 열은 모두 0을 가지고 있기 때문에, 하나의 열이 LEX 에 대해 만들어집니다. 이는 열 안에서 정보가 없는 "영분산 설명변수" 입니다. 이러한 설명변수에 대해 에러를 발생시키지 않는 R 함수들이 있지만, 보통은 경고와 다른 이슈들을 만듭니다. `step_zv()` 를 하면 트레이닝 셋 데이터가 하나의 값을 가질 때 데이터에서 열들이 제거되어, `step_dummy()` *이후*에 레시피에 더해집니다:
 
 
 ```r
@@ -419,13 +418,13 @@ lr_mod <-
 
 우리 모델을 훈련하고 테스트하면서 몇 단계에 recipe 를 사용하게 될 것입니다. 
 
-1. **트레이닝셋을 사용하여 recipe 를 프로세스한다**: 트레이닝셋에 기반하여 추정이나 계산을 하는 것이 포함됩니다. 우리 recipe 에게 있어, 트레이닝셋을 사용하여 어떤 설명변수가 더미 변수로 변환되어야 하는지, 어떤 설명변수가 트레이닝셋에서 영분산이 되어 제거를 고려해야 하는지를 결정할 것입니다. 
+1. **트레이닝셋을 사용하여 recipe 를 프로세스하기**: 트레이닝셋에 기반하여 추정이나 계산을 하는 것이 포함됩니다. 우리 recipe 에게 있어, 트레이닝셋을 사용하여 어떤 설명변수가 더미 변수로 변환되어야 하는지, 어떤 설명변수가 트레이닝셋에서 영분산이 되어 제거를 고려해야 하는지를 결정할 것입니다. 
  
 1. **트레이닝셋에 recipe 적용하기**: 트레이닝셋의 최종 설명변수를 만듭니다.
  
-1. **테스트셋에 recipe 적용하기**: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set. 
- 
-To simplify this process, we can use a _모델 워크플로_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. tidymodels 의 [workflows 패키지](https://workflows.tidymodels.org/) 를 사용하여 우리 parsnip 모델 (`lr_mod`) 과 우리 recipe (`flights_rec`) 를 묶을 것입니다.
+1. **테스트셋에 recipe 적용하기**: 테스트셋에 최종 설명변수 셋을 생성합니다. 새로 계산 되는 것은 없고, 테스트셋 정보는 여기에서 사용되지 않습니다; 트레이닝셋에서 더미변수와 영분산 결과가 테스트셋에 적용됩니다.
+
+_모델 워크플로_ 를 사용하면 이 과정을 단순화되는데, 모델과 레시피를 쌍을 지웁니다. 다른 레시피는 다른 모델에 자주 필요하므로, 모델과 레시피가 묶일 때 _워크플로_를 훈련하고 테스트하는 것이 더 쉽기 때문에, 이렇게 하는 것이 자연스럽습니다. tidymodels 의 [workflows 패키지](https://workflows.tidymodels.org/) 를 사용하여 우리 parsnip 모델 (`lr_mod`) 과 우리 recipe (`flights_rec`) 를 묶을 것입니다.
 
 
 ```r
@@ -453,7 +452,7 @@ flights_wflow
 #> Computational engine: glm
 ```
 
-Now, there is a single function that can be used to prepare the recipe and train the model from the resulting predictors: 
+이제 결과의 설명변수에서부터 레시피를 준비하고 모델을 훈련시키는데 사용할 수 있는 함수 하나가 생겼습니다: 
 
 
 ```r
@@ -529,11 +528,11 @@ flights_aug %>%
 #> # … with 81,450 more rows
 ```
 
-Now that we have a tibble with our predicted class probabilities, how will we evaluate the performance of our workflow? We can see from these first few rows that our model predicted these 5 on time flights correctly because the values of `.pred_on_time` are *p* > .50. But we also know that we have 81,455 rows total to predict. We would like to calculate a metric that tells how well our model predicted late arrivals, compared to the true status of our outcome variable, `arr_delay`.
+이제 예측 클래스 확률들이 있는 티블을 얻었는데, 우리 워크플로의 성능을 어떻게 측정할 수 있을까요? 다음의 처음 몇 행을 보면 `.pred_on_time` 의 값이 *p* > .50 이므로 우리모델이 5 정시 비행을 정확하게 예측했다는 것을 알 수 있습니다. 하지만 전체 예측해야할 열은 모두 81,455 열입니다. 우리 모델이 반응 변수, `arr_delay` 의 실제값에 비해 연착을 얼마나 잘 예측했는지를 나타내는 지표를 계산하고 싶습니다. 
 
-Let's use the area under the [ROC curve](https://bookdown.org/max/FES/measuring-performance.html#class-metrics) as our metric, computed using `roc_curve()` and `roc_auc()` from the [yardstick package](https://yardstick.tidymodels.org/). 
+[yardstick 패키지](https://yardstick.tidymodels.org/)에 있는 `roc_curve()` 과 `roc_auc()` 로 계산한 area under the [ROC curve](https://bookdown.org/max/FES/measuring-performance.html#class-metrics) 을 우리의 지표로 사용해 봅시다.
 
-To generate a ROC curve, we need the predicted class probabilities for `late` and `on_time`, which we just calculated in the code chunk above. We can create the ROC curve with these values, using `roc_curve()` and then piping to the `autoplot()` method: 
+ROC 커브를 생성하기 위해, 우리가 위의 코드청크에서 계산한, `late` 과 `on_time` 에 해당하는 예측 클래스 확률이 필요합니다. `roc_curve()` 을 사용한 후 `autoplot()` 메소드에 파이프를 하여 이 값들로 ROC 커브를 생성할 수 있습니다:
 
 
 ```r
@@ -544,7 +543,7 @@ flights_aug %>%
 
 <img src="figs/roc-plot-1.svg" width="672" />
 
-Similarly, `roc_auc()` estimates the area under the curve: 
+비슷하게, `roc_auc()` 은 area under the curve 를 추정합니다: 
 
 
 ```r
@@ -577,7 +576,7 @@ flights_aug %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-16
+#>  date     2021-12-19
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
