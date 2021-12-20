@@ -19,7 +19,7 @@ description: |
 
 지금까지 [모델을 만들고](/start/models/) [recipe 로 데이터 전처리](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [ 워크플로](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
 
-To use code in this article,  you will need to install the following packages: modeldata, ranger, and tidymodels.
+이 장에 있는 코드를 사용하려면,  다음 패키지들을 인스톨해야 합니다: modeldata, ranger, and tidymodels.
 
 
 ```r
@@ -62,15 +62,15 @@ cells
 
 <img src="img/cells.png" width="70%" style="display: block; margin: auto;" />
 
-이러한 색깔을 이용해서 이미지 안의 세포는 _경계를 잡아 (segmented)_ 서 어떤 픽셀이 어떤 세포에 속하는지 알아낼 수 있습니다. 이 과정이 잘 된다면, 세포가 다양한 방법으로 측정이 되어 생물학 연구에 있어 중요할 수 있습니다. 세포 모양이 중요한 경우가 있어 크기나 "oblongness" 같은 특징들을 요약하는데 다양한 수학적 도구가 사용됩니다. 
+이러한 색깔을 이용해서 이미지 안의 세포는 _경계를 잡아 (segmented)_ 서 어떤 픽셀이 어떤 세포에 속하는지 알아낼 수 있습니다. 이 과정이 잘 된다면, 세포가 다양한 방법으로 측정이 되어 생물학 연구에 있어 중요할 수 있습니다. 세포 모양이 중요한 경우가 있어 크기나 "장방형" 같은 특징들을 요약하는데 다양한 수학적 도구가 사용됩니다. 
 
-The bottom panel shows some segmentation results. Cells 1 and 5 are fairly well segmented. However, cells 2 to 4 are bunched up together because the segmentation was not very good. The consequence of bad segmentation is data contamination; when the biologist analyzes the shape or size of these cells, the data are inaccurate and could lead to the wrong conclusion. 
+아래 패널은 세그멘테이션 결과를 보여줍니다. 1번과 5번 세포는 꽤 잘 세그멘트되었습니다. 하지만, 3번 4번 세포는 세그멘테이션이 잘 되지 않았기 때문에 뭉쳐져 있습니다. 세그멘테이션이 잘 되지 않으면, 데이터 오염이 됩니다; 생물학자는 이러한 세포의 모양이나 크기를 분석할 때, 데이터가 정확하지 않고 잘못된 결론을 도출하게 됩니다.  
 
-A cell-based experiment might involve millions of cells so it is unfeasible to visually assess them all. Instead, a subsample can be created and these cells can be manually labeled by experts as either poorly segmented (`PS`) or well-segmented (`WS`). If we can predict these labels accurately, the larger data set can be improved by filtering out the cells most likely to be poorly segmented.
+세포 기반 실험은 수백만 세포를 다루므로 이들을 모두 시각적으로 살펴보는 것은 불가능합니다. 대신, 서브샘플을 생성하여 전문가가 잘못 세그멘트됨 (`PS`), 잘 세그멘트됨 (`WS`) 중 하나로 수동으로 라벨할 수 있습니다. 이러한 라벨을 정확하게 예측할 수 있으면, 잘못 세그멘트된 것 같은 세포들을 필터링하여 대량의 데이터가 개선될 수 있습니다. 
 
-### Back to the cells data
+### 세포 데이터 돌아가기
 
-The `cells` data has `class` labels for 2019 cells &mdash; each cell is labeled as either poorly segmented (`PS`) or well-segmented (`WS`). Each also has a total of 56 predictors based on automated image analysis measurements. For example, `avg_inten_ch_1` is the mean intensity of the data contained in the nucleus, `area_ch_1` is the total size of the cell, and so on (some predictors are fairly arcane in nature). 
+`cells` 데이터에는 2019 세포의 `class` 라벨이 있습니다 &mdash; 각 세포는 잘못 세그멘트됨 (`PS`), 잘 세그멘트됨 (`WS`) 중 하나로 라벨링 됩니다. 각 세포는 자동 이미지 분석 측정값들에 기반하여 총 56 개의 설명변수가 있습니다. 예를 들어, `avg_inten_ch_1` 는 핵에 포함된 데이터의 평균강도이고, `area_ch_1` 은 세포의 총 크기, 등입니다. (몇몇 설명변수는 의미가 파악이 안됨)
 
 
 ```r
@@ -88,7 +88,7 @@ cells
 #> #   diff_inten_density_ch_1 <dbl>, diff_inten_density_ch_3 <dbl>, …
 ```
 
-The rates of the classes are somewhat imbalanced; there are more poorly segmented cells than well-segmented cells:
+클래스들의 비율은 다소 불균형입니다; 잘 세그멘트된 세포들보다 잘못 세그멘트된 세포들이 더 많습니다. 
 
 
 ```r
@@ -104,17 +104,17 @@ cells %>%
 
 ## 데이터 나누기 {#data-split}
 
-이전의 [*recipe 로 데이터 전처리하기*](/start/recipes/#data-split) 장에서 데이터 나누기 부터 시작했었습니다. It is common when beginning a modeling project to [separate the data set](https://bookdown.org/max/FES/data-splitting.html) into two partitions: 
+이전의 [*recipe 로 데이터 전처리하기*](/start/recipes/#data-split) 장에서 데이터 나누기 부터 시작했었습니다. 모델링 프로젝트를 시작할 때, 보통 [데이터셋을 두 부분으로 분리](https://bookdown.org/max/FES/data-splitting.html)부터 합니다: 
 
- * The _training set_ is used to estimate parameters, compare models and feature engineering techniques, tune models, etc.
+ * _트레이닝셋_ 은 파라미터를 추정하고, 모델과 피쳐엔지니어링 기술을 비교하고, 모델을 튜닝하는 등에 이용됩니다.
 
- * The _test set_ is held in reserve until the end of the project, at which point there should only be one or two models under serious consideration. It is used as an unbiased source for measuring final model performance. 
+ * _테스트셋_ 은 프로젝트 마지막에 사용되는데, 이 시점에서는 심각하게 고려하는 모델이 한개나 두개 정도여야 합니다. 최종 모델 성능측정을 위한 unbiased source 로 사용됩니다.
 
-There are different ways to create these partitions of the data. The most common approach is to use a random sample. Suppose that one quarter of the data were reserved for the test set. Random sampling would randomly select 25% for the test set and use the remainder for the training set. We can use the [rsample](https://tidymodels.github.io/rsample/) package for this purpose. 
+데이터를 이렇게 나누는 법은 여러 방법이 있습니다. 가장 일반적인 방법은 랜덤샘플을 이용하는 것입니다. 데이터 사분의 일이 테스트셋으로 분리되었다고 가정합니다. 랜덤샘플링은 25% 를 랜덤하게 선택하여 테스트셋을 만들고, 나머지를 트레이닝셋으로 사용합니다. [rsample](https://tidymodels.github.io/rsample/) 패키지를 사용하여 이렇게 할 수 있습니다. 
 
-Since random sampling uses random numbers, it is important to set the random number seed. This ensures that the random numbers can be reproduced at a later time (if needed). 
+랜덤 샘플링은 랜덤넘버를 사용하기 때문에, 랜덤넘버 씨드를 설정하는 것이 중요합니다. 랜덤넘버는 (필요시) 나중에 랜덤넘버를 재현할 수 있게 해 줍니다. 
 
-The function `rsample::initial_split()` takes the original data and saves the information on how to make the partitions. In the original analysis, the authors made their own training/test set and that information is contained in the column `case`. To demonstrate how to make a split, we'll remove this column before we make our own split:
+함수 `rsample::initial_split()` 은 원데이터를 입력으로, 어떻게 분리하는 지에 대한 정보를 저장합니다. 원 분석에서, 저자들은 자신들만의 트레이닝/테스트셋을 만들었고, 이 정보는 `case`열에 저장됩니다. 나눈 방법을 보여주기 위해, 우리만의 분리를 하기 전에 이 열을 제거할 것입니다:
 
 
 ```r
@@ -123,7 +123,7 @@ cell_split <- initial_split(cells %>% select(-case),
                             strata = class)
 ```
 
-Here we used the [`strata` argument](https://tidymodels.github.io/rsample/reference/initial_split.html), which conducts a stratified split. This ensures that, despite the imbalance we noticed in our `class` variable, our training and test data sets will keep roughly the same proportions of poorly and well-segmented cells as in the original data. After the `initial_split`, the `training()` and `testing()` functions return the actual data sets. 
+여기서 우리는 [`strata` 인수](https://tidymodels.github.io/rsample/reference/initial_split.html) 를 사용했는데, 이는 층화분리를 수행합니다. 우리 `class` 변수에서 발견한 불균형에도 불구하고 우리 트레이닝과 테스트셋은 잘못 세그멘트, 잘 세그멘트된 세포의 비율을 원데이터와 대략 같게 유지하게 해 줍니다. `initial_split` 을 한 후 `training()` 과 `testing()` 함수들은 실제 데이터셋을 반환합니다.
 
 
 ```r
@@ -156,18 +156,18 @@ cell_test %>%
 #> 2 WS      180 0.356
 ```
 
-The majority of the modeling work is then conducted on the training set data. 
+이후 트레이닝데이터셋을 이용하여 모델링 작업의 대부분을 수행합니다.
 
 
 ## 모델링
 
 [랜덤포레스트 모델](https://en.wikipedia.org/wiki/Random_forest) 은 [decision tree](https://en.wikipedia.org/wiki/Decision_tree) 의  [앙상블](https://en.wikipedia.org/wiki/Ensemble_learning) 입니다. 약간 다른 트레이닝 셋에 기반하여 많은 수의 decision tree 모델이 생성됩니다. 각 decision tree 가 생성될 때, 적합과정은 최대한 decision tree 들이 다양하게 되길 유도합니다. 트리의 집합은 랜덤포레스트 모델로 조합되고, 새로운 샘플이 예측될 때, 각 트리로 부터의 투표가 최종 예측값을 계산하는데 사용됩니다. 우리의 `cells` 예시 데이터의 `class` 와 같은 범주형 종속변수에 대해, 랜덤포레스트의 모든 트리를 통틀어 가장 많은 투표를 받은 모델이 새로운 샘플의 예측 범주를 결정합니다. 
 
-One of the benefits of a random forest model is that it is very low maintenance;  it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won't create a recipe for the `cells` data.
+랜덤 포레스트 모델의 장점 중 하나는 유지에 손이 거의 들지 않는다는 것입니다. 데이터 전처리를 할 필요가 거의 없고, 기본값 파라미터들이 괜찮은 결과를 제공합니다. 이러한 이유로 우리는 `cells` 데이터를 위해 레시피를 생성하지는 않을 것입니다. 
 
-At the same time, the number of trees in the ensemble should be large (in the thousands) and this makes the model moderately expensive to compute. 
+동시에, 렌덤포레스트라는 이 앙상블 모델의 나무 개수는 커야하고 (수천), 이로 인해 모델을 계산하는데 꽤 시간이 걸립니다.
 
-To fit a random forest model on the training set, let's use the [parsnip](https://tidymodels.github.io/parsnip/) package with the [ranger](https://cran.r-project.org/web/packages/ranger/index.html) engine. We first define the model that we want to create:
+[parsnip](https://tidymodels.github.io/parsnip/) 패키지를 [ranger](https://cran.r-project.org/web/packages/ranger/index.html) 엔진과 함께 사용하여 랜덤 포레스트 모델을 적합해 봅시다. 우리가 생성하고 싶은 모델을 우선 정의합니다:
 
 
 ```r
@@ -177,7 +177,7 @@ rf_mod <-
   set_mode("classification")
 ```
 
-Starting with this parsnip model object, the `fit()` function can be used with a model formula. Since random forest models use random numbers, we again set the seed prior to computing: 
+위의 parsnip 모델 객체부터 시작하여 `fit()` 함수는 모델 공식과 함께 사용될 수 있습니다. 랜덤포레스트 모델은 랜덤 넘버를 사용하기 때문에, 계산에 앞서 시드를 한번더 설정합니다: 
 
 
 ```r
@@ -188,7 +188,7 @@ rf_fit <-
 rf_fit
 #> parsnip model object
 #> 
-#> Fit time:  2.2s 
+#> Fit time:  2.3s 
 #> Ranger result
 #> 
 #> Call:
@@ -205,22 +205,22 @@ rf_fit
 #> OOB prediction error (Brier s.):  0.1189338
 ```
 
-This new `rf_fit` object is our fitted model, trained on our training data set. 
+새롭게 만들어진 `rf_fit` 객체는 트레이닝 데이터셋에서 트레이닝된 적합된 모델입니다. 
 
 
 ## 성능 추정하기 {#performance}
 
-During a modeling project, we might create a variety of different models. To choose between them, we need to consider how well these models do, as measured by some performance statistics. In our example in this article, some options we could use are: 
+모델링 프로젝트 동안, 우리는 다양한 모델을 생성할 수 있습니다. 이들 중 선택하기 위해 이러한 모델들이 얼마나 잘 되는지, 성능 통계량들을 측정하여 고려해야 합니다. 이 장의 예에서, 사용할 수 있는 선택지들은 다음과 같습니다:
 
- * the area under the Receiver Operating Characteristic (ROC) curve, and
+ * the area under the Receiver Operating Characteristic (ROC) curve
  
- * overall classification accuracy.
+ * 종합 분류 정확도 (accuracy).
  
-The ROC curve uses the class probability estimates to give us a sense of performance across the entire set of potential probability cutoffs. Overall accuracy uses the hard class predictions to measure performance. The hard class predictions tell us whether our model predicted `PS` or `WS` for each cell. But, behind those predictions, the model is actually estimating a probability. A simple 50% probability cutoff is used to categorize a cell as poorly segmented.
+ROC 커브는 클래스 확률 추정값을 사용하여 잠재 확률 컷오프의 전체셋을 통해 성능 감도를 제공합니다. Hard class 예측값은 각 세포마다 `PS`, `WS` 를 예측했는지를 알려줍니다. 하지만, 이러한 예측 뒤에, 모델은 확률을 사실을 측정합니다. 50% 확률 컷오프가 자ㅏㄹ못 세그멘트된 것으로 분류하기 위해 사용됩니다. 
 
 [yardstick 패키지](https://tidymodels.github.io/yardstick/) 에는 이러한 두 측정값들을 계산하는 함수, `roc_auc()` 와 `accuracy()` 가 있습니다. 
 
-At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let's see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
+처음 보아서는 이러한 통계량을 계산하기 위해 트레이닝 셋 데이터를 사용하는 것이 좋아 보입니다. (이는 사실 매우 나쁜 생각입니다.) 이렇게 했을때 어떤 일이 일어나는지 살펴봅시다. 트레이닝셋에 기반하여 성능을 측정하기 위해 `predict()` 메소드를 호출하여 두 종류의 예측 (즉, 확률과 hard class 예측) 을 구합니다. 
 
 
 ```r
@@ -250,7 +250,7 @@ rf_training_pred %>%                # training set predictions
 #> 1 accuracy binary         0.991
 ```
 
-Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren't bad, they are certainly worse than what we initially thought based on predicting the training set: 
+이 모델이 매우 성능이 좋기 때문에, 테스트셋으로 진행합니다. 우리 결과가 나쁘지는 않지만, 트레이닝셋 예측작업에 기반하여 처음 기대했던 것 보다 훨씬 좋지 않습니다.
 
 
 ```r
@@ -278,10 +278,10 @@ rf_testing_pred %>%                   # test set predictions
 
 ### 무슨일이 일어난 거야?
 
-There are several reasons why training set statistics like the ones shown in this section can be unrealistically optimistic: 
+이 섹션에서 보이는 것 같이 트레이닝셋 통계량이 실제와 다르게 긍정적인 것에서는 여러 이유가 있습니다. 
 
-* Models like random forests, neural networks, and other black-box methods can essentially memorize the training set. Re-predicting that same set should always result in nearly perfect results.
-
+* 랜덤포레스트, 뉴럴 네트워크, 다른 블랙박스 방법들 같은 모델들은 트레이닝셋을 본질적으로 암기할 수 있습니다. 같은 셋을 다시 예측하면 항상 거의 완벽한 결과를 제공할 수 밖에 없다. 
+강의 
 * The training set does not have the capacity to be a good arbiter of performance. It is not an independent piece of information; predicting the training set can only reflect what the model already knows. 
 
 To understand that second point better, think about an analogy from teaching. Suppose you give a class a test, then give them the answers, then provide the same test. The student scores on the _second_ test do not accurately reflect what they know about the subject; these scores would probably be higher than their results on the first test. 
@@ -290,12 +290,13 @@ To understand that second point better, think about an analogy from teaching. Su
 
 ## Resampling 를 이용한 문제해결 {#resampling}
 
-cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬레이션 시스템입니다. They create a series of data sets similar to the training/testing split discussed previously; a subset of the data are used for creating the model and a different subset is used to measure performance. Resampling is always used with the _training set_. This schematic from [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) illustrates data usage for resampling methods:
+cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬레이션 시스템입니다. 이들은 이전에 논의한 training/testing 분할과 유사하게 데이터셋 일련을 생성합니다. 이 데이터셋의 서브셋은 모델을 생성하는데 사용되고 다른 서브셋은 성능을 측정하는데 사용됩니다. 리샘플링은 항상 _트레이닝셋_ 과 사용됩니다. [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) 의 스케매틱에서 리샘플링 메소드의 데이터 사용을 보여줍니다:
 
 <img src="img/resampling.svg" width="85%" style="display: block; margin: auto;" />
 
-In the first level of this diagram, you see what happens when you use `rsample::initial_split()`, which splits the original data into training and test sets. Then, the training set is chosen for resampling, and the test set is held out.
+이 다이어그램의 첫번째 수준에서, `rsample::initial_split()` 을 사용할 때 일어나는 일을 볼 수 있는데, 원 데이터를 트레이닝과 테스트셋으로 분할합니다. 그 후 트레이닝셋이 리샘플링을 위해 선택되고 테스트셋은 보존됩니다.
 
+이 예에서 10-폴드 cross-validation (CV) 를 오
 Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1514 cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
 
 The other 90% of the data (about 1362 cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
@@ -489,8 +490,8 @@ The performance metrics from the test set are much closer to the performance met
 
 
 ```
-#> ─ Session info  🇨🇼  🇸🇭  🇭🇺   ───────────────────────────────────────
-#>  hash: flag: Curaçao, flag: St. Helena, flag: Hungary
+#> ─ Session info  🌒  💑  🇳🇱   ───────────────────────────────────────
+#>  hash: waxing crescent moon, couple with heart, flag: Netherlands
 #> 
 #>  setting  value
 #>  version  R version 4.1.1 (2021-08-10)
@@ -501,7 +502,7 @@ The performance metrics from the test set are much closer to the performance met
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-04
+#>  date     2021-12-20
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

@@ -209,12 +209,11 @@ rf_testing_pred %>%                   # test set predictions
 
 이 섹션에서 보이는 것 같이 트레이닝셋 통계량이 실제와 다르게 긍정적인 것에서는 여러 이유가 있습니다. 
 
-* 랜덤포레스트, 뉴럴 네트워크, 다른 블랙박스 방법들 같은 모델들은 트레이닝셋을 본질적으로 암기할 수 있습니다. 
-Models like random forests, neural networks, and other black-box methods can essentially memorize the training set. Re-predicting that same set should always result in nearly perfect results.
+* 랜덤포레스트, 뉴럴 네트워크, 다른 블랙박스 방법들 같은 모델들은 트레이닝셋을 본질적으로 암기할 수 있습니다. 같은 셋을 다시 예측하면 항상 거의 완벽한 결과를 제공할 수 밖에 없습니다. 
 
-* The training set does not have the capacity to be a good arbiter of performance. It is not an independent piece of information; predicting the training set can only reflect what the model already knows. 
+* 트레이닝셋은 성능의 좋은 심판자가 될 역량이 없습니다. 정보가 독립되지 않습니다; 트레이닝셋을 예측하는 것은 모델이 이미 알고 무엇을 알고 있는지를 반영할 뿐입니다. 
 
-To understand that second point better, think about an analogy from teaching. Suppose you give a class a test, then give them the answers, then provide the same test. The student scores on the _second_ test do not accurately reflect what they know about the subject; these scores would probably be higher than their results on the first test. 
+두 번째 방법을 더 잘 이해하기 위해 가르치는 것에서 비유를 생각해 보세요. 학급에 시험을 치룬다고 가정한후 정답을 주고, 같은 시험을 치룹니다. _두번째_ 시험에서 학생들 성적은 과목에 대해 얼마나 알고 있는지를 정확하게 반영하지 않습니다; 이 점수들은 첫번째 시험의 결과보다 아마 더 높기만 할 것입니다. 
 
 
 
@@ -228,7 +227,7 @@ knitr::include_graphics("img/resampling.svg")
 
 이 다이어그램의 첫번째 수준에서, `rsample::initial_split()` 을 사용할 때 일어나는 일을 볼 수 있는데, 원 데이터를 트레이닝과 테스트셋으로 분할합니다. 그 후 트레이닝셋이 리샘플링을 위해 선택되고 테스트셋은 보존됩니다.
 
-이 예에서 10-폴드 cross-validation (CV) 를 오
+이 예에서 10-폴드 cross-validation (CV) 를 사용합니다. 이 방법은 트레이닝셋의 `r nrow(cell_train)` 개의 세포를 "폴드" 라고 부르는 같은 크기의 10 개 그룹으로 랜덤하게 할당합니다. 
 Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the `r nrow(cell_train)` cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about `r floor(nrow(cell_train)/10)` cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
 
 The other 90% of the data (about `r floor(nrow(cell_train) * .9)` cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
