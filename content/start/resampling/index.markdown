@@ -188,7 +188,7 @@ rf_fit <-
 rf_fit
 #> parsnip model object
 #> 
-#> Fit time:  2.3s 
+#> Fit time:  2.2s 
 #> Ranger result
 #> 
 #> Call:
@@ -280,11 +280,11 @@ rf_testing_pred %>%                   # test set predictions
 
 이 섹션에서 보이는 것 같이 트레이닝셋 통계량이 실제와 다르게 긍정적인 것에서는 여러 이유가 있습니다. 
 
-* 랜덤포레스트, 뉴럴 네트워크, 다른 블랙박스 방법들 같은 모델들은 트레이닝셋을 본질적으로 암기할 수 있습니다. 같은 셋을 다시 예측하면 항상 거의 완벽한 결과를 제공할 수 밖에 없다. 
-강의 
-* The training set does not have the capacity to be a good arbiter of performance. It is not an independent piece of information; predicting the training set can only reflect what the model already knows. 
+* 랜덤포레스트, 뉴럴 네트워크, 다른 블랙박스 방법들 같은 모델들은 트레이닝셋을 본질적으로 암기할 수 있습니다. 같은 셋을 다시 예측하면 항상 거의 완벽한 결과를 제공할 수 밖에 없습니다. 
 
-To understand that second point better, think about an analogy from teaching. Suppose you give a class a test, then give them the answers, then provide the same test. The student scores on the _second_ test do not accurately reflect what they know about the subject; these scores would probably be higher than their results on the first test. 
+* 트레이닝셋은 성능의 좋은 심판자가 될 역량이 없습니다. 정보가 독립되지 않습니다; 트레이닝셋을 예측하는 것은 모델이 이미 알고 무엇을 알고 있는지를 반영할 뿐입니다. 
+
+두 번째 방법을 더 잘 이해하기 위해 가르치는 것에서 비유를 생각해 보세요. 학급에 시험을 치룬다고 가정한후 정답을 주고, 같은 시험을 치룹니다. _두번째_ 시험에서 학생들 성적은 과목에 대해 얼마나 알고 있는지를 정확하게 반영하지 않습니다; 이 점수들은 첫번째 시험의 결과보다 아마 더 높기만 할 것입니다. 
 
 
 
@@ -296,16 +296,15 @@ cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬�
 
 이 다이어그램의 첫번째 수준에서, `rsample::initial_split()` 을 사용할 때 일어나는 일을 볼 수 있는데, 원 데이터를 트레이닝과 테스트셋으로 분할합니다. 그 후 트레이닝셋이 리샘플링을 위해 선택되고 테스트셋은 보존됩니다.
 
-이 예에서 10-폴드 cross-validation (CV) 를 오
-Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1514 cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
+이 예에서 10-폴드 cross-validation (CV) 를 사용합니다. 이 방법은 트레이닝셋의 1514 개의 세포를 "폴드" 라고 부르는 같은 크기의 10 개 그룹으로 랜덤하게 할당합니다. 리샘플링의 첫번째 반복에서, 약 151 개의 세포들로 이루어진 첫번째 폴드가 성능을 측정하기 위해 보존됩니다. 이는 테스트셋과 유사하지만, 혼동을 피하기 위해, 이 데이터를 tidymodels 프레임워크에서 _평가셋(assessment set)_ 으로 부릅니다. 
 
-The other 90% of the data (about 1362 cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
+데이터의 나머지 90% (약 1362 개의 세포) 가 모델을 적합하기 위해 사용됩니다. 트레이닝셋과 유사하게 들리기 때문에, tidymodel 에서는 이를 _분석셋(analysis set)_ 으로 부릅니다. 분석셋에 훈련된 이 모델이 예측값을 생성하기 위해 평가셋에 적용되고, 평가 통계량은 이 예측값에 기반하여 계산됩니다. 
 
-In this example, 10-fold CV moves iteratively through the folds and leaves a different 10% out each time for model assessment. At the end of this process, there are 10 sets of performance statistics that were created on 10 data sets that were not used in the modeling process. For the cell example, this means 10 accuracies and 10 areas under the ROC curve. While 10 models were created, these are not used further; we do not keep the models themselves trained on these folds because their only purpose is calculating performance metrics. 
-
+이 예에서, 10-폴드 CV 는 폴드를 바꿔가며 진행하고, 매번 다른 10% 를 모델 평가를 위해 남겨놓습니다. 이 프로세스 마지막에 모델 프로세스에서 사용하지 않은 10 데이터셋에서 생성된 성능 통계량 10 셋이 생깁니다. 세포 예에서, 10 개의 정확성과 10 개의 area under the ROC curve 를 의미합니다. 10 모델이 생성되었지만, 더 이상 사용되지 않습니다; 이 폴드에서 훈련된 모델을 사용하지 않는데, 이들은 성능 지표를 계산할 목적으로만 생성했기 때문입니다.
 
 
-The final resampling estimates for the model are the **averages** of the performance statistics replicates. For example, suppose for our data the results were: 
+
+모델의 마지막 리샘플링 추정값은 성능 통계량 replicates 의 **평균**입니다. 예를 들어, 우리 데이터의 경우 결과는 다음과 같습니다:
 
 <table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
  <thead>
@@ -380,12 +379,13 @@ The final resampling estimates for the model are the **averages** of the perform
 </tbody>
 </table>
 
-From these resampling statistics, the final estimate of performance for this random forest model would be 0.904 for the area under the ROC curve and 0.832 for accuracy. 
+이 리샘플링 통계량으로 부터, 이 랜덤 포레스트 모델의 최정 성능 추정값은 area under the ROC curve 는 0.904 이고, 정확도는 0.904 입니다. 
 
-These resampling statistics are an effective method for measuring model performance _without_ predicting the training set directly as a whole. 
+이 리샘플링 통계량은 트레이닝셋 전체를 직접 예측하지 _않고_ 모델 성능을 측정하는 효율적인 방법입니다. 
 
-## Fit a model with resampling {#fit-resamples}
+## 리샘플링으로 모델 적합 {#fit-resamples}
 
+이 결과를 생성하기 위해, 첫번째 단계는 rsample 을 이용해서 
 To generate these results, the first step is to create a resampling object using rsample. There are [several resampling methods](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods) implemented in rsample; cross-validation folds can be created using `vfold_cv()`: 
 
 

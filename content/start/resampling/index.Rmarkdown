@@ -227,12 +227,11 @@ knitr::include_graphics("img/resampling.svg")
 
 이 다이어그램의 첫번째 수준에서, `rsample::initial_split()` 을 사용할 때 일어나는 일을 볼 수 있는데, 원 데이터를 트레이닝과 테스트셋으로 분할합니다. 그 후 트레이닝셋이 리샘플링을 위해 선택되고 테스트셋은 보존됩니다.
 
-이 예에서 10-폴드 cross-validation (CV) 를 사용합니다. 이 방법은 트레이닝셋의 `r nrow(cell_train)` 개의 세포를 "폴드" 라고 부르는 같은 크기의 10 개 그룹으로 랜덤하게 할당합니다. 
-Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the `r nrow(cell_train)` cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about `r floor(nrow(cell_train)/10)` cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the tidymodels framework. 
+이 예에서 10-폴드 cross-validation (CV) 를 사용합니다. 이 방법은 트레이닝셋의 `r nrow(cell_train)` 개의 세포를 "폴드" 라고 부르는 같은 크기의 10 개 그룹으로 랜덤하게 할당합니다. 리샘플링의 첫번째 반복에서, 약 `r floor(nrow(cell_train)/10)` 개의 세포들로 이루어진 첫번째 폴드가 성능을 측정하기 위해 보존됩니다. 이는 테스트셋과 유사하지만, 혼동을 피하기 위해, 이 데이터를 tidymodels 프레임워크에서 _평가셋(assessment set)_ 으로 부릅니다. 
 
-The other 90% of the data (about `r floor(nrow(cell_train) * .9)` cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
+데이터의 나머지 90% (약 `r floor(nrow(cell_train) * .9)` 개의 세포) 가 모델을 적합하기 위해 사용됩니다. 트레이닝셋과 유사하게 들리기 때문에, tidymodel 에서는 이를 _분석셋(analysis set)_ 으로 부릅니다. 분석셋에 훈련된 이 모델이 예측값을 생성하기 위해 평가셋에 적용되고, 평가 통계량은 이 예측값에 기반하여 계산됩니다. 
 
-In this example, 10-fold CV moves iteratively through the folds and leaves a different 10% out each time for model assessment. At the end of this process, there are 10 sets of performance statistics that were created on 10 data sets that were not used in the modeling process. For the cell example, this means 10 accuracies and 10 areas under the ROC curve. While 10 models were created, these are not used further; we do not keep the models themselves trained on these folds because their only purpose is calculating performance metrics. 
+이 예에서, 10-폴드 CV 는 폴드를 바꿔가며 진행하고, 매번 다른 10% 를 모델 평가를 위해 남겨놓습니다. 이 프로세스 마지막에 모델 프로세스에서 사용하지 않은 10 데이터셋에서 생성된 성능 통계량 10 셋이 생깁니다. 세포 예에서, 10 개의 정확성과 10 개의 area under the ROC curve 를 의미합니다. 10 모델이 생성되었지만, 더 이상 사용되지 않습니다; 이 폴드에서 훈련된 모델을 사용하지 않는데, 이들은 성능 지표를 계산할 목적으로만 생성했기 때문입니다.
 
 ```{r rf-rs, include = FALSE}
 set.seed(345)
@@ -269,7 +268,7 @@ assessment_stats <-
 rs_stats <- collect_metrics(rf_fit_rs)
 ```
 
-The final resampling estimates for the model are the **averages** of the performance statistics replicates. For example, suppose for our data the results were: 
+모델의 마지막 리샘플링 추정값은 성능 통계량 replicates 의 **평균**입니다. 예를 들어, 우리 데이터의 경우 결과는 다음과 같습니다:
 
 ```{r rs-table, echo = FALSE, results = "asis"}
 assessment_stats %>% 
@@ -277,13 +276,13 @@ assessment_stats %>%
   kable_styling(full_width = FALSE)
 ```
 
-From these resampling statistics, the final estimate of performance for this random forest model would be `r round(rs_stats$mean[rs_stats$.metric == "roc_auc"], 3)` for the area under the ROC curve and `r round(rs_stats$mean[rs_stats$.metric == "accuracy"], 3)` for accuracy. 
+이 리샘플링 통계량으로 부터, 이 랜덤 포레스트 모델의 최정 성능 추정값은 area under the ROC curve 는 `r round(rs_stats$mean[rs_stats$.metric == "roc_auc"], 3)` 이고, 정확도는 `r round(rs_stats$mean[rs_stats$.metric == "roc_auc"], 3)` 입니다. 
 
-These resampling statistics are an effective method for measuring model performance _without_ predicting the training set directly as a whole. 
+이 리샘플링 통계량은 트레이닝셋 전체를 직접 예측하지 _않고_ 모델 성능을 측정하는 효율적인 방법입니다. 
 
-## Fit a model with resampling {#fit-resamples}
+## 리샘플링으로 모델 적합 {#fit-resamples}
 
-To generate these results, the first step is to create a resampling object using rsample. There are [several resampling methods](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods) implemented in rsample; cross-validation folds can be created using `vfold_cv()`: 
+이 결과를 생성하기 위해, 첫번째 단계는 rsample 을 이용해서 리샘플링 객체를 생성하는 것입니다. rsample 에는 [몇 개의 리샘플링 방법들](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods)이 구현되어 있습니다; `vfold_cv()` 를 이용하여 cross-validation 폴드를 생성할 수 있습니다:
 
 ```{r folds}
 set.seed(345)
