@@ -463,8 +463,7 @@ collect_metrics(rf_fit_rs)
 #> 2 roc_auc  binary     0.904    10 0.00610 Preprocessor1_Model1
 ```
 
-이제 얻은 정확성과 AUC 를 생각해봅시다. 이 성능 지표들은 이 섹션의 앞 쪽에서 성능 지표를 계산하려고 잘못 가이드를 받아 했던 시도보다 이제 더 현실적 (즉, 낮음) 입니다. 
-Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let's remind ourselves of the results:
+이제 얻은 정확성과 AUC 를 생각해봅시다. 이 성능 지표들은 이 섹션의 앞 쪽에서 성능 지표를 계산하려고 잘못 가이드를 받아 했던 시도보다 이제 더 현실적 (즉, 낮음) 입니다. 이 데이터셋에 다른 종류의 모델을 시도하고 싶다면, 모델 사이에 선택하기 위해 리샘플링을 사용하여 계산된 성능 지표들을 더 자신있게 비교해야할 것입니다. 또한, 우리 프로젝트 마지막에 우리 테스트셋으로 돌아가서 최종 모델 성능을 추정하는 것을 기억하십시오. 리샘플링을 사용하기 시작하기 전에 이미 한번 이를 보았지만, 결과를 기억합시다:
 
 
 ```r
@@ -482,8 +481,7 @@ rf_testing_pred %>%                   # test set predictions
 #> 1 accuracy binary         0.816
 ```
 
-The performance metrics from the test set are much closer to the performance metrics computed using resampling than our first ("bad idea") attempt. Resampling allows us to simulate how well our model will perform on new data, and the test set acts as the final, unbiased check for our model's performance.
-
+테스트셋에서 성능 지표는 처음 ("나쁜 생각") 시도보다 리샘플링을 사용하여 계산한 성능지표에 훨씬 더 가깝습니다. 리샘플링을 하면 우리 모델이 새로운 데이터에 성능이 얼마나 될 것인지를 시뮬레이트할 수 있고 테스트셋은 우리 모델 성능에 최종, 불편 체크로 작용합니다.
 
 
 ## Session information

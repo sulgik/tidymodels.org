@@ -14,11 +14,11 @@ description: |
 
 ## 들어가기 {#intro}
 
-모델 파라미터 중 어떤 것들은 모델 트레이닝 중 데이터셋으로 부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 숫자 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+모델 파라미터 중 어떤 것들은 모델 트레이닝 중 데이터셋으로 부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 숫자 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. 모델 트레이닝 중 하이퍼파라미터를 학습하는것 대신, 리샘플한 데이터셋에 많은 모형을 훈련하고 이 모델들의 성능을 탐색해서 가장 좋은 값을 _추정_ 할 수 있습니다. 이 프로세스를 **튜닝** 이라고 부릅니다.
 
-Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can _estimate_ the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+하이퍼파라미터의 예로, 트리-기반 모델에서 쪼개짐에서 샘플된 설명변수의 숫자 (tidymodels 에서 `mtry` 라고 부름), 혹은 부스티드 트리모델에서 학습속도(`learning_rate` 이라고 부름)가 있습니다. 
 
-To use code in this article,  you will need to install the following packages: rpart, rpart.plot, tidymodels, and vip.
+이 장에 있는 코드를 사용하려면,  다음 패키지들을 인스톨해야 합니다: rpart, rpart.plot, tidymodels, and vip.
 
 
 ```r
@@ -33,7 +33,7 @@ library(vip)         # for variable importance plots
 
 ## 세포 이미지 데이터, 계속 {#data}
 
-In our previous [*Evaluate your model with resampling*](/start/resampling/) article, we introduced a data set of images of cells that were labeled by experts as well-segmented (`WS`) or poorly segmented (`PS`). We trained a [random forest model](/start/resampling/#modeling) to predict which images are segmented well vs. poorly, so that a biologist could filter out poorly segmented cell images in their analysis. We used [resampling](/start/resampling/#resampling) to estimate the performance of our model on this data.
+이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 여기서 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
 
 
 ```r
@@ -52,18 +52,18 @@ cells
 #> #   diff_inten_density_ch_1 <dbl>, diff_inten_density_ch_3 <dbl>, …
 ```
 
-## Predicting image segmentation, but better {#why-tune}
+## 이미지 세그멘테이션 예측하기, 더 정확히 {#why-tune}
 
-Random forest models are a tree-based ensemble method, and typically perform well with [default hyperparameters](https://bradleyboehmke.github.io/HOML/random-forest.html#out-of-the-box-performance). However, the accuracy of some other tree-based models, such as [boosted tree models](https://en.wikipedia.org/wiki/Gradient_boosting#Gradient_tree_boosting) or [decision tree models](https://en.wikipedia.org/wiki/Decision_tree), can be sensitive to the values of hyperparameters. In this article, we will train a **decision tree** model. There are several hyperparameters for decision tree models that can be tuned for better performance. Let's explore:
+랜덤포레스트 모델은 트리-기반 앙상블 방법이고 보통 [기본값 하이퍼파라미터](https://bradleyboehmke.github.io/HOML/random-forest.html#out-of-the-box-performance)로도 성능이 나쁘지 않습니다. 하지만, [boosted tree models](https://en.wikipedia.org/wiki/Gradient_boosting#Gradient_tree_boosting) or [decision tree models](https://en.wikipedia.org/wiki/Decision_tree) 같은 다른 트리기반 모델들은 정확도가 하이퍼파라미터 값들에 민감한 경우가 많습니다. 이 장에서 **decision tree** 모델을 트레이닝할 것입니다. decision tree 에는 튜닝할 수 있는 하이퍼파라미터 몇개가 있습니다. 한번 살펴봅시다:
 
-- the complexity parameter (which we call `cost_complexity` in tidymodels) for the tree, and
+- the complexity parameter (`cost_complexity` in tidymodels 에서 `cost_complexity` 라고 부름) for the tree, and
 - the maximum `tree_depth`.
 
-Tuning these hyperparameters can improve model performance because decision tree models are prone to [overfitting](https://bookdown.org/max/FES/important-concepts.html#overfitting). This happens because single tree models tend to fit the training data _too well_ &mdash; so well, in fact, that they over-learn patterns present in the training data that end up being detrimental when predicting new data. 
+이러한 하이퍼파라미터를 튜닝하면 모델 성능을 개선할 수 있는데 decision tree 모델은 [overfitting](https://bookdown.org/max/FES/important-concepts.html#overfitting)되는 경향이 있기 때문입니다. 하나의 트리모델은 트레이닝 데이터에 _너무 잘_ 적합되는 경향이 있기 때문에 그렇습니다. &mdash; 사실 트레이닝 데이터에 존재하는 패턴들을 과학습해서 새로운 데이터를 예측할 때 방해가 될 정도가 됩니다.
 
-We will tune the model hyperparameters to avoid overfitting. Tuning the value of `cost_complexity` helps by [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) back our tree. It adds a cost, or penalty, to error rates of more complex trees; a cost closer to zero decreases the number tree nodes pruned and is more likely to result in an overfit tree. However, a high cost increases the number of tree nodes pruned and can result in the opposite problem&mdash;an underfit tree. Tuning `tree_depth`, on the other hand, helps by [stopping](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping)  our tree from growing after it reaches a certain depth. We want to tune these hyperparameters to find what those two values should be for our model to do the best job predicting image segmentation. 
+과적합을 피하기 위해 모델 하이퍼파라미터를 튜닝할 것입니다. `cost_complexity` 의 값을 튜닝하면 우리 트리를  [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) 하여 도움이 됩니다. 더 복잡한 트리의 에러 레이트에 코스트 혹은 페널티를 추가합니다; 0에 가까운 코스트는 프룬된 트리노드 개수를 감소시키고 과적합된 나무를 제공하기 쉽습니다. 그러나 높은 코스트는 프룬된 트리 노드의 개수를 증가시키고 상반된 문제&mdash;an underfit tree 를 산출할 수 있습니다. 반면에 `tree_depth` 를 튜닝하면 우리 트리를 어떤 뎁스에 다다른 뒤 더 자라는 것을 [방지](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping) 하는 도움을 줍니다. 우리의 목적은 이러한 하이퍼파라미터들을 튜닝하여 우리모델이 이미지 세그멘테이션을 가장 잘 예측하기 위한 값들로 튜닝하는 것입니다.
 
-Before we start the tuning process, we split our data into training and testing sets, just like when we trained the model with one default set of hyperparameters. As [before](/start/resampling/), we can use `strata = class` if we want our training and testing sets to be created using stratified sampling so that both have the same proportion of both kinds of segmentation.
+튜닝 프로세스를 시작하기 전에, 하이퍼파라미터 기본값으로 모델을 훈련시켰을 때와 같이 우리 데이터를 트레이닝셋과 테스트 셋으로 분리합니다. [전](/start/resampling/)과 같이 `strata = class` 를 하여 층화 샘플링을 이용하여 트레이닝과 테스팅 셋이 세그멘테이션 종류에 같은 비율이 되도록 합니다.
 
 
 ```r
@@ -74,9 +74,9 @@ cell_train <- training(cell_split)
 cell_test  <- testing(cell_split)
 ```
 
-We use the training data for tuning the model.
+모델을 튜닝하기 위해 트레이닝 데이터를 사용합니다.
 
-## Tuning hyperparameters {#tuning}
+## 하이퍼파라미터 튜닝 {#tuning}
 
 Let’s start with the parsnip package, using a [`decision_tree()`](https://parsnip.tidymodels.org/reference/decision_tree.html) model with the [rpart](https://cran.r-project.org/web/packages/rpart/index.html) engine. To tune the decision tree hyperparameters `cost_complexity` and `tree_depth`, we create a model specification that identifies which hyperparameters we plan to tune. 
 
@@ -413,40 +413,43 @@ You could tune the other hyperparameter we didn't use here, `min_n`, which sets 
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
+#> ─ Session info  🐑  👩‍🚒  🥝   ───────────────────────────────────────
+#>  hash: ewe, woman firefighter, kiwi fruit
+#> 
+#>  setting  value
 #>  version  R version 4.1.1 (2021-08-10)
-#>  os       Ubuntu 18.04.5 LTS          
-#>  system   x86_64, linux-gnu           
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  C.UTF-8                     
-#>  ctype    C.UTF-8                     
-#>  tz       Etc/UTC                     
-#>  date     2021-10-25                  
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-21
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.1)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.1)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.1)
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.1)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.1)
-#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rpart      * 4.1-15  2019-04-12 [3] CRAN (R 4.0.0)
-#>  rpart.plot * 3.0.9   2020-09-17 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.1.1)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.1)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.1)
-#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.1)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.1)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.1)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rpart      * 4.1-15  2019-04-12 [1] CRAN (R 4.1.1)
+#>  rpart.plot * 3.1.0   2021-07-24 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
 #> 
-#> [1] /usr/local/lib/R/site-library
-#> [2] /usr/lib/R/site-library
-#> [3] /usr/lib/R/library
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
