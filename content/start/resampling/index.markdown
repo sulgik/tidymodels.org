@@ -385,8 +385,7 @@ cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬�
 
 ## 리샘플링으로 모델 적합 {#fit-resamples}
 
-이 결과를 생성하기 위해, 첫번째 단계는 rsample 을 이용해서 
-To generate these results, the first step is to create a resampling object using rsample. There are [several resampling methods](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods) implemented in rsample; cross-validation folds can be created using `vfold_cv()`: 
+이 결과를 생성하기 위해, 첫번째 단계는 rsample 을 이용해서 리샘플링 객체를 생성하는 것입니다. rsample 에는 [몇 개의 리샘플링 방법들](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods)이 구현되어 있습니다; `vfold_cv()` 를 이용하여 cross-validation 폴드를 생성할 수 있습니다:
 
 
 ```r
@@ -409,15 +408,15 @@ folds
 #> 10 <split [1363/151]> Fold10
 ```
 
-The list column for `splits` contains the information on which rows belong in the analysis and assessment sets. There are functions that can be used to extract the individual resampled data called `analysis()` and `assessment()`. 
+`splits` 의 리스트-열은 어떤 행ㄷ르이 분석과 평가셋에 속하는지에 관한 정보를 포함하고 있습니다. `analysis()` 와 `assessment()` 라고 부르는 함수를 이용하여 각 리샘플된 데이터를 추출할 수 있습니다. 
 
-However, the tune package contains high-level functions that can do the required computations to resample a model for the purpose of measuring performance. You have several options for building an object for resampling:
+하지만, tune 패키지는 성능을 측정할 목적으로 모델을 리샘플하기 위해 필요한 계산을 할 수 있는 고차원 함수들을 포함하고 있습니다. 리샘플링 위해 객체를 만드는 몇몇 선택지가 있습니다:
 
-+ Resample a model specification preprocessed with a formula or [recipe](/start/recipes/), or 
++ 공식이나 [recipe](/start/recipes/)로 전처리된 모델 스펙을 리샘플하기 
 
-+ Resample a [`workflow()`](https://tidymodels.github.io/workflows/) that bundles together a model specification and formula/recipe. 
++ 모델 스펙과 공식/레시피를 함께 묶은 [`workflow()`](https://tidymodels.github.io/workflows/) 를 리샘플하기
 
-For this example, let's use a `workflow()` that bundles together the random forest model and a formula, since we are not using a recipe. Whichever of these options you use, the syntax to `fit_resamples()` is very similar to `fit()`: 
+이 예에서는 레시피를 사용하지 않기 때문에, 랜덤 포레스트 모델과 공식을 묶은 `workflow()` 를 리샘플 합니다. 이 옵션들 중 어떤걸 사용하던지, `fit_resamples()` 의 문법은 `fit()` 과 매우 유사합니다:
 
 
 ```r
@@ -452,8 +451,8 @@ rf_fit_rs
 #> 10 <split [1363/151]> Fold10 <tibble [2 × 4]> <tibble [0 × 1]>
 ```
 
-The results are similar to the `folds` results with some extra columns. The column `.metrics` contains the performance statistics created from the 10 assessment sets. These can be manually unnested but the tune package contains a number of simple functions that can extract these data: 
- 
+결과는 추가되는 열이 있는 `folds` 결과들과 매우 유사합니다. `.metrics` 열은 10 개의 평가셋에서 생성된 성능 통계량을 포함합니다. 수동으로 unnest 할 수 있지만, tune 패키지에는 이러한 데이터를 추출할 수 있는 단순한 함수들이 많습니다:
+
 
 ```r
 collect_metrics(rf_fit_rs)
@@ -464,6 +463,7 @@ collect_metrics(rf_fit_rs)
 #> 2 roc_auc  binary     0.904    10 0.00610 Preprocessor1_Model1
 ```
 
+이제 얻은 정확성과 AUC 를 생각해봅시다. 이 성능 지표들은 이 섹션의 앞 쪽에서 성능 지표를 계산하려고 잘못 가이드를 받아 했던 시도보다 이제 더 현실적 (즉, 낮음) 입니다. 
 Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let's remind ourselves of the results:
 
 
@@ -502,7 +502,7 @@ The performance metrics from the test set are much closer to the performance met
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-20
+#>  date     2021-12-21
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
