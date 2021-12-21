@@ -63,7 +63,7 @@ cells
 
 과적합을 피하기 위해 모델 하이퍼파라미터를 튜닝할 것입니다. `cost_complexity` 의 값을 튜닝하면 우리 트리를  [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) 하여 도움이 됩니다. 더 복잡한 트리의 에러 레이트에 코스트 혹은 페널티를 추가합니다; 0에 가까운 코스트는 프룬된 트리노드 개수를 감소시키고 과적합된 나무를 제공하기 쉽습니다. 그러나 높은 코스트는 프룬된 트리 노드의 개수를 증가시키고 상반된 문제&mdash;an underfit tree 를 산출할 수 있습니다. 반면에 `tree_depth` 를 튜닝하면 우리 트리를 어떤 뎁스에 다다른 뒤 더 자라는 것을 [방지](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping) 하는 도움을 줍니다. 우리의 목적은 이러한 하이퍼파라미터들을 튜닝하여 우리모델이 이미지 세그멘테이션을 가장 잘 예측하기 위한 값들로 튜닝하는 것입니다.
 
-튜닝 프로세스를 시작하기 전에, 하이퍼파라미터 기본값으로 모델을 훈련시켰을 때와 같이 우리 데이터를 트레이닝셋과 테스트 셋으로 분리합니다. [전](/start/resampling/)과 같이 `strata = class` 를 하여 층화 샘플링을 이용하여 트레이닝과 테스팅 셋이 세그멘테이션 종류에 같은 비율이 되도록 합니다.
+튜닝 프로세스를 시작하기 전에, 하이퍼파라미터 기본값으로 모델을 훈련시켰을 때와 같이 우리 데이터를 트레이닝셋과 테스트 셋으로 분리합니다. [전](/start/resampling/)과 같이 `strata = class` 를 하여 층화 샘플링을 이용하여 트레이닝과 테스팅 셋이 세그멘테이션 종류비율이 같도록 합니다.
 
 
 ```r
@@ -78,7 +78,7 @@ cell_test  <- testing(cell_split)
 
 ## 하이퍼파라미터 튜닝 {#tuning}
 
-Let’s start with the parsnip package, using a [`decision_tree()`](https://parsnip.tidymodels.org/reference/decision_tree.html) model with the [rpart](https://cran.r-project.org/web/packages/rpart/index.html) engine. To tune the decision tree hyperparameters `cost_complexity` and `tree_depth`, we create a model specification that identifies which hyperparameters we plan to tune. 
+[`decision_tree()`](https://parsnip.tidymodels.org/reference/decision_tree.html) 모델을 [rpart](https://cran.r-project.org/web/packages/rpart/index.html) 엔진과 함께 사용하여 parsnip 패키지로 시작해 봅시다. decision tree 하이퍼파라미터 `cost_complexity` and `tree_depth` 를 튜닝하기 위해, 튜닝하고 싶은 하이퍼파라미터를 식별하는 모델 spec 을 생성합니다. 
 
 
 ```r
@@ -100,9 +100,9 @@ tune_spec
 #> Computational engine: rpart
 ```
 
-Think of `tune()` here as a placeholder. After the tuning process, we will select a single numeric value for each of these hyperparameters. For now, we specify our parsnip model object and identify the hyperparameters we will `tune()`.
+여기서 `tune()` 를 placeholder 로 간주합니다. 튜닝 프로세스 후, 이러한 하이퍼파라미터 각각에 수치값 하나씩을 결정할 것입니다. 현재는 우리 parsnip 모델 객체를 명시하고 우리가 `tune()` 할 하이퍼파라미터를 식별합니다.
 
-We can't train this specification on a single data set (such as the entire training set) and learn what the hyperparameter values should be, but we _can_ train many models using resampled data and see which models turn out best. We can create a regular grid of values to try using some convenience functions for each hyperparameter:
+(전체 트레이닝셋같은) 하나의 데이터셋에 이 스펙을 트레이닝하고 어떤 하이퍼파라미터 값이 되어야 하는지를 학습할 수 없습니다. 대신, 우리는 리샘플된 데이터를 사용하여 모델 여러개를 훈련하고 어떤 모델이 가장 좋은 결과를 얻었는지 볼 _수 있습니다._ 레귤러 그리드 값을 생성하여 각 하이퍼파라미터에 편리한 함수들을 사용해 볼 수 있습니다:
 
 
 ```r
@@ -111,7 +111,7 @@ tree_grid <- grid_regular(cost_complexity(),
                           levels = 5)
 ```
 
-The function [`grid_regular()`](https://dials.tidymodels.org/reference/grid_regular.html) is from the [dials](https://dials.tidymodels.org/) package. It chooses sensible values to try for each hyperparameter; here, we asked for 5 of each. Since we have two to tune, `grid_regular()` returns 5 `\(\times\)` 5 = 25 different possible tuning combinations to try in a tidy tibble format.
+[`grid_regular()`](https://dials.tidymodels.org/reference/grid_regular.html) 함수는 [dials](https://dials.tidymodels.org/) 패키지에 있습니다. 이 함수는 각 하이퍼파라미터에 시도해볼 합리적인 값들을 선택합니다; 여기서는 두 경우에 5를 시도합니다. 두 개를 튜닝하므로, `grid_regular()` 는 5 `\(\times\)` 5 = 25 개의 각기 다른 튜닝 조합을 타이디 티블 포맷으로 반환합니다.
 
 
 ```r
@@ -159,7 +159,7 @@ cell_folds <- vfold_cv(cell_train)
 
 Tuning in tidymodels requires a resampled object created with the [rsample](https://rsample.tidymodels.org/) package.
 
-## Model tuning with a grid {#tune-grid}
+## 그리드 모델튜닝 {#tune-grid}
 
 We are ready to tune! Let's use [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) to fit models at all the different values we chose for each tuned hyperparameter. There are several options for building the object for tuning:
 
