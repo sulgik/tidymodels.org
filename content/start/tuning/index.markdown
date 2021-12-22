@@ -4,7 +4,7 @@ weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
 description: | 
-  Estimate the best values for hyperparameters that cannot be learned directly during model training.
+  모델 훈련동안 직접 학습될 수 엇ㅂ는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
 ---
 
 
@@ -132,7 +132,7 @@ tree_grid
 #> # … with 15 more rows
 ```
 
-Here, you can see all 5 values of `cost_complexity` ranging up to 0.1. These values get repeated for each of the 5 values of `tree_depth`:
+여기에, 0.1 까지 변하는 `cost_complexity` 의 5 가지 값 모두를 볼 수 있습니다. 이러한 값들은 `tree_depth` 의 5 개 값 각각에 대해 반복됩니다:
 
 
 ```r
@@ -149,7 +149,7 @@ tree_grid %>%
 ```
 
 
-Armed with our grid filled with 25 candidate decision tree models, let's create [cross-validation folds](/start/resampling/) for tuning:
+25 개 후보 의사결정 나무 모델로 채워진 그리드로 무장하여, 튜닝을 위해 [cross-validation folds](/start/resampling/)을 생성합시다:
 
 
 ```r
@@ -157,17 +157,17 @@ set.seed(234)
 cell_folds <- vfold_cv(cell_train)
 ```
 
-Tuning in tidymodels requires a resampled object created with the [rsample](https://rsample.tidymodels.org/) package.
+Tuning in tidymodels 에서 튜닝하려면 [rsample](https://rsample.tidymodels.org/) 패키지로 생성된 리샘플된 객체가 필요합니다.
 
 ## 그리드 모델튜닝 {#tune-grid}
 
-We are ready to tune! Let's use [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) to fit models at all the different values we chose for each tuned hyperparameter. There are several options for building the object for tuning:
+튜닝할 준비가 되었습니다! Let's use [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) 를 사용하여 각 튜닝된 하이퍼파라미터로 선택한 모든 다른 값들에 모형을 적합합니다. 튜닝을 위한 객체를 만드는 옵션 몇 가지가 있습니다:
 
-+ Tune a model specification along with a recipe or model, or 
++ 레시피나 모델을 따라 모델 스펙을 튜닝하기
 
-+ Tune a [`workflow()`](https://workflows.tidymodels.org/) that bundles together a model specification and a recipe or model preprocessor. 
++ 모델 스펙과 레시피 혹은 모델 전처리과정을 묶는 [`workflow()`](https://workflows.tidymodels.org/)를 튜닝하기. 
 
-Here we use a `workflow()` with a straightforward formula; if this model required more involved data preprocessing, we could use `add_recipe()` instead of `add_formula()`.
+여기서 우리는 `workflow()`를 직관적인 공식과 함께 사용합니다; 이 모델이 더 관여된 데이터 전처리를 필요하다면, `add_formula()` 대신 `add_recipe()` 를 사용할 수 있습니다.
 
 
 ```r
@@ -202,7 +202,7 @@ tree_res
 #> 10 <split [1363/151]> Fold10 <tibble [50 × 6]> <tibble [0 × 1]>
 ```
 
-Once we have our tuning results, we can both explore them through visualization and then select the best result. The function `collect_metrics()` gives us a tidy tibble with all the results. We had 25 candidate models and two metrics, `accuracy` and `roc_auc`, and we get a row for each `.metric` and model. 
+우리 튜닝 결과를 얻었다면, 시각화를 통해 이를 탐색하고, 이후 가장 좋은 결과를 선택할 수 있습니다. `collect_metrics()` 함수는 타이티 티블을 모든 결과와 함께 제공합니다. 25 개의 후보 모델과 두개의 지표, `accuracy` 와 `roc_auc` 가 있고, 각 `.metric` 과 모델마다 하나의 행을 얻었습니다.
 
 
 ```r
@@ -224,7 +224,7 @@ tree_res %>%
 #> # … with 40 more rows
 ```
 
-We might get more out of plotting these results:
+이 결과를 플롯하여 더 많은 것을 얻을 수 있습니다:
 
 
 ```r
@@ -241,7 +241,7 @@ tree_res %>%
 
 <img src="figs/best-tree-1.svg" width="768" />
 
-We can see that our "stubbiest" tree, with a depth of 1, is the worst model according to both metrics and across all candidate values of `cost_complexity`. Our deepest tree, with a depth of 15, did better. However, the best tree seems to be between these values with a tree depth of 4. The [`show_best()`](https://tune.tidymodels.org/reference/show_best.html) function shows us the top 5 candidate models by default:
+두 지표 기준으로 depth 가 1 인 "stubbiest" 트리가 `cost_complexity` 의 모든 후보 값들을 통틀어 가장 나쁜 모델임을 알 수 있습니다. 깊이가 15 인 가장 깊은 트리가 더 성능이 좋았습니다. 하지만, 이러한 값들 사이에 가장 좋은 트리는 depth 가 4 인 트리인 것 같습니다. [`show_best()`](https://tune.tidymodels.org/reference/show_best.html) 함수는 기본값으로 가장 좋은 5 개 후보를 보여줍니다:
 
 
 ```r
@@ -257,7 +257,7 @@ tree_res %>%
 #> 5    0.1                   4 accuracy binary     0.786    10  0.0124 Preprocess…
 ```
 
-We can also use the [`select_best()`](https://tune.tidymodels.org/reference/show_best.html) function to pull out the single set of hyperparameter values for our best decision tree model:
+[`select_best()`](https://tune.tidymodels.org/reference/show_best.html) 함수를 사용하여 최적의 decision tree model 의 하이퍼파라미터 값을 추출할 수도 있습니다:
 
 
 ```r
@@ -271,12 +271,12 @@ best_tree
 #> 1    0.0000000001          4 Preprocessor1_Model06
 ```
 
-These are the values for `tree_depth` and `cost_complexity` that maximize accuracy in this data set of cell images. 
+이는 세포 이미지 데이터셋에서 정확도를 최대화하는 `tree_depth` 와 `cost_complexity` 값입니다.
 
 
-## Finalizing our model {#final-model}
+## 최종 모델 {#final-model}
 
-We can update (or "finalize") our workflow object `tree_wf` with the values from `select_best()`. 
+`select_best()` 의 값들로 우리 워크플로 객체 `tree_wf` 를 업데이트 (혹은 마무리)할 수 있습니다.
 
 
 ```r
@@ -302,11 +302,11 @@ final_wf
 #> Computational engine: rpart
 ```
 
-Our tuning is done!
+튜닝이 완료됐습니다!
 
-### The last fit
+### 마지막 적합
 
-Finally, let's fit this final model to the training data and use our test data to estimate the model performance we expect to see with new data. We can use the function [`last_fit()`](https://tune.tidymodels.org/reference/last_fit.html) with our finalized model; this function _fits_ the finalized model on the full training data set and _evaluates_ the finalized model on the testing data.
+마지막으로 우리 최종모델을 트레이닝 데이터에 적합하고 테스트 데이터를 사용하여 새로운 데이터에서 예측되는 모델 성능을 추정해 봅시다. [`last_fit()`](https://tune.tidymodels.org/reference/last_fit.html) 함수를 우리의 최종완성된 모델과 사용할 수 있습니다; 이 함수는 최종완료된 모델을 전체 트레이닝 데이터셋에 _적합_하고, 테스팅 데이터에 최종완료된 모델을 _평가_합니다.
 
 
 ```r
@@ -330,9 +330,9 @@ final_fit %>%
 
 <img src="figs/last-fit-1.svg" width="672" />
 
-The performance metrics from the test set indicate that we did not overfit during our tuning procedure.
+테스트셋에서 성능 지표들은 우리가 튜닝 과정 동안 과적합하지 않았음을 가르킵니다.
 
-The `final_fit` object contains a finalized, fitted workflow that you can use for predicting on new data or further understanding the results. You may want to extract this object, using [one of the `extract_` helper functions](https://tune.tidymodels.org/reference/extract-tune.html).
+`final_fit` 객체는 새로운 데이터에서 예측하거나 결과를 더 이해하는데 사용할 수 있는 최종완료되고, 적합된 워크플로를 포함합니다. 이 객체를 추출하고 싶으면 [`extract_` 도우미함수 중 하나](https://tune.tidymodels.org/reference/extract-tune.html)를 사용하면 됩니다.
 
 
 ```r
@@ -379,7 +379,7 @@ final_tree %>%
 
 <img src="figs/rpart-plot-1.svg" width="768" />
 
-Perhaps we would also like to understand what variables are important in this final model. We can use the [vip](https://koalaverse.github.io/vip/) package to estimate variable importance [based on the model's structure](https://koalaverse.github.io/vip/reference/vi_model.html#details). 
+우리는 이 최종모델에서 어떤 변수가 중요한지 알고 싶을 것입니다. [vip](https://koalaverse.github.io/vip/) 패키지를 써서 [모델구조에 기반하여](https://koalaverse.github.io/vip/reference/vi_model.html#details) variable importance 를 추정할 수 있습니다.
 
 
 ```r
@@ -392,10 +392,10 @@ final_tree %>%
 
 <img src="figs/vip-1.svg" width="576" />
 
-These are the automated image analysis measurements that are the most important in driving segmentation quality predictions.
+이 변수들은 세그멘테이션 품질 예측을 좌우하는 데 가장 중요한 자동화된 이미지 분석 측정값들입니다.
 
 
-We leave it to the reader to explore whether you can tune a different decision tree hyperparameter. You can explore the [reference docs](/find/parsnip/#models), or use the `args()` function to see which parsnip object arguments are available:
+다른 의사결정 나무 하이퍼파라미터를 튜닝할 수 있는지 없는지를 탐색하는 것은 독자에게 남겨두겠습니다. [reference docs](/find/parsnip/#models) 를 탐색하거나 `args()` 함수를 사용하여 어떤 parsnip 객체 인수들이 있는지를 볼 수 있습니다:
 
 
 ```r
@@ -405,7 +405,7 @@ args(decision_tree)
 #> NULL
 ```
 
-You could tune the other hyperparameter we didn't use here, `min_n`, which sets the minimum `n` to split at any node. This is another early stopping method for decision trees that can help prevent overfitting. Use this [searchable table](/find/parsnip/#model-args) to find the original argument for `min_n` in the rpart package ([hint](https://stat.ethz.ch/R-manual/R-devel/library/rpart/html/rpart.control.html)). See whether you can tune a different combination of hyperparameters and/or values to improve a tree's ability to predict cell segmentation quality.
+우리가 여기서 사용하지 않은 하이퍼파라미터, `min_n` 을 튜닝할 수 있는데, 어떤 노드에서 split 하기 위해 최소 `n` 을 설정합니다. 이는 의사결정 나무들의 또 하나의 early stopping 방법인데 이는 과적합을 방지하는데 도움을 줄 수 있습니다. 이 [searchable table](/find/parsnip/#model-args)을 사용하여 rpart 패키지에 있는 `min_n` 의 원 인수를 구할 수 있습니다. ([hint](https://stat.ethz.ch/R-manual/R-devel/library/rpart/html/rpart.control.html)) 트리의 세포 세그멘테이션 품질 예측 성능을 개선하기 위해 하이퍼파라미터의 다른 조합을 튜닝할 수 있는지 시도해보세요.
 
 
 
@@ -425,7 +425,7 @@ You could tune the other hyperparameter we didn't use here, `min_n`, which sets 
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-21
+#>  date     2021-12-22
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
