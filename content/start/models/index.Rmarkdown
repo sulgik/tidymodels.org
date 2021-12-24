@@ -196,7 +196,7 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 ## 다른 엔진을 사용한 모델 {#new-engine}
 
-팀원 모두가 이 플롯에 만족했지_만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
+팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
 
 `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달됩니다. 
 

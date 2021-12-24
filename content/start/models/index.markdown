@@ -49,14 +49,13 @@ urchins <-
   setNames(c("food_regime", "initial_volume", "width")) %>% 
   # Factors are very helpful for modeling, so we convert one column
   mutate(food_regime = factor(food_regime, levels = c("Initial", "Low", "High")))
-#> Rows: 72 Columns: 3
-#> ── Column specification ──────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): TREAT
-#> dbl (2): IV, SUTW
 #> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> ── Column specification ──────────────────────────────────────────────
+#> cols(
+#>   TREAT = col_character(),
+#>   IV = col_double(),
+#>   SUTW = col_double()
+#> )
 ```
 
 데이터를 빠르게 한 번 봅시다.
@@ -158,7 +157,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  2ms 
+#> Fit time:  4ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -272,7 +271,7 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 ## 다른 엔진을 사용한 모델 {#new-engine}
 
-팀원 모두가 이 플롯에 만족했지_만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
+팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
 
 `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달됩니다. 
 
@@ -300,7 +299,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.5s 
+#> Fit time:  21.4s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -409,44 +408,39 @@ ggplot(urchins,
 
 
 ```
-#> ─ Session info  🕵🏼  👱🏼  💥   ──────────────────────────────────────
-#>  hash: detective: medium-light skin tone, person: medium-light skin tone, blond hair, collision
+#> ─ Session info ───────────────────────────────────────────────────────────────
+#>  setting  value                       
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
+#>  system   x86_64, darwin17.0          
+#>  ui       X11                         
+#>  language (EN)                        
+#>  collate  en_US.UTF-8                 
+#>  ctype    en_US.UTF-8                 
+#>  tz       Asia/Seoul                  
+#>  date     2021-12-24                  
 #> 
-#>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
-#>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
-#>  tz       Asia/Seoul
-#>  date     2021-12-17
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package     * version date       lib source        
+#>  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.0.2)
+#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.0.2)
+#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample     * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.0.2)
+#>  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick   * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
-#>  package     * version date (UTC) lib source
-#>  broom       * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
-#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.1.0)
-#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.1.0)
-#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  readr       * 2.1.0   2021-11-11 [1] CRAN (R 4.1.0)
-#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample     * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.1.0)
-#>  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick   * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
-#> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-#> 
-#> ────────────────────────────────────────────────────────────────────
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
