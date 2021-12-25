@@ -171,7 +171,7 @@ mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
 ```
 
-When making predictions, the tidymodels convention is to always produce a tibble of results with standardized column names. This makes it easy to combine the original data and the predictions in a usable format: 
+예측값을 만들 때, tidymodels 컨벤션은 결과티블을 항상 표준화된 열이름을 가지도록 만듭니다. 이렇게 하면 원 데이터와 예측값을 다시사용할 수 있는 포맷으로 조합하기 쉬워집니다:
 
 ```{r lm-all-pred}
 conf_int_pred <- predict(lm_fit, 
@@ -198,9 +198,8 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
 
-`linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달됩니다. 
 
-The [documentation](https://mc-stan.org/rstanarm/articles/priors.html) on the rstanarm package shows us that the `stan_glm()` function can be used to estimate this model, and that the function arguments that need to be specified are called `prior` and `prior_intercept`. It turns out that `linear_reg()` has a [`stan` engine](https://tidymodels.github.io/parsnip/reference/linear_reg.html#details). Since these prior distribution arguments are specific to the Stan software, they are passed as arguments to [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html). After that, the same exact `fit()` call is used:
+rstarnarm 패키지에 관한 이 [문서](https://mc-stan.org/rstanarm/articles/priors.html)에는  on the rstanarm package shows us that the `stan_glm()` 함수가 이 모델을 추정하는 데 사용할 수 있고, 이 제공해야할 함수 인수들은 `prior` 와 `prior_intercept` 라고 부른다고 적혀 있습니다. `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달됩니다. 이후에는, 완전히 같은 호출, `fit()` 을 사용합니다:
 
 ```{r go-stan, message = FALSE}
 # set the prior distribution
@@ -223,7 +222,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 ```
 
-This kind of Bayesian analysis (like many models) involves randomly generated numbers in its fitting procedure. We can use `set.seed()` to ensure that the same (pseudo-)random numbers are generated each time we run this code. The number `123` isn't special or related to our data; it is just a "seed" used to choose random numbers.
+이 같은 종류의 베이지언 분석은 (다른 모델들과 같이) 적합과정에서 숫자를 랜덤하게 생성하는 것이 포함되어 있습니다. `set.seed()` 를 사용하여 이 코드를 실행할 때마다 같은 (pseudo-)랜덤 숫자가 생성되도록 할 수 있습니다. 숫자 `123` 은 특별한 의미가 있거나 우리 데이터와 관련이 있는 것은 아닙니다; 단지 랜덤 숫자를 선택할 때 사용된 "시드" 입니다.
 
 파라미터 표를 새로 얻기 위해, 또 한번 `tidy()` 방법을 사용할 수 있습니다:
 
@@ -231,7 +230,7 @@ This kind of Bayesian analysis (like many models) involves randomly generated nu
 tidy(bayes_fit, conf.int = TRUE)
 ```
 
-A goal of the tidymodels packages is that the **interfaces to common tasks are standardized** (as seen in the `tidy()` results above). The same is true for getting predictions; we can use the same code even though the underlying packages use very different syntax:
+tidymodels 패키지의 목표는 **interfaces to common tasks are standardized** (as seen in the `tidy()` results above)입니다. 예측값을 구할 때도 같습니다; 기저의 패키지들이 전혀 다른 문법을 사용하더라도 같은 코드를 사용할 수 있습니다:
 
 ```{r stan-pred}
 bayes_plot_data <- 
@@ -246,17 +245,17 @@ ggplot(bayes_plot_data, aes(x = food_regime)) +
   ggtitle("Bayesian model with t(1) prior distribution")
 ```
 
-This isn't very different from the non-Bayesian results (except in interpretation). 
+베이지언이 아닌 결과와 (해석을 제외하면) 매우 다르지는 않습니다.
 
 {{% note %}} The [parsnip](https://parsnip.tidymodels.org/) package can work with many model types, engines, and arguments. Check out [tidymodels.org/find/parsnip](/find/parsnip/) to see what is available. {{%/ note %}}
 
 ## 어떤 작동원리를 가진것일까? {#why}
 
-The extra step of defining the model using a function like `linear_reg()` might seem superfluous since a call to `lm()` is much more succinct. However, the problem with standard modeling functions is that they don't separate what you want to do from the execution. For example, the process of executing a formula has to happen repeatedly across model calls even when the formula does not change; we can't recycle those computations. 
+`linear_reg()` 와 같은 함수를 사용하여 모델을 정의하는 extra step 은 superfluous 한 것 같은데 `lm()` 을 호출하는 것은 훨씬 간단해 보이기 때문입니다. 하지만, 표준 모델링 함수들의 문제는, 실행하는 것에서 하고 싶은 것을 분리하지 못한다는 것입니다. 예를 들어, 공식을 실행하는 프로세스는 공식이 바뀌지 않았을 때도 모델 호출들을 따라 반복적으로 일어나야 합니다; 이 계산을 재사용할 수 없습니다.
 
-Also, using the tidymodels framework, we can do some interesting things by incrementally creating a model (instead of using single function call). [Model tuning](/start/tuning/) with tidymodels uses the specification of the model to declare what parts of the model should be tuned. That would be very difficult to do if `linear_reg()` immediately fit the model. 
+또한, tidymodels 프레임워크를 사용하면 모델을 점진적으로 생성하면서 (단일 함수 호출을 사용하는 대신) 재미있는 것들을 할 수 있습니다. tidymodels 와 함께 [모델을 튜닝](/start/tuning/)하는 것은 모델 specification 을 사용하여 모델의 어느 부분을 튜닝해야하는지를 선언합니다. 만약 `linear_reg()` 가 즉각 모델을 적합한다면 이 작업을 하는 것은 매우 어렵습니다.
 
-If you are familiar with the tidyverse, you may have noticed that our modeling code uses the magrittr pipe (`%>%`). With dplyr and other tidyverse packages, the pipe works well because all of the functions take the _data_ as the first argument. For example: 
+tidyverse 에 익숙하다면, 우리 모델링 코드가 magrittr 파이프(`%>%`)를 사용한다는 것을 알아차렸을 것입니다. dplyr 과 다른 tidyverse 패키지들에서 파이프를 쓰면 모든 함수들이 _데이터_ 를 첫번째 인수로 사용하기 때문에 작동을 잘 합니다. 예를 들면:
 
 ```{r tidy-data}
 urchins %>% 
@@ -264,14 +263,14 @@ urchins %>%
   summarize(med_vol = median(initial_volume))
 ```
 
-whereas the modeling code uses the pipe to pass around the _model object_:
+모델링 코드는 파이프를 사용하여 _모델객체_ 를 전달합니다:
 
 ```{r tidy-model, eval = FALSE}
 bayes_mod %>% 
   fit(width ~ initial_volume * food_regime, data = urchins)
 ```
 
-This may seem jarring if you have used dplyr a lot, but it is extremely similar to how ggplot2 operates:
+dplyr 을 많이 사용해왔다면 이는 jarring 한 것 처럼 보이지만, ggplot2 가 작동하는 방식과 매우 유사합니다:
 
 ```{r eval=FALSE}
 ggplot(urchins,
