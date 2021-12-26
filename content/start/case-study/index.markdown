@@ -134,17 +134,17 @@ hotel_test  %>%
 #> 2 none     11489 0.919
 ```
 
-지금까지 우리는 주요 리샘플링 방법으로 [`rsample::vfold_cv()`](https://tidymodels.github.io/rsample/reference/vfold_cv.html) 을 사용한 10-fold cross-validation 을 사용했습니다. 이 방법은 트레이닝셋 (_분석_ 과 _평가_ 셋으로 더 쪼갬) 10 개의 다른 리샘플들을 생성하고 10 개의 다른 성능지표들을 생성한 뒤 취합한다.
+지금까지 우리는 주요 리샘플링 방법으로 [`rsample::vfold_cv()`](https://tidymodels.github.io/rsample/reference/vfold_cv.html) 을 사용한 10-fold cross-validation 을 사용했습니다. 이 방법은 트레이닝셋 ( _분석_ 과 _평가_ 셋으로 더 쪼갬) 10 개의 다른 리샘플들을 생성하고 10 개의 다른 성능지표들을 생성한 뒤 취합한다.
 
-For this case study, rather than using multiple iterations of resampling, let's create a single resample called a _validation set_. In tidymodels, a validation set is treated as a single iteration of resampling. This will be a split from the 37,500 stays that were not used for testing, which we called `hotel_other`. This split creates two new datasets: 
+이번 케이스 스터디에 대해, 여러번 리샘플링 하는 것 대신, _validation set_ 이라고 부르는 리샘플 하나만 생성해봅시다. tidymodels 에서 validation set 은 리샘플링 일반복으로 취급됩니다. `hotel_other` 라고 부르는 테스팅 사용되지 않은 37,500 개의 숙박으로 부터 split 이 될 것입니다. 이 split 은 두 개의 새로운 데이터셋을 생성합니다:
 
-+ the set held out for the purpose of measuring performance, called the _validation set_, and 
++ _validation set_ 이라고 부르는, 성능측정 목적으로 따로 떼어낸 셋
 
-+ the remaining data used to fit the model, called the _training set_. 
++ _training set_ 이라고 부르는, 모델 적합하는데 사용하는 남은 데이터셋. 
 
 <img src="img/validation-split.svg" width="50%" style="display: block; margin: auto;" />
 
-We'll use the `validation_split()` function to allocate 20% of the `hotel_other` stays to the _validation set_ and 30,000 stays to the _training set_. This means that our model performance metrics will be computed on a single set of 7,500 hotel stays. This is fairly large, so the amount of data should provide enough precision to be a reliable indicator for how well each model predicts the outcome with a single iteration of resampling.
+`validation_split()` 함수를 사용하여 20% of the `hotel_other` 숙박의 20% 를  _validation set_ 에 30,000 숙박은 _training set_ 에 할당할 것입니다. 이는 우리 모델 성능 지표가 7,500 개의 호텔 숙박 데이터셋으로 계산된다는 것을 의미합니다. 이는 꽤 큰 규모여서, 이러한 데이터 양은 각 모델이 리샘플링 일반복으로 얼마나 잘 예측하는지에 대한 믿을만한 지표가 되기 충분한 precision 을 제공할 것입니다.
 
 
 ```r
@@ -160,15 +160,15 @@ val_set
 #> 1 <split [30000/7500]> validation
 ```
 
-This function, like `initial_split()`, has the same `strata` argument, which uses stratified sampling to create the resample. This means that we'll have roughly the same proportions of hotel stays with and without children in our new validation and training sets, as compared to the original `hotel_other` proportions.
+이 함수는 `initial_split()` 과 같이 `strata` 인수를 갖는데, 층화 샘플링을 사용하여 리샘플을 생성합니다. 이는 새로운 validation 과 training set 이 아이들이 있고 없는 숙박의 비율이 원 `hotel_other` 비율과 비교하여 대략 같은 비율이 될 것이라는 점을 의미합니다.
 
 ## 첫 모델: penalized logistic regression {#first-model}
 
-Since our outcome variable `children` is categorical, logistic regression would be a good first model to start. Let's use a model that can perform feature selection during training. The [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) R package fits a generalized linear model via penalized maximum likelihood. This method of estimating the logistic regression slope parameters uses a _penalty_ on the process so that less relevant predictors are driven towards a value of zero. One of the glmnet penalization methods, called the [lasso method](https://en.wikipedia.org/wiki/Lasso_(statistics)), can actually set the predictor slopes to zero if a large enough penalty is used. 
+우리의 반응변수 `children` 은 범주형이기 때문에, 로지스틱 회귀가 시작하기 좋은 첫번째 모델이 됩니다. 트레이닝 동안 feature selection 을 수행할 모델을 사용해봅시다. [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) R 패키지는 penalized maximum likelihood 를 통해 일반화 선형 모형을 적합합니다. 로지스틱 회귀 기울기 파라미터 추정방법은 _penalty_ 를 프로세스에 사용해서 덜 관련된 설명변수들을 0 값으로 보냅니다. glmnet penalization 방법들 중 하나인, [lasso method](https://en.wikipedia.org/wiki/Lasso_(statistics)) 은 충분히 큰 penalty 가 사용되면 설명변수 기울기를 실제 0 으로 설정할 수 있습니다. 
 
-### Build the model
+### 모델 만들기
 
-To specify a penalized logistic regression model that uses a feature selection penalty, let's use the parsnip package with the [glmnet engine](/find/parsnip/):  
+feature selection penalty 를 사용하는 penalized 로지스틱 회구 모델을 specify 하기 위해 parsnip 패키지를 [glmnet engine](/find/parsnip/) 과 사용해 봅시다:  
 
 
 ```r
@@ -181,23 +181,23 @@ We'll set the `penalty` argument to `tune()` as a placeholder for now. This is a
 
 ### Create the recipe 
 
-Let's create a [recipe](/start/recipes/) to define the preprocessing steps we need to prepare our hotel stays data for this model. It might make sense to create a set of date-based predictors that reflect important components related to the arrival date. We have already introduced a [number of useful recipe steps](/start/recipes/#features) for creating features from dates:
+[recipe](/start/recipes/) 를 생성하여 이 모델을 위해 호텔숙박 데이터를 준비하는 전처리 과정을 정의해 봅시다. 도착 날짜에 관련된 중요한 구성요소들을 반영하는 데이터 기반 설명변수 셋을 생성하는 것이 의미가 있을 수 있습니다. 우리는 이미 앞에서 [여러 recipe step](/start/recipes/#features)을 소개하여 날짜로 부터 피쳐들을 생성해보았습니다:
 
-+ `step_date()` creates predictors for the year, month, and day of the week.
++ `step_date()` 은 연도, 월, 요일 설명변수를 생성.
 
-+ `step_holiday()` generates a set of indicator variables for specific holidays. Although we don't know where these two hotels are located, we do know that the countries for origin for most stays are based in Europe.
++ `step_holiday()` 은 특별한 holiday 를 가리키는 변수 집합을 생성. 이 호텔이 어디에 위치해 있는지 알지 못해도, 대부분 숙박의 origin 을 위한 국가들이 유럽에 기반하고 있다는 것은 알고 있습니다.
 
-+ `step_rm()` removes variables; here we'll use it to remove the original date variable since we no longer want it in the model.
++ `step_rm()` 은 변수들을 제거; 여기서 우리는 원 날짜 변수를 모델에서 더 이상 사용하지 않아서, 이를 제거하기 위해 사용할 것이다.
 
-Additionally, all categorical predictors (e.g., `distribution_channel`, `hotel`, ...) should be converted to dummy variables, and all numeric predictors need to be centered and scaled.
+추가적으로 모든 범주형 설명변수 (예, `distribution_channel`, `hotel`, ...) 들은 더미 변수들로 바뀔 것이고, 모든 수치형 변수들은 centered 되고 scaled 될 것이다.
 
-+ `step_dummy()` converts characters or factors (i.e., nominal variables) into one or more numeric binary model terms for the levels of the original data.
++ `step_dummy()` 는 문자와 팩터형 (즉, 명목형 변수들) 을 원 데이터의 수준들을 위한 하나 이상의 수치형 binary model terms 으로 변환.
 
-+ `step_zv()` removes indicator variables that only contain a single unique value (e.g. all zeros). This is important because, for penalized models, the predictors should be centered and scaled.
++ `step_zv()` 은 하나의 유일한 값을 하나만 포함(예, 모두 0)하는 indicator 변수들을 제거. penalized models 에서 설명변수는 center 되고 scale 되어야 하기 때문에 이 스텝은 중요합니다.
 
-+ `step_normalize()` centers and scales numeric variables.
++ `step_normalize()` 는 수치형 변수들을 centering 하고 scaling 함.
 
-Putting all these steps together into a recipe for a penalized logistic regression model, we have: 
+이 모든 스텝의 penalized logistic regression 모델의 레시피로 묶으면: 
 
 
 ```r
@@ -215,9 +215,9 @@ lr_recipe <-
 ```
 
 
-### Create the workflow
+### 워크플로 생성
 
-As we introduced in [*Preprocess your data with recipes*](/start/recipes/#fit-workflow), let's bundle the model and recipe into a single `workflow()` object to make management of the R objects easier:
+[*레시피로 전처리하기*](/start/recipes/#fit-workflow)에서와 같이, 모델와 레시피를 하나의 `workflow()` 객체로 번들하여 R 객체 관리를 더 쉽게 해 봅시다:
 
 
 ```r
@@ -227,9 +227,9 @@ lr_workflow <-
   add_recipe(lr_recipe)
 ```
 
-### Create the grid for tuning
+### 튜닝을 위한 그리드 생성
 
-Before we fit this model, we need to set up a grid of `penalty` values to tune. In our [*Tune model parameters*](/start/tuning/) article, we used [`dials::grid_regular()`](start/tuning/#tune-grid) to create an expanded grid based on a combination of two hyperparameters. Since we have only one hyperparameter to tune here, we can set the grid up manually using a one-column tibble with 30 candidate values:
+이 모델을 적합하기 전에, 튜닝할 `penalty` 값의 그리드를 설정해야 합니다. [*모델 파라미터 튜닝하기*](/start/tuning/) 장에서 [`dials::grid_regular()`](start/tuning/#tune-grid)을 사용하여 하이퍼파라미터 두개의 조합에 기반하여 expanded 그리드를 생성하였습니다. 여기서 튜닝할 하이퍼파라미터가 하나이므로, 30개 후보 값들을 가진 하나의 열 티블을 수동으로 이용하여 그리드를 설정할 수 있습니다.
 
 
 ```r
@@ -257,9 +257,9 @@ lr_reg_grid %>% top_n(5)  # highest penalty values
 #> 5  0.1
 ```
 
-### Train and tune the model
+### 모델 훈련과 튜닝하기
 
-Let's use `tune::tune_grid()` to train these 30 penalized logistic regression models. We'll also save the validation set predictions (via the call to `control_grid()`) so that diagnostic information can be available after the model fit. The area under the ROC curve will be used to quantify how well the model performs across a continuum of event thresholds (recall that the event rate&mdash;the proportion of stays including children&mdash; is very low for these data). 
+`tune::tune_grid()` 를 사용하여 이 30 개의 penalized logistic regression models 을 훈련시켜 봅시다. validation set 예측값을 저장할 수 있는데 (`control_grid()` 호출 사용) 이렇게 하면, 진단정보가 모델 적합 이후 사용할 수 있습니다. 이벤트 threshold 의 continum 을 통튼 모델 성능을 정량화하는데 Area under ROC 커브를 사용할 것입니다 (event rate&mdash;아이들을 포함한 숙박비율&mdash 이 데이터에서 매우 낮음을 기억하세요).
 
 
 ```r
@@ -271,7 +271,7 @@ lr_res <-
             metrics = metric_set(roc_auc))
 ```
 
-It might be easier to visualize the validation set metrics by plotting the area under the ROC curve against the range of penalty values: 
+area under the ROC 커브를 penalty 값들 범위에 상대하여 plotting 하면 validation set 지표들을 시각화 하는 것이 더 쉬울 것입니다:
 
 
 ```r
@@ -289,9 +289,9 @@ lr_plot
 
 <img src="figs/logistic-results-1.svg" width="576" />
 
-This plots shows us that model performance is generally better at the smaller penalty values. This suggests that the majority of the predictors are important to the model. We also see a steep drop in the area under the ROC curve towards the highest penalty values. This happens because a large enough penalty will remove _all_ predictors from the model, and not surprisingly predictive accuracy plummets with no predictors in the model (recall that an ROC AUC value of 0.50 means that the model does no better than chance at predicting the correct class).
+이 플롯은 모델 성능이 더 작은 penalty 값들에서 일반적으로 더 좋다는 것을 보여줍니다. 이는 설명변수 대부분이 모델에 중요하다는 것을 제안합니다. ROC 커브가 높은 penalty 값에서 가파르게 떨어지는 것을 볼 수도 있습니다. 충분히 큰 penalty 는 모델에서 _모든_ 설명변수들을 제거할 것이기 때문에 발생합니다. 예측정확도가 설명변수가 없는 모델에서 급감하는 것은 놀라운 일이 아닙니다 (0.50 ROC AUC 값은 모델이 맞는 클래스를 예측할 때 우연히 하는 것과 성능이 같다는 것을 의미한다는 것을 기억하세요).
 
-Our model performance seems to plateau at the smaller penalty values, so going by the `roc_auc` metric alone could lead us to multiple options for the "best" value for this hyperparameter: 
+우리 모델 성능은 더 작은 페널티 값에서 평평한 것 처럼 보입니다. 따라서 `roc_auc` 하나만 사용하면 하이퍼파라미터의 "가장좋은" 값에 여러 옵션들이 있다고 결론내리게 됩니다: 
 
 
 ```r
@@ -322,7 +322,7 @@ top_models
 
 
 
-Every candidate model in this tibble likely includes more predictor variables than the model in the row below it. If we used `select_best()`, it would return candidate model 11 with a penalty value of 0.00137, shown with the dotted line below. 
+이 티블의 모든 후보모델은 아래 행의 모델보다 더 많은 설명변수를 가집니다. `select_best()` 를 하면 점선보다 낮은 값에 보이는 0.00137 페널티 값을 가진 후보 모델 11 를 반환할 것입니다.
 
 <img src="figs/lr-plot-lines-1.svg" width="576" />
 
@@ -373,10 +373,10 @@ But, here we are using a single validation set, so parallelization isn't an opti
 ```r
 cores <- parallel::detectCores()
 cores
-#> [1] 8
+#> [1] 4
 ```
 
-We have 8 cores to work with. We can pass this information to the ranger engine when we set up our parsnip `rand_forest()` model. To enable parallel processing, we can pass engine-specific arguments like `num.threads` to ranger when we set the engine: 
+We have 4 cores to work with. We can pass this information to the ranger engine when we set up our parsnip `rand_forest()` model. To enable parallel processing, we can pass engine-specific arguments like `num.threads` to ranger when we set the engine: 
 
 
 ```r
@@ -649,43 +649,39 @@ Here are some more ideas for where to go next:
 
 
 ```
-#> ─ Session info  🧁  🧭  🎷   ───────────────────────────────────────
-#>  hash: cupcake, compass, saxophone
+#> ─ Session info ───────────────────────────────────────────────────────────────
+#>  setting  value                       
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
+#>  system   x86_64, darwin17.0          
+#>  ui       X11                         
+#>  language (EN)                        
+#>  collate  en_US.UTF-8                 
+#>  ctype    en_US.UTF-8                 
+#>  tz       Asia/Seoul                  
+#>  date     2021-12-26                  
 #> 
-#>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
-#>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
-#>  tz       Asia/Seoul
-#>  date     2021-12-17
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package    * version date       lib source        
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  glmnet     * 4.0     2020-05-14 [1] CRAN (R 4.0.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  ranger     * 0.13.1  2021-07-14 [1] CRAN (R 4.0.2)
+#>  readr      * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
-#>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  ranger       0.13.1  2021-07-14 [1] CRAN (R 4.1.0)
-#>  readr      * 2.1.0   2021-11-11 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  vip        * 0.3.2   2020-12-17 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
-#> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-#> 
-#> ────────────────────────────────────────────────────────────────────
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
