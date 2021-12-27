@@ -136,9 +136,9 @@ lr_mod <-
   set_engine("glmnet")
 ```
 
-We'll set the `penalty` argument to `tune()` as a placeholder for now. This is a model hyperparameter that we will [tune](/start/tuning/) to find the best value for making predictions with our data. Setting `mixture` to a value of one means that the glmnet model will potentially remove irrelevant predictors and choose a simpler model. 
+여기서 `tune()` 을 이용해서 튜닝할 `penalty` 인수를 지금은 placeholder 로 설정할 것입니다. 이 인수는 우리 데이터로 예측을 하기 위한 가장 좋은 값을 찾아야 찾는 [튜닝](/start/tuning/)할 모델 하이퍼파라미터입니다. `mixture` 를 1 로 설정하는 것은 glmnet 모델이 잠재적으로 관계없는 예측을 제거하고 단순한 모델을 선택할 것이라는 것을 의미합니다. 
 
-### Create the recipe 
+### 레시피 생성하기 
 
 [recipe](/start/recipes/) 를 생성하여 이 모델을 위해 호텔숙박 데이터를 준비하는 전처리 과정을 정의해 봅시다. 도착 날짜에 관련된 중요한 구성요소들을 반영하는 데이터 기반 설명변수 셋을 생성하는 것이 의미가 있을 수 있습니다. 우리는 이미 앞에서 [여러 recipe step](/start/recipes/#features)을 소개하여 날짜로 부터 피쳐들을 생성해보았습니다:
 
@@ -299,22 +299,20 @@ autoplot(lr_auc)
 
 ## 두번째 모델: tree-based ensemble {#second-model}
 
-효과적이면서 low-maintenance 모델링 기법은 _랜덤포레스트_ 입니다. 이 모델은 [*resampling 으로 모델평가하기*](/start/resampling/) 장에서 사용되기도 했습니다. 로지스틱 회귀와 비교하여, 랜덤포레스트 모델은 더 유연합니다.
+효과적이면서 low-maintenance 모델링 기법은 _랜덤포레스트_ 입니다. 이 모델은 [*resampling 으로 모델평가하기*](/start/resampling/) 장에서 사용되기도 했습니다. 로지스틱 회귀와 비교하여, 랜덤포레스트 모델은 더 유연합니다. 랜덤 포레스트는 일반적으로 각 수천개의 decision tree 들로 구성된 _앙상블모델_ 입니다. 각 트리는 약간 다른 버전의 트레이닝 데이터를 만나게 되고, 새로운 데이터를 예측하기 위한 splitting rule sequence 를 학습합니다. 각 tree 는 비선형이고 tree들을 aggregate 하면 랜덤 포레스트를 또한 비선형이 되지만 단일 tree 에 비해 더 robust 하고 안정성있게 됩니다. 랜덤 포레스트 같은 트리 기반 모델들은 전처리를 거의 필요로 하지 않고 다양한 종류의 설명변수들(sparse, skewed, continuous, categorical 등)을 효과적으로 다룰 수 있습니다. 
 
-An effective and low-maintenance modeling technique is a _random forest_. This model was also used in our [*Evaluate your model with resampling*](/start/resampling/) article. Compared to logistic regression, a random forest model is more flexible. A random forest is an _ensemble model_ typically made up of thousands of decision trees, where each individual tree sees a slightly different version of the training data and learns a sequence of splitting rules to predict new data. Each tree is non-linear, and aggregating across trees makes random forests also non-linear but more robust and stable compared to individual trees. Tree-based models like random forests require very little preprocessing and can effectively handle many types of predictors (sparse, skewed, continuous, categorical, etc.).
+### 모델 구축과 학습 시간 개선
 
-### Build the model and improve training time
+랜덤포레스트의 기본값 하이퍼파라미터가 꽤 괜찮은 결과를 주곤 하지만, 성능이 개선시킬 거라고 생각되는 하이퍼 파라미터 두개를 튜닝해 보려고 합니다. 안타깝게도, 랜덤 포레스트 모델을 훈련시키고 튜닝하는 것은 computationally expensive 할 수 있습니다. 모델 튜닝에 필요한 계산은 학습 시간을 개선시키기 위해 쇱게 병렬화 될 수 있습니다. tune 패키지는 [parallel processing](https://tidymodels.github.io/tune/articles/extras/optimizations.html#parallel-processing)을 대신해 줄 수 있고 사용자들이 모델을 적합할 목적으로 멀티코어나 separate machines 를 사용할 수 있게 해줍니다. 
 
-Although the default hyperparameters for random forests tend to give reasonable results, we'll plan to tune two hyperparameters that we think could improve performance. Unfortunately, random forest models can be computationally expensive to train and to tune. The computations required for model tuning can usually be easily parallelized to improve training time. The tune package can do [parallel processing](https://tidymodels.github.io/tune/articles/extras/optimizations.html#parallel-processing) for you, and allows users to use multiple cores or separate machines to fit models. 
-
-But, here we are using a single validation set, so parallelization isn't an option using the tune package. For this specific case study, a good alternative is provided by the engine itself. The ranger package offers a built-in way to compute individual random forest models in parallel. To do this, we need to know the the number of cores we have to work with. We can use the parallel package to query the number of cores on your own computer to understand how much parallelization you can do: 
+하지만, 여기서 우리는 하나의 validation set 을 사용하고 있기 때문에, 병렬화는 tune 패키지를 사용하는 option 이 아닙니다. 우리의 케이스 스터디에서 엔진 자체가 좋은 대안을 제공합니다. ranger 패키지는 개별 랜덤 포레스트 모델을 병렬로 계산하는 빌트인 방법을 제공합니다. 이를 하기 위해, 우리가 작업해야 하는 코어 수를 알아야 합니다. parallel 패키지를 사용하여 얼마나 병렬화를 할 수 있는지 이해하기 위해 당신이 가진 컴퓨터의 코어 수를 조회할 수 있습니다:
 
 ```{r num-cores}
 cores <- parallel::detectCores()
 cores
 ```
 
-We have `r cores` cores to work with. We can pass this information to the ranger engine when we set up our parsnip `rand_forest()` model. To enable parallel processing, we can pass engine-specific arguments like `num.threads` to ranger when we set the engine: 
+우리는 `r cores` 개의 코어로 작업할 수 있습니다. parsnip `rand_forest()` 모델을 설정할 때 ranger 엔진에게 이 정보를 전달할 수 있습니다. 병렬 프로세싱을 하기 위해, `num.threads` 와 같은 엔진-specific 한 인수들을 다음과 같이 ranger 에 전달할 수 있습니다:
 
 ```{r rf-model}
 rf_mod <- 
@@ -323,13 +321,13 @@ rf_mod <-
   set_mode("classification")
 ```
 
-This works well in this modeling context, but it bears repeating: if you use any other resampling method, let tune do the parallel processing for you &mdash; we typically do not recommend relying on the modeling engine (like we did here) to do this.
+이 모델링 컨텍스트에서 잘 작동하지만, 반복하지 못합니다: 다른 resampling 방법을 사용하면, tune 이 자동으로 병렬 프로세싱을 합니다&mdash; 병렬 프로세싱을 위해 일반적으로 (여기서 우리가 했듯이) 모델링 엔진에 의존하는 것을 추천하지 않습니다.
 
-In this model, we used `tune()` as a placeholder for the `mtry` and `min_n` argument values, because these are our two hyperparameters that we will [tune](/start/tuning/).  
+이 모델에서, 우리는 `mtry` 와 `min_n` 인수 값들을 위한 placeholder 로 `tune()` 을 사용했습니다. 왜냐하면 이들이 우리가 [튜닝](/start/tuning/)할 하이퍼파라미터들이기 때문입니다..  
 
-### Create the recipe and workflow
+### 레시피와 워크플로 생성하기
 
-Unlike penalized logistic regression models, random forest models do not require [dummy](https://bookdown.org/max/FES/categorical-trees.html) or normalized predictor variables. Nevertheless, we want to do some feature engineering again with our `arrival_date` variable. As before, the date predictor is engineered so that the random forest model does not need to work hard to tease these potential patterns from the data.  
+penalized logistic regression model과 다르게 random forest model은 [더미](https://bookdown.org/max/FES/categorical-trees.html)나 정규화된 설명변수들을 필요로 하지 않습니다. 그럼에도 불구하고 `arrival_date` 변수에 다시한번 피쳐 엔지니어링을 하고 싶습니다. 전과 같이 날짜 설명변수는 randome forest 가 데이터에서 잠재된 패턴들을 너무 열심히 tease 하지 않도록 engineered 되었습니다.
 
 ```{r rf-features}
 rf_recipe <- 
@@ -339,7 +337,7 @@ rf_recipe <-
   step_rm(arrival_date) 
 ```
 
-Adding this recipe to our parsnip model gives us a new workflow for predicting whether a hotel stay included children and/or babies as guests with a random forest:
+이 레시피를 우리 parsnip 모델에 추가해서 호텔숙박이 어린이나 아기들을 게스트로 포함했는지 아닌지를 랜덤포레스트로 예측하는 새로운 워크플로가 생겼습니다. 
 
 ```{r rf-workflow}
 rf_workflow <- 
@@ -348,9 +346,9 @@ rf_workflow <-
   add_recipe(rf_recipe)
 ```
 
-### Train and tune the model
+### 모델 훈련하기와 튜닝하기
 
-When we set up our parsnip model, we chose two hyperparameters for tuning:
+parsnip 모델을 설정할 때 우리는 튜닝할 두 개의 하이퍼파라미터를 선택했습니다:
 
 ```{r message=FALSE}
 rf_mod
@@ -360,9 +358,9 @@ rf_mod %>%
   parameters()  
 ```
 
-The `mtry` hyperparameter sets the number of predictor variables that each node in the decision tree "sees" and can learn about, so it can range from 1 to the total number of features present; when `mtry` = all possible features, the model is the same as bagging decision trees. The `min_n` hyperparameter sets the minimum `n` to split at any node.
+`mtry` 하이퍼파라미터는 의사결정 나무의 각 노드가 만나고 학습하는 설명변수의 숫자를 설정하는데, 1에서 부터 존재하는 피쳐의 총 개수까지의 범위를 가집니다; `mtry` = 가능한 피쳐숫자 이면 모델은 배깅 decision tree 와 같습니다.  `min_n` 하이퍼파라미터는 어떤 노드에서 split 할 최소 `n` 을 설정합니다.
 
-We will use a space-filling design to tune, with 25 candidate models: 
+우리는 튜닝할 space-filling 디자인을 25 개의 후보 모델들과 사용할 것입니다: 
 
 ```{r rf-fit, cache = TRUE}
 set.seed(345)
@@ -374,24 +372,24 @@ rf_res <-
             metrics = metric_set(roc_auc))
 ```
 
-The message printed above *"Creating pre-processing data to finalize unknown parameter: mtry"* is related to the size of the data set. Since `mtry` depends on the number of predictors in the data set, `tune_grid()` determines the upper bound for `mtry` once it receives the data. 
+위에 출력되는 *"Creating pre-processing data to finalize unknown parameter: mtry"* 라는 메세지는 데이터셋 사이즈와 관련이 있습니다. `mtry` 는 데이터셋에서 설명변수의 개수에 의존하기 때문에, `tune_grid()` 는 `mtry` 가 데이터를 받을 때의 upper bound 를 결정합니다. 
 
-Here are our top 5 random forest models, out of the 25 candidates:
+여기에 25 개의 후보모델들 중 top 5 랜덤 포레스트 모델이 있습니다:
 
 ```{r}
 rf_res %>% 
   show_best(metric = "roc_auc")
 ```
 
-Right away, we see that these values for area under the ROC look more promising than our top model using penalized logistic regression, which yielded an ROC AUC of `r format(select_roc, digits = 3)`.
+바로 이 ROC AUC 값들이 우리가 penalized 로지스틱회귀를 사용한, ROC AUC of `r format(select_roc, digits = 3)` 의 값을 얻었던 top model 보다 더 좋은 것처럼 보입니다. 
 
-Plotting the results of the tuning process highlights that both `mtry` (number of predictors at each node) and `min_n` (minimum number of data points required to keep splitting) should be fairly small to optimize performance. However, the range of the y-axis indicates that the model is very robust to the choice of these parameter values &mdash; all but one of the ROC AUC values are greater than 0.90.
+튜닝 프로세스의 결과를 플롯팅해 보면 성능을 최적화 하기 위해 `mtry` (number of predictors at each node)와 `min_n` (minimum number of data points required to keep splitting) 두개 모두 꽤 작아야 한다는 것을 강조하여 보여줍니다. 하지만, y-축 범위는 모델이 이 파라미터 값 선택에 있어 매우 로버스트하다는 것을 보여줍니다 &mdash; ROC AUC 값 중 하나를 제외한 모든 값들이 0.90 보다 큽니다. 
 
 ```{r rf-results, fig.height = 4}
 autoplot(rf_res)
 ```
 
-Let's select the best model according to the ROC AUC metric. Our final tuning parameter values are:
+ROC AUC 지표에 따른 가장 좋은 모델을 선택해 봅시다. 우리의 최종 튜닝 파라미터는:
 
 ```{r rf-best}
 rf_best <- 
@@ -400,7 +398,7 @@ rf_best <-
 rf_best
 ```
 
-To calculate the data needed to plot the ROC curve, we use `collect_predictions()`. This is only possible after tuning with `control_grid(save_pred = TRUE)`. In the output, you can see the two columns that hold our class probabilities for predicting hotel stays including and not including children.
+ROC 커브를 플롯하기 위해 필요한 데이터를 계산하기 위해 `collect_predictions()`를 사용합니다. `control_grid(save_pred = TRUE)` 으로 튜닝한 다음에야 가능합니다. 출력에서 아이들을 포함하고 하지않는 호텔숙박을 예측하는 클래스 확률을 포함하는 두 개의 열을 볼 수 있습니다. 
 
 ```{r R.options = list(tibble.print_min = 5)}
 rf_res %>% 
