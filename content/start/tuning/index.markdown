@@ -4,7 +4,7 @@ weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
 description: | 
-  모델 훈련동안 직접 학습될 수 엇ㅂ는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
+  모델 훈련동안 직접 학습될 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
 ---
 
 
@@ -32,7 +32,7 @@ library(vip)         # for variable importance plots
 
 ## 세포 이미지 데이터, 계속 {#data}
 
-이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 여기서 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
+이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
 
 
 ```r

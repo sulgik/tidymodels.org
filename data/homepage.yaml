@@ -1,14 +1,14 @@
 bandtwo:
 - url: /start/
-  title: Get Started
+  title: 시작하기
   icon: fa-flag-checkered
   icon_pack: fas
   what: |
-    What do you need to know to start using tidymodels? Learn what you need in 5 articles, starting with how to create a model and ending with a beginning-to-end modeling case study.
+    tidymodels 를 사용하기 위해 무엇을 알아야 할까요? 다섯 장에서 필요한 것을 배우세요. 모델을 생성하는 것부터 시작해서, 모델링 전과정 사례연구로 마무리합니다. 
 
 - url: /learn/
-  title: Learn
+  title: 배우기
   icon: fa-lightbulb
   icon_pack: far
   what: |
-    After you are comfortable with the basics, you can learn how to go farther with tidymodels in your modeling and machine learning projects.
+    기초항목들을 익혔다면, 모델링/머신러닝 프로젝트에서 tidymodels 를 더 깊게 사용하는 법을 배울 수 있습니다.

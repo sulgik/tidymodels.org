@@ -114,7 +114,7 @@ cells %>%
 
 랜덤 샘플링은 랜덤넘버를 사용하기 때문에, 랜덤넘버 씨드를 설정하는 것이 중요합니다. 랜덤넘버는 (필요시) 나중에 랜덤넘버를 재현할 수 있게 해 줍니다. 
 
-함수 `rsample::initial_split()` 은 원데이터를 입력으로, 어떻게 분리하는 지에 대한 정보를 저장합니다. 원 분석에서, 저자들은 자신들만의 트레이닝/테스트셋을 만들었고, 이 정보는 `case`열에 저장됩니다. 나눈 방법을 보여주기 위해, 우리만의 분리를 하기 전에 이 열을 제거할 것입니다:
+함수 `rsample::initial_split()` 은 원데이터를 입력으로, 어떻게 분리하는지에 대한 정보를 저장합니다. 원 분석에서, 저자들은 자신들만의 트레이닝/테스트셋을 만들었고, 이 정보는 `case`열에 저장됩니다. 나눈 방법을 보여주기 위해, 우리만의 분리를 하기 전에 이 열을 제거할 것입니다:
 
 
 ```r
@@ -188,7 +188,7 @@ rf_fit <-
 rf_fit
 #> parsnip model object
 #> 
-#> Fit time:  2.2s 
+#> Fit time:  2.3s 
 #> Ranger result
 #> 
 #> Call:
@@ -500,7 +500,7 @@ rf_testing_pred %>%                   # test set predictions
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-21
+#>  date     2021-12-28
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
