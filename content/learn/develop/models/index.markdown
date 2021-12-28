@@ -18,10 +18,10 @@ description: |
 
 The parsnip 패키지는 모델과 예측의 행동을 공식으로 표현하여 이들을 만듭니다. 이유는 다음과 같습니다:
 
- * 중복된 코드 다수가 제거됨
- * Since the expressions are not evaluated until fitting, it eliminates many package dependencies.
+ * 중복된 코드 다수가 제거됨.
+ * 표현식이 적합되기 전에는 evaluate 되지 않기 때문에, 패키지 의존성문제의 다수가 제거됨.
 
-parsnip 모델 함수는 is itself very general. For example, the `logistic_reg()` function itself doesn't have any model code within it. Instead, each model function is associated with one or more computational _engines_. These might be different R packages or some function in another language (that can be evaluated by R).  
+parsnip 모델 함수는 그 자체로 매우 일반적입니다. 예를 들어, `logistic_reg()` 함수 자체는 내부에 모델 코드가 없습니다. 대신, 각 모델 함수는 하나 이상의 computational _엔진_ 과 짝을 이룹니다. These might be different R packages or some function in another language (that can be evaluated by R).  
 
 This article describes the process of creating a new model function. Before proceeding, take a minute and read our [guidelines on creating modeling packages](https://tidymodels.github.io/model-implementation-principles/) to understand the general themes and conventions that we use.  
 
@@ -48,7 +48,7 @@ Before proceeding, it helps to to review how parsnip categorizes models:
 
 * Within a model type is the _mode_, related to the modeling goal. Currently the two modes in the package are regression and classification. Some models have methods for both models (e.g. nearest neighbors) while others have only a single mode (e.g. logistic regression). 
 
-* The computation _engine_ is a combination of the estimation method and the implementation. For example, for linear regression, one engine is `"lm"` which uses ordinary least squares analysis via the `lm()` function. Another engine is `"stan"` which uses the Stan infrastructure to estimate parameters using Bayes rule. 
+* 계산 _엔진_ 은 추정 방법과 구현으로 이루어져 있습니다. 선형회귀를 예로 들면 `"lm"` 엔진은, `lm()` 함수를 통해 ordinary least squares 분석을 사용합니다. 또 다른 엔진인 `"stan"` 은 Stan infrastructure 를 사용하여 파라미터를 Bayes rule 기반으로 추정합니다. 
 
 When adding a model into parsnip, the user has to specify which modes and engines are used. The package also enables users to add a new mode or engine to an existing model. 
 
@@ -58,7 +58,7 @@ The parsnip package stores information about the models in an internal environme
 
 If you are adding a new model from your own package, you can use these functions to add new entries into the model environment. 
 
-### Step 1. Register the model, modes, and arguments
+### 1 단계. 모델, 모드, 인수 등록
 
 We will add the MDA model using the model type `discrim_mixture`. Since this is a classification method, we only have to register a single mode:
 
@@ -131,7 +131,7 @@ show_model_info("discrim_mixture")
 #>  no registered prediction modules.
 ```
 
-### Step 2. Create the model function
+### 2 단계. 모델 함수 생성
 
 This is a fairly simple function that can follow a basic template. The main arguments to our function will be:
 
@@ -169,15 +169,15 @@ This is pretty simple since the data are not exposed to this function.
 
 {{% warning %}} We strongly suggest favoring `rlang::abort()` and `rlang::warn()` over `stop()` and `warning()`. The former return better traceback results and have safer defaults for handling call objects. {{%/ warning %}}
 
-### Step 3. Add a fit module
+### 3 단계. fit 모듈을 추가
 
 Now that parsnip knows about the model, mode, and engine, we can give it the information on fitting the model for our engine. The information needed to fit the model is contained in another list. The elements are:
 
  * `interface` is a single character value that could be "formula", "data.frame", or "matrix". This defines the type of interface used by the underlying fit function (`mda::mda`, in this case). This helps the translation of the data to be in an appropriate format for the that function. 
  
- * `protect` is an optional list of function arguments that **should not be changeable** by the user. In this case, we probably don't want users to pass data values to these arguments (until the `fit()` function is called).
+ * `protect` 는 사용자가 **변경하면 안되는** 선택적인 함수 인수 리스트입니다. 이 경우, 사용자가 데이터 값을 이 인수들에 전달하지 않기를 원할 것입니다 (`fit()` 함수가 호출되기 전에는).
  
- * `func` is the package and name of the function that will be called. If you are using a locally defined function, only `fun` is required. 
+ * `func` 는 호출될 패키지와 함수의 이름입니다. 로컬에서 정의된 함수를 사용하고 있다면, `fun` 만 요구됩니다. 
  
  * `defaults` is an optional list of arguments to the fit function that the user can change, but whose defaults can be set here. This isn't needed in this case, but is described later in this document.
 
@@ -215,6 +215,8 @@ show_model_info("discrim_mixture")
 #>  no registered prediction modules.
 ```
 
+설명변수가 어떻게 다루어져야 하는지에 관한 정보도 설정합니다. 
+
 We also set up the information on how the predictors should be handled. These options ensure that the data that parsnip gives to the underlying model allows for a model fit that is as similar as possible to what it would have produced directly.
 
  * `predictor_indicators` describes whether and how to create indicator/dummy variables from factor predictors. There are three options: `"none"` (do not expand factor predictors), `"traditional"` (apply the standard `model.matrix()` encodings), and `"one_hot"` (create the complete set including the baseline level for all factors). 
@@ -241,7 +243,7 @@ set_encoding(
 ```
 
 
-### Step 4. Add modules for prediction
+### 4 단계. 예측을 위한 모듈 추가
 
 Similar to the fitting module, we specify the code for making different types of predictions. To make hard class predictions, the `class` object contains the details. The elements of the list are:
 
@@ -374,7 +376,7 @@ mda_fit <- mda_spec %>%
 mda_fit
 #> parsnip model object
 #> 
-#> Fit time:  28ms 
+#> Fit time:  25ms 
 #> Call:
 #> mda::mda(formula = Class ~ ., data = data, subclasses = ~2)
 #> 
