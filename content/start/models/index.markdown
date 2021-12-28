@@ -158,7 +158,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  4ms 
+#> Fit time:  3ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -238,7 +238,7 @@ mean_pred
 #> 3 0.0961
 ```
 
-예측값을 만들 때, tidymodels 컨벤션은 결과티블을 항상 표준화된 열이름을 가지도록 만듭니다. 이렇게 하면 원 데이터와 예측값을 다시사용할 수 있는 포맷으로 조합하기 쉬워집니다:
+tidymodels 컨벤션으로 인해 예측값티블이 항상 표준화된 열이름을 가집니다. 이렇게 하면 원 데이터와 예측값을 다시 사용할 수 있는 포맷으로 조합하기 쉬워집니다:
 
 
 ```r
@@ -272,10 +272,9 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 ## 다른 엔진을 사용한 모델 {#new-engine}
 
-팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 동의합니다.
+팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 합니다.
 
-
-rstarnarm 패키지에 관한 이 [문서](https://mc-stan.org/rstanarm/articles/priors.html)에는  on the rstanarm package shows us that the `stan_glm()` 함수가 이 모델을 추정하는 데 사용할 수 있고, 이 제공해야할 함수 인수들은 `prior` 와 `prior_intercept` 라고 부른다고 적혀 있습니다. `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수의 형태로 전달됩니다. 이후에는, 완전히 같은 호출, `fit()` 을 사용합니다:
+rstarnarm 패키지에 관한 이 [문서](https://mc-stan.org/rstanarm/articles/priors.html)에는 `stan_glm()` 함수가 이 모델을 추정하는 데 사용할 수 있고, 함수 인수들은 `prior` 와 `prior_intercept` 라고 부른다고 적혀 있습니다. `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수형태로 전달됩니다. 이후에는, 완전히 같은 호출, `fit()` 을 사용합니다:
 
 
 ```r
@@ -299,7 +298,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.5s 
+#> Fit time:  16.6s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -323,7 +322,7 @@ print(bayes_fit, digits = 5)
 #> * For info on the priors used see ?prior_summary.stanreg
 ```
 
-이 같은 종류의 베이지언 분석은 (다른 모델들과 같이) 적합과정에서 숫자를 랜덤하게 생성하는 것이 포함되어 있습니다. `set.seed()` 를 사용하여 이 코드를 실행할 때마다 같은 (pseudo-)랜덤 숫자가 생성되도록 할 수 있습니다. 숫자 `123` 은 특별한 의미가 있거나 우리 데이터와 관련이 있는 것은 아닙니다; 단지 랜덤 숫자를 선택할 때 사용된 "시드" 입니다.
+이와 같은 베이지언 분석은 (다른 모델들과 같이) 적합과정에서 숫자를 랜덤하게 생성하는 것이 포함되어 있습니다. `set.seed()` 를 사용하여 이 코드를 실행할 때마다 같은 (pseudo-)랜덤 숫자가 생성되도록 할 수 있습니다. 숫자 `123` 은 특별한 의미가 있거나 우리 데이터와 관련이 있는 것은 아닙니다; 단지 랜덤 숫자를 선택할 때 사용된 "시드" 입니다.
 
 파라미터 표를 새로 얻기 위해, 또 한번 `tidy()` 방법을 사용할 수 있습니다:
 
