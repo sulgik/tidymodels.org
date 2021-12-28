@@ -5,7 +5,7 @@ categories: []
 type: learn-subsection
 weight: 2
 description: | 
-  Create a parsnip model function from an existing model implementation.
+  기존 구현된 모델로부터 parsnip 모델을 생성합니다.
 ---
 
 
@@ -14,7 +14,7 @@ description: |
 
 ## 들어가기
 
-To use the code in this article, you will need to install the following packages: mda, modeldata, and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: mda, modeldata, and tidymodels.
 
 The parsnip 패키지는 모델과 예측의 행동을 공식으로 표현하여 이들을 만듭니다. 이유는 다음과 같습니다:
 
@@ -374,7 +374,7 @@ mda_fit <- mda_spec %>%
 mda_fit
 #> parsnip model object
 #> 
-#> Fit time:  31ms 
+#> Fit time:  28ms 
 #> Call:
 #> mda::mda(formula = Class ~ ., data = data, subclasses = ~2)
 #> 
@@ -392,7 +392,7 @@ mda_fit
 
 predict(mda_fit, new_data = example_test, type = "prob") %>%
   bind_cols(example_test %>% select(Class))
-#> # A tibble: 8 x 3
+#> # A tibble: 8 × 3
 #>   .pred_Class1 .pred_Class2 Class 
 #>          <dbl>        <dbl> <fct> 
 #> 1       0.679         0.321 Class1
@@ -406,7 +406,7 @@ predict(mda_fit, new_data = example_test, type = "prob") %>%
 
 predict(mda_fit, new_data = example_test) %>% 
  bind_cols(example_test %>% select(Class))
-#> # A tibble: 8 x 2
+#> # A tibble: 8 × 2
 #>   .pred_class Class 
 #>   <fct>       <fct> 
 #> 1 Class1      Class1
@@ -477,7 +477,7 @@ linear_reg() %>%
   fit(mpg ~ ., data = mtcars)
 #> parsnip model object
 #> 
-#> Fit time:  7ms 
+#> Fit time:  5ms 
 #> Call:
 #> rlm(formula = mpg ~ ., data = data)
 #> Converged in 8 iterations
@@ -609,7 +609,7 @@ cv <- vfold_cv(example_train)
 mda_tune_res <- mda_spec %>%
   tune_grid(Class ~ ., cv, grid = 4)
 show_best(mda_tune_res, metric = "roc_auc")
-#> # A tibble: 4 x 7
+#> # A tibble: 4 × 7
 #>   sub_classes .metric .estimator  mean     n std_err .config             
 #>         <int> <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
 #> 1           2 roc_auc binary     0.890    10  0.0143 Preprocessor1_Model3
@@ -751,42 +751,44 @@ If you have a suggestion, please add a [GitHub issue](https://github.com/tidymod
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.5 (2021-03-31)
-#>  os       Ubuntu 18.04.5 LTS          
-#>  system   x86_64, linux-gnu           
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  C.UTF-8                     
-#>  ctype    C.UTF-8                     
-#>  tz       Etc/UTC                     
-#>  date     2021-10-25                  
+#> ─ Session info  👩🏿‍🦰  👫🏾  💂🏾   ───────────────────────────────────────
+#>  hash: woman: dark skin tone, red hair, woman and man holding hands: medium-dark skin tone, guard: medium-dark skin tone
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.7   2021-06-13 [1] CRAN (R 4.0.5)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.5)
-#>  dplyr      * 1.0.6   2021-05-05 [1] CRAN (R 4.0.5)
-#>  ggplot2    * 3.3.3   2020-12-30 [1] CRAN (R 4.0.5)
-#>  infer      * 0.5.4   2021-01-13 [1] CRAN (R 4.0.5)
-#>  mda        * 0.5-2   2020-06-29 [1] CRAN (R 4.0.5)
-#>  modeldata  * 0.1.0   2020-10-22 [1] CRAN (R 4.0.5)
-#>  parsnip    * 0.1.6   2021-05-27 [1] CRAN (R 4.0.5)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.5)
-#>  recipes    * 0.1.16  2021-04-16 [1] CRAN (R 4.0.5)
-#>  rlang      * 0.4.11  2021-04-30 [1] CRAN (R 4.0.5)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.5)
-#>  tibble     * 3.1.2   2021-05-16 [1] CRAN (R 4.0.5)
-#>  tidymodels * 0.1.3   2021-04-19 [1] CRAN (R 4.0.5)
-#>  tune       * 0.1.5   2021-04-23 [1] CRAN (R 4.0.5)
-#>  workflows  * 0.2.2   2021-03-10 [1] CRAN (R 4.0.5)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.5)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-28
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /home/sgkim/R/x86_64-pc-linux-gnu-library/4.0
-#> [2] /usr/local/lib/R/site-library
-#> [3] /usr/lib/R/site-library
-#> [4] /usr/lib/R/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  mda        * 0.5-2   2020-06-29 [1] CRAN (R 4.1.0)
+#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
 
 
