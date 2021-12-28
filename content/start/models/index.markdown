@@ -49,13 +49,14 @@ urchins <-
   setNames(c("food_regime", "initial_volume", "width")) %>% 
   # Factors are very helpful for modeling, so we convert one column
   mutate(food_regime = factor(food_regime, levels = c("Initial", "Low", "High")))
-#> 
+#> Rows: 72 Columns: 3
 #> ── Column specification ──────────────────────────────────────────────
-#> cols(
-#>   TREAT = col_character(),
-#>   IV = col_double(),
-#>   SUTW = col_double()
-#> )
+#> Delimiter: ","
+#> chr (1): TREAT
+#> dbl (2): IV, SUTW
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 ```
 
 데이터를 빠르게 한 번 봅시다.
@@ -115,7 +116,7 @@ width ~ initial_volume * food_regime
 
 initial volume 에 따라 변하는 위의 회귀 모형은 각 사육법에 대해 다른 기울기와 절편을 갖게 됩니다.
 
-이러한 모델에 대해, ordinary least squares 는 처음으로 시도해보기 좋은 방법입니다. tidymodels 에서 원하는 모델의 _함수포맷_ 을 [parsnip package](https://tidymodels.github.io/parsnip/)를 사용하여 명시합니다. 수치형 출력값이 있고, 모델이 기울기와 절편들에 대해 선형이므로, 이러한 모델 타잎은 ["linear regression (선형회귀)"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
+이러한 모델에 대해, 처음으로 시도해보기 좋은 방법은 ordinary least squares 입니다. tidymodels 에서 원하는 모델의 _함수포맷_ 을 [parsnip 패키지](https://tidymodels.github.io/parsnip/)를 사용하여 명시합니다. 수치형 출력값이 있고, 모델이 기울기와 절편에 대해 선형이므로, 이러한 모델타잎은 ["linear regression"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
 
 
 
@@ -126,7 +127,7 @@ linear_reg()
 #> Computational engine: lm
 ```
 
-이는 정작 하는 것이 거의 없기 때문에, 꽤 시시합니다. 하지만, 모델의 유형이 명시되었기 때문에, 이제 **engine** 모델을 사용하여 _적합_ 이나 훈련을 명시할 수 있습니다. 
+이는 정작 하는 것이 거의 없기 때문에, 꽤 시시합니다. 하지만, 모델의 유형이 명시되었기 때문에, 이제 **engine** 을 사용하여 _적합_ 이나 훈련을 명시할 수 있습니다. 
 엔진값은 모델을 훈련시키거나 적합하는데 사용되는 소프트웨어와 추정방법의 결합(mash-up)인 경우가 많습니다. 예를 들어, 엔진을 `lm` 으로 두어 ordinary least squares 를 사용합니다:
 
 
@@ -138,7 +139,7 @@ linear_reg() %>%
 #> Computational engine: lm
 ```
 
-[`linear_reg() 문서`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 에는 가능한 엔진들이 나열되어 있습니다. 이 모델 객체를 `lm_mod` 으로 저장할 것입니다.
+[`linear_reg() 문서`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 에는 가능한 엔진들이 나열되어 있습니다. 이 모델 객체를 `lm_mod` 로 저장합니다:
 
 
 ```r
@@ -147,7 +148,7 @@ lm_mod <-
   set_engine("lm")
 ```
 
-이제 [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) 함수를 사용하여 모형을 추정하고 훈련할 수 있습니다:
+이제 [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) 함수로 모형을 추정하고 훈련할 수 있습니다:
 
 
 ```r
@@ -171,7 +172,7 @@ lm_fit
 #>                     -0.0012594                       0.0005254
 ```
 
-아마도 우리 분석에서 모델 파라미터 추정값과 통계적 특징값들에 대해 descirption 이 필요합니다. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
+분석 후에 모델 파라미터 추정값과 통계적 특징값들의 정보가 필요하게 됩니다. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 
 ```r
@@ -187,7 +188,7 @@ tidy(lm_fit)
 #> 6 initial_volume:food_regimeHigh  0.000525  0.000702     0.748 0.457
 ```
 
-이러한 종류의 출력은 dotwhisker 패키지를 사용하여 우리의 회귀 결과의 dot-and-whisker 플롯을 그려볼 수 있습니다:
+dotwhisker 패키지를 사용하여 회귀결과의 dot-and-whisker 플롯을 그려볼 수 있습니다:
 
 
 ```r
@@ -202,9 +203,9 @@ tidy(lm_fit) %>%
 
 ## 모델을 이용하여 예측하기 {#predict-model}
 
-적합된 객체 `lm_fit` 에는 `lm` model output built-in 이 있어, `lm_fit$fit` 로 접근할 수 있지만, 적합된 parsnip 모델 객체에는 예측에 관련하여 장점 몇 개가 있습니다. 
+객체 `lm_fit` 에도 빌트인된 `lm` 모델 출력이 있어, `lm_fit$fit` 으로 접근할 수 있지만, 적합된 parsnip 모델 객체에는 예측에 관련하여 장점 몇 개가 있습니다. 
 
-Suppose that, for a publication, it would be particularly interesting to make a plot of the mean body size for urchins that started the experiment with an initial volume of 20ml. To create such a graph, we start with some new example data that we will make predictions for, to show in our graph:
+예를 들어, 출판을 위해 20ml 의 초기부피로 실험을 시작한 성게들의 평균 성체크기의 플롯을 그리는 것은 특별히 흥미로울 수 있습니다. 이러한 그래프를 그리기 위해, 예측을 할 대상인 새로운 데이터로 시작합니다. 
 
 
 ```r
@@ -298,7 +299,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  21.6s 
+#> Fit time:  16.5s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -407,39 +408,44 @@ ggplot(urchins,
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2021-12-24                  
+#> ─ Session info  🕵🏼  👱🏼  💥   ──────────────────────────────────────
+#>  hash: detective: medium-light skin tone, person: medium-light skin tone, blond hair, collision
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package     * version date       lib source        
-#>  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.0.2)
-#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.0.2)
-#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
-#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample     * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.0.2)
-#>  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick   * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2021-12-28
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package     * version date (UTC) lib source
+#>  broom       * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.1.0)
+#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.1.0)
+#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  readr       * 2.1.0   2021-11-11 [1] CRAN (R 4.1.0)
+#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample     * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.1.0)
+#>  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick   * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
