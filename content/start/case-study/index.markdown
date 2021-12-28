@@ -1,5 +1,5 @@
 ---
-title: "예측 모델링 사례 연구"
+title: "예측 모델링 사례연구"
 weight: 5
 tags: [parsnip, recipes, rsample, workflows, tune]
 categories: [model fitting, tuning]
@@ -14,7 +14,7 @@ description: |
 
 ## 들어가기 {#intro}
 
-앞선 [_시작하기섹션_](/start/)의 네 장에서는 모델링에 집중했었습니다. 이러한 줄기에서 모델작업할 때 필요한 tidymodles 생태계의 핵심 패키지들과 핵심 함수들을 소개했었습니다. 여기 사례 연구에서 앞 장들에서 배운 모든 것들 사용하여 호텔 숙박에 관한 데이터로 처음부터 끝까지 예측 모델을 만들어 볼 것입니다.
+[_시작하기섹션_](/start/)의 앞선 네 장에서는 모델링에 집중했었습니다. 이러한 맥락에서 모델작업할 때 필요한 tidymodles 생태계의 핵심 패키지들과 핵심 함수들을 소개했었습니다. 여기에서는 앞 장에서 배운 것 모두를 사용하여 호텔 숙박에 관한 데이터로 예측 모델을 처음부터 끝까지 만들어 볼 것입니다.
 
 
 <img src="img/hotel.jpg" width="90%" />
@@ -35,9 +35,9 @@ library(vip)         # for variable importance plots
 
 ## 호텔 부킹 데이터 {#data}
 
-[Antonio, Almeida, and Nunes (2019)](https://doi.org/10.1016/j.dib.2018.11.126) 에 있는 호텔 부킹 데이터를 사용하여 여행객들이 어느 호텔에서 묵었는지, 가격은 얼마나였는지 등에 관한 특징들에 기반하여 어떤 호텔에서 어린이와 아기가 묵을 수 있는지를 예측해봅시다. 
+[Antonio, Almeida, and Nunes (2019)](https://doi.org/10.1016/j.dib.2018.11.126) 의 호텔 부킹 데이터를 사용하여, 호텔 숙박이 어린이와 아기가 포함되었는지를, 묵은 호텔, 가격 등에 관한 특징에 기반하여 예측해봅시다. 
 
-이 데이터셋은 [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11) 데이터셋이고 변수의 정보는 [data dictionary](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11#data-dictionary)에 담겨져 있습니다. 사례 연구를 위해 [해당 데이터셋의 편집버전 데이터셋](https://gist.github.com/topepo/05a74916c343e57a71c51d6bc32a21ce)을 사용할 것입니다. 호텔 데이터를 R 로 불러와 봅시다. 우리 CSV 데이터가 위치한 url ("<https://tidymodels.org/start/case-study/hotels.csv>") 을 [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 알려줍니다:
+이 데이터셋은 [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11) 데이터셋이고 변수의 정보는 [data dictionary](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11#data-dictionary)에 담겨져 있습니다. 사례연구를 위해 [해당 데이터셋의 편집버전 데이터셋](https://gist.github.com/topepo/05a74916c343e57a71c51d6bc32a21ce)을 사용할 것입니다. 호텔 데이터를 R 로 불러와 봅시다. 우리 CSV 데이터가 위치한 url ("<https://tidymodels.org/start/case-study/hotels.csv>") 을 [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) 에 알려줍니다:
 
 
 ```r
@@ -52,7 +52,7 @@ dim(hotels)
 #> [1] 50000    23
 ```
 
-원 논문에서 [저자들](https://doi.org/10.1016/j.dib.2018.11.126)은 많은 변수(such as number of adults/children, room type, meals bought, country of origin of the guests, and so forth)의 분포들이 취소건과 취소하지 않은 건 사이에 차이가 있습니다고 경고합니다. 이러한 정보 대부분이 숙박객이 체크인 할 때 모아지고, 따라서 취소된 부킹은 취소되지 않은 부킹보다 결측 데이터가 더 많아서, 데이터가 결측되지 않았을 때 다른 특징들을 가질 것이기 때문에, 이러한 차이를 예상하는 것은 합리적입니다. 이를 감안하여 이 데이터에서 부킹을 캔슬한 손님과 하지 않은 손님 사이에 의미있는 차이를 발견하기 쉽지 않을 것입니다. 여기에서 모델을 만들기 위해, 우리는 데이터를 이미 필터링해서 취소하지 않은 부킹만 포함했기 때문에 _호텔숙박_ 만 분석하게 될 것입니다. 
+원 논문에서 [저자들](https://doi.org/10.1016/j.dib.2018.11.126)은 많은 변수(어른/아이의 숫자, 객실 타잎, meals bought, 여행객 출신국가 등과 같은 변수)의 분포들이 취소건과 취소하지 않은 건 사이에 차이가 있습니다고 경고합니다. 이러한 정보 대부분이 여행객이 체크인 할 때 모아지고, 따라서 취소된 부킹은 취소되지 않은 부킹보다 결측 데이터가 더 많아서, 데이터가 결측되지 않았을 때 다른 특징들을 가질 것이기 때문에, 이러한 차이를 예상하는 것은 합리적입니다. 이를 감안하여 이 데이터에서 부킹취소 여행객과 하지 않은 여행객 사이에 의미있는 차이를 발견하기는 쉽지 않을 것입니다. 여기에서 모델을 만들기 위해, 우리는 데이터를 이미 필터링해서 취소하지 않은 부킹만 포함했기 때문에 _호텔숙박_ 만 분석하게 될 것입니다. 
 
 
 ```r
@@ -84,7 +84,7 @@ glimpse(hotels)
 #> $ arrival_date                   <date> 2016-09-01, 2017-08-25, 2016-11-19, 20…
 ```
 
-우리는 실제 숙박이 어린이들이나 아기를 포함했는지, 아닌지를 예측하는 모델을 만들어 볼 것입니다. 반응 변수 `children` 은 수준이 두개인 팩터형 변수입니다:
+우리는 숙박이 어린이나 아기를 포함했는지, 아닌지를 예측하는 모델을 만들어 볼 것입니다. 반응 변수 `children` 은 수준이 두 개인 팩터형 변수입니다:
 
 
 ```r
@@ -103,7 +103,7 @@ hotels %>%
 ## 데이터 쪼개기와 리샘플링 {#data-split}
 
 데이터 쪼개기 전략으로 숙박데이터의 25% 를 테스트셋으로 따로 떼어 봅시다. 
-of the stays to the test set. As in our [*resampling 으로 모델 평가하기*](/start/resampling/#data-split) 장에서와 같이 반응변수 `children` 이 꽤 불균형인것을 알기 때문에, 층화 랜덤 샘플을 사용할 것입니다:  
+[*resampling 으로 모델 평가하기*](/start/resampling/#data-split) 장에서와 같이 반응변수 `children` 이 꽤 불균형인 것을 알기 때문에, 층화 랜덤 샘플을 사용할 것입니다:  
 
 
 ```r
@@ -392,7 +392,7 @@ rf_mod <-
 
 ### 레시피와 워크플로 생성하기
 
-penalized logistic regression model과 다르게 random forest model은 [더미](https://bookdown.org/max/FES/categorical-trees.html)나 정규화된 설명변수들을 필요로 하지 않습니다. 그럼에도 불구하고 `arrival_date` 변수에 다시한번 피쳐 엔지니어링을 하고 싶습니다. 전과 같이 날짜 설명변수는 randome forest 가 데이터에서 잠재된 패턴들을 너무 열심히 tease 하지 않도록 engineered 되었습니다.
+penalized logistic regression model과 다르게 random forest model은 [더미](https://bookdown.org/max/FES/categorical-trees.html)나 정규화된 설명변수들을 필요로 하지 않습니다. 그럼에도 불구하고 `arrival_date` 변수에 다시한번 피쳐 엔지니어링을 하고 싶습니다. 전과 같이 날짜 설명변수는 랜덤 포레스트가 데이터에서 잠재된 패턴들을 너무 열심히 tease 하지 않도록 엔지니어링되었습니다.
 
 
 ```r
@@ -483,7 +483,7 @@ rf_res %>%
 
 바로 이 ROC AUC 값들이 우리가 penalized 로지스틱회귀를 사용한, ROC AUC of 0.876 의 값을 얻었던 top model 보다 더 좋은 것처럼 보입니다. 
 
-Plotting the results of the tuning process highlights that both `mtry` (number of predictors at each node) and `min_n` (minimum number of data points required to keep splitting) should be fairly small to optimize performance. However, the range of the y-axis indicates that the model is very robust to the choice of these parameter values &mdash; all but one of the ROC AUC values are greater than 0.90.
+튜닝 프로세스의 결과를 플롯팅해 보면 성능을 최적화 하기 위해 `mtry` (number of predictors at each node)와 `min_n` (minimum number of data points required to keep splitting) 두개 모두 꽤 작아야 한다는 것을 강조하여 보여줍니다. 하지만, y-축 범위는 모델이 이 파라미터 값 선택에 있어 매우 로버스트하다는 것을 보여줍니다 &mdash; ROC AUC 값 중 하나를 제외한 모든 값들이 0.90 보다 큽니다. 
 
 
 ```r
@@ -492,7 +492,7 @@ autoplot(rf_res)
 
 <img src="figs/rf-results-1.svg" width="672" />
 
-Let's select the best model according to the ROC AUC metric. Our final tuning parameter values are:
+ROC AUC 지표에 따른 가장 좋은 모델을 선택해 봅시다. 우리의 최종 튜닝 파라미터는:
 
 
 ```r
@@ -506,7 +506,7 @@ rf_best
 #> 1     8     7 Preprocessor1_Model13
 ```
 
-To calculate the data needed to plot the ROC curve, we use `collect_predictions()`. This is only possible after tuning with `control_grid(save_pred = TRUE)`. In the output, you can see the two columns that hold our class probabilities for predicting hotel stays including and not including children.
+ROC 커브를 플롯하기 위해 필요한 데이터를 계산하기 위해 `collect_predictions()`를 사용합니다. `control_grid(save_pred = TRUE)` 으로 튜닝한 다음에야 가능합니다. 출력에서 아이들을 포함하고 하지않는 호텔숙박을 예측하는 클래스 확률을 포함하는 두 개의 열을 볼 수 있습니다. 
 
 
 ```r
@@ -523,7 +523,7 @@ rf_res %>%
 #> # … with 187,495 more rows
 ```
 
-To filter the predictions for only our best random forest model, we can use the `parameters` argument and pass it our tibble with the best hyperparameter values from tuning, which we called `rf_best`:
+우리의 가장 좋은 랜덤 포레스트 모델을 위한 예측값을 골라내기 위해, `parameters` 인수를 사용해서, `rf_best` 로 명명한 가장 좋은 하이퍼파라미터 값을 가진 우리 티블에 전달할 수 있습니다:
 
 
 ```r
@@ -534,7 +534,7 @@ rf_auc <-
   mutate(model = "Random Forest")
 ```
 
-Now, we can compare the validation set ROC curves for our top penalized logistic regression model and random forest model: 
+이제, 우리 top penalized logistic regression model 과 랜덤포레스트 모델의 validation set ROC 커브를 비교할 수 있습니다:
 
 
 ```r
@@ -548,13 +548,13 @@ bind_rows(rf_auc, lr_auc) %>%
 
 <img src="figs/rf-lr-roc-curve-1.svg" width="672" />
 
-The random forest is uniformly better across event probability thresholds. 
+랜덤 포레스트가 event probability thresholds 를 통틀어 유니폼하게 좋습니다.
 
 ## 마지막 적합 {#last-fit}
 
-Our goal was to predict which hotel stays included children and/or babies. The random forest model clearly performed better than the penalized logistic regression model, and would be our best bet for predicting hotel stays with and without children. After selecting our best model and hyperparameter values, our last step is to fit the final model on all the rows of data not originally held out for testing (both the training and the validation sets combined), and then evaluate the model performance one last time with the held-out test set. 
+우리 목표는 호텔 숙박이 어린이나 아이를 포함했는지를 예측하는 것이었습니다. 랜덤 포레스트 모델은 확실히 penalized 로지스틱 회귀 모델보다 더 성능이 좋았고, 아이들에 관한 호텔숙박을 예측하는데 가장 좋은 선택이 될 수 있습니다. 가장 좋은 모델과 하이퍼파라미터를 선택한 후 마지막 단계는 테스팅으로 떼어 놓지 않은 데이터 모두(트레이닝과 밸리데이션 셋을 합침)로 최종 모델을 적합한 후 따로 떼어낸 테스트 셋으로 모델 성능을 마지막 한 번 평가하는 것입니다. 
 
-We'll start by building our parsnip model object again from scratch. We take our best hyperparameter values from our random forest model. When we set the engine, we add a new argument: `importance = "impurity"`. This will provide _variable importance_ scores for this last model, which gives some insight into which predictors drive model performance.
+이번에도 parsnip 객체를 처음부터 만드는 것부터 할 것입니다. 우리 랜덤 포레스트 모델로 부터 가장 좋은 하이퍼파라미터 값을 취합니다. 엔진을 설정할 때 새로운 인수를 추가합니다: `importance = "impurity"`. 이렇게 하면 이 마지막 모델의 _variable importance_ 를 얻을 수 있는데, 이는 어떤 설명변수가 모델 성능을 좌지우지하는지에 관한 직관을 제공합니다.
 
 
 ```r
@@ -584,7 +584,7 @@ last_rf_fit
 #> 1 <split [37500/12500]> train/test split <tibble … <tibb… <tibble [12… <workflo…
 ```
 
-This fitted workflow contains _everything_, including our final metrics based on the test set. So, how did this model do on the test set? Was the validation set a good estimate of future performance? 
+위의 적합이 된 워크플로는 테스트셋 기반 최종 지표를 포함하여 _모든것_ 을 포함합니다. 미 모델이 테스트셋에서 성능이 어떻습니까? validation set 이 미래 성능의 추정값으로서 괜찮았습니까?
 
 
 ```r
@@ -597,9 +597,9 @@ last_rf_fit %>%
 #> 2 roc_auc  binary         0.923 Preprocessor1_Model1
 ```
 
-This ROC AUC value is pretty close to what we saw when we tuned the random forest model with the validation set, which is good news. That means that our estimate of how well our model would perform with new data was not too far off from how well our model actually performed with the unseen test data.
+이 ROC AUC 값은 우리가 validation set 으로 랜덤 포레스트를 튜닝했을 때 보았던 것과 꽤 가깝습니다. 우리 모델이 새로운 데이터에 어느정도의 성능을 보여줄 것인지에 관한 추정값이 보지 않은 테스트셋에서 실제로 수행한 것에서 멀리 떨어지지는 않았다는 것을 의미합니다.
 
-We can access those variable importance scores via the `.workflow` column. We first need to [pluck](https://purrr.tidyverse.org/reference/pluck.html) out the first element in the workflow column, then [pull out the fit](https://tidymodels.github.io/workflows/reference/workflow-extractors.html) from the workflow object. Finally, the vip package helps us visualize the variable importance scores for the top 20 features: 
+이 variance importance 값들을 `.workflow` 열을 통해 접근할 수 있습니다. [pluck](https://purrr.tidyverse.org/reference/pluck.html) 을 사용하여 워크플로 열의 첫번째 요소를 추출한 후 워크플로 객체에서 [적합을 추출](https://tidymodels.github.io/workflows/reference/workflow-extractors.html) 해야 합니다. 마지막으로, vip 패키지는 top 20 피쳐에 대한 variable importance score 를 시각화합니다: 
 
 
 ```r
@@ -613,9 +613,9 @@ last_rf_fit %>%
 
 <img src="figs/rf-importance-1.svg" width="672" />
 
-The most important predictors in whether a hotel stay had children or not were the daily cost for the room, the type of room reserved, the type of room that was ultimately assigned, and the time between the creation of the reservation and the arrival date. 
+호텔숙박에 아이들이 포함되었는지 아닌지에 관한 가장 중요한 설명변수는 객실 가격, 예약객실타잎, 최종제공된 객실타잎, 예약생성과 도착날짜 사이의 시간이었습니다.
 
-Let's generate our last ROC curve to visualize. Since the event we are predicting is the first level in the `children` factor ("children"), we provide `roc_curve()` with the [relevant class probability](https://tidymodels.github.io/yardstick/reference/roc_curve.html#relevant-level) `.pred_children`:
+시각화할 ROC 커브를 마지막으로 생성해 봅시다. 우리가 예측하는 사건은 `children` 팩터의 첫번째 수준 ("children") 이기 때문에, `roc_curve()` 에 [relevant class probability](https://tidymodels.github.io/yardstick/reference/roc_curve.html#relevant-level)인 `.pred_children` 을 제공합니다:
 
 
 ```r
@@ -627,21 +627,21 @@ last_rf_fit %>%
 
 <img src="figs/test-set-roc-curve-1.svg" width="672" />
 
-Based on these results, the validation set and test set performance statistics are very close, so we would have pretty high confidence that our random forest model with the selected hyperparameters would perform well when predicting new data.
+결과에 기반한 validation set과 test set 성능 통계량은 매우 가깝기 때문에, 하이퍼파라미터 튜닝된 우리 랜덤 포레스트 모델이 새로운 데이터에 예측하는 데에 잘 작동할 것이라는 것에 꽤 높은 신뢰를 가질 수 있습니다.
 
 ## 다음단계 {#next}
 
-If you've made it to the end of this series of [*Get Started*](/start/) articles, we hope you feel ready to learn more! You now know the core tidymodels packages and how they fit together. After you are comfortable with the basics we introduced in this series, you can [learn how to go farther](/learn/) with tidymodels in your modeling and machine learning projects. 
+[*시작하기*](/start/) 시리즈의 마지막까지 왔다면, 더 배울 준비가 되었을 것입니다! 이제 tidymodels 핵심 패키지가 어떻게 적용되는지 이해하게 되었습니다. 이 시리즈에서 소개한 기초내용에 대해 편안하게 되었다면, 모델링과 머신러닝 프로젝트에서 tidymodels 를 더 깊게 사용하는 법을 [배울](/learn/) 수 있습니다. 
 
-Here are some more ideas for where to go next:
+다음 목적지에 관한 아이디어들입니다:
 
-+ Study up on statistics and modeling with our comprehensive [books](/books/).
++ 종합적인 [도서](/books/)로 통계학과 모델링을 학습.
 
-+ Dig deeper into the [package documentation sites](/packages/) to find functions that meet your modeling needs. Use the [searchable tables](/find/) to explore what is possible.
++ [package documentation sites](/packages/) 로 깊게 파서 모델링 니즈를 충적시켜주는 함수를 발견. [검색 가능한 테이블](/find/) 을 이용하여 무엇이 가능한지 탐색.
 
-+ Keep up with the latest about tidymodels packages at the [tidyverse blog](https://www.tidyverse.org/tags/tidymodels/).
++ [tidyverse blog](https://www.tidyverse.org/tags/tidymodels/) 에서 tidymodels 패키지들에 관한 최신 소식 따라잡기.
 
-+ Find ways to ask for [help](/help/) and [contribute to tidymodels](/contribute) to help others.
++ [도움](/help/) 요청할 방법 찾기와 [tidymodels 에 기여](/contribute) 하여 다른사람 돕기.
 
 ### <center>Happy modeling!</center>
 
@@ -661,7 +661,7 @@ Here are some more ideas for where to go next:
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-27
+#>  date     2021-12-28
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
