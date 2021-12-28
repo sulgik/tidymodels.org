@@ -2,23 +2,23 @@
 #   The weight parameter defines the order that the links will appear in.
 
 [[main]]
-    name = "Packages"
+    name = "패키지"
     url = "/packages/"
     weight = 1
 [[main]]
-    name = "Get Started"
+    name = "시작하기"
     url = "/start/"
     weight = 2
 [[main]]
-    name = "Learn"
+    name = "배우기"
     url = "/learn/"
     weight = 3
 [[main]]
-    name = "Help"
+    name = "도움받기"
     url = "/help/"
     weight = 4
 [[main]]
-    name = "Contribute"
+    name = "기여하기"
     url = "/contribute/"
     weight = 5
 [[main]]
