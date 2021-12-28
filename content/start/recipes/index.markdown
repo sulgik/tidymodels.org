@@ -15,7 +15,7 @@ description: |
 
 ## 들어가기 {#intro}
 
-[*모델 만들기*](/start/models/) 챕터에서는 [parsnip 패키지](https://parsnip.tidymodels.org/) 를 사용하여 여러 엔진들로 모델을 정의하고 훈련시키는 법에 대해 배웠습니다. 이 챕터에서는 tidymodels 의 또 다른 패키지인 [recipes](https://recipes.tidymodels.org/) 패키지를 살펴볼 것인데, 트레이닝 *전*에 데이터를 전처리를 도와주기 위해 설계되었습니다. 레시피(recipe)는 다음과 같이 일련의 전처리 과정들로 구성됩니다:
+[*모델 만들기*](/start/models/) 장에서는 [parsnip 패키지](https://parsnip.tidymodels.org/) 를 사용하여 여러 엔진들로 모델을 정의하고 훈련시키는 법에 대해 배웠습니다. 이 챕터에서는 tidymodels 의 또 다른 패키지인 [recipes](https://recipes.tidymodels.org/) 패키지를 살펴볼 것인데, 트레이닝 *전*에 데이터를 전처리를 도와주기 위해 설계되었습니다. 레시피(recipe)는 다음과 같이 일련의 전처리 과정들로 구성됩니다:
 
 + 정성 설명변수를 지시변수 (indicator variables 더미 변수로도 알려짐) 로 변환,
 
@@ -576,7 +576,7 @@ flights_aug %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-19
+#>  date     2021-12-28
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

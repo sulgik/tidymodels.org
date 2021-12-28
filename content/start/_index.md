@@ -1,7 +1,7 @@
 ---
 title: 시작하기
 subtitle: 환영합니다!
-description: "What do you need to know to start using tidymodels? Learn what you need in 5 articles."
+description: "tidymodels 를 시작하기 위해 알아야 할 것들은 무엇일까요? 다섯 개의 장에서 필요한 것을 배우세요."
 ---
 
 tidymodels 를 시작하기 위한 필수 요소들을 다섯 섹션을 통해 배워봅시다. 모델을 만드는 방법에서부터 시작하여, 처음부터 끝까지 모델링하는 케이스 스터디로 마무리 합니다. 기초적인 것에 익숙해 졌다면 [tidymodels 더 배우기](/learn/) 를 학습할 수 있습니다.

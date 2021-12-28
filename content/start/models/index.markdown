@@ -158,7 +158,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  3ms 
+#> Fit time:  2ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -298,7 +298,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.6s 
+#> Fit time:  16.4s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -340,7 +340,7 @@ tidy(bayes_fit, conf.int = TRUE)
 #> 6 initial_volume:food_regimeHigh  0.000517  0.000732 -0.000691  0.00171
 ```
 
-tidymodels 패키지의 목표는 **interfaces to common tasks are standardized** (as seen in the `tidy()` results above)입니다. 예측값을 구할 때도 같습니다; 기저의 패키지들이 전혀 다른 문법을 사용하더라도 같은 코드를 사용할 수 있습니다:
+tidymodels 패키지의 목표는 **공통 작업 인터페이스를 표준화** (위의 `tidy()` 결과에서 보듯이)하는 것입니다. 예측값을 구할 때도 같습니다; 기저의 패키지들이 전혀 다른 문법을 사용하더라도 같은 코드를 사용할 수 있습니다:
 
 
 ```r
@@ -358,13 +358,13 @@ ggplot(bayes_plot_data, aes(x = food_regime)) +
 
 <img src="figs/stan-pred-1.svg" width="672" />
 
-베이지언이 아닌 결과와 (해석을 제외하면) 매우 다르지는 않습니다.
+non-Bayesian 결과와 (해석을 제외하면) 매우 다르지는 않습니다.
 
 {{% note %}} The [parsnip](https://parsnip.tidymodels.org/) package can work with many model types, engines, and arguments. Check out [tidymodels.org/find/parsnip](/find/parsnip/) to see what is available. {{%/ note %}}
 
 ## 어떤 작동원리를 가진것일까? {#why}
 
-`linear_reg()` 와 같은 함수를 사용하여 모델을 정의하는 extra step 은 superfluous 한 것 같은데 `lm()` 을 호출하는 것은 훨씬 간단해 보이기 때문입니다. 하지만, 표준 모델링 함수들의 문제는, 실행하는 것에서 하고 싶은 것을 분리하지 못한다는 것입니다. 예를 들어, 공식을 실행하는 프로세스는 공식이 바뀌지 않았을 때도 모델 호출들을 따라 반복적으로 일어나야 합니다; 이 계산을 재사용할 수 없습니다.
+`linear_reg()` 와 같은 함수를 사용하여 모델을 정의하는 단계를 추가하는 것은 필요 없을 것 같은데 `lm()` 을 호출하는 것이 훨씬 간단해 보이기 때문입니다. 하지만, 표준 모델링 함수들이 가진 문제는, 실행하는 것에서 하고 싶은 것을 분리하지 못한다는 것입니다. 예를 들어, 공식을 실행하는 프로세스는 공식이 바뀌지 않았을 때도 모델 호출들을 따라 반복적으로 일어나야 합니다; 이 계산을 재사용할 수 없습니다.
 
 또한, tidymodels 프레임워크를 사용하면 모델을 점진적으로 생성하면서 (단일 함수 호출을 사용하는 대신) 재미있는 것들을 할 수 있습니다. tidymodels 와 함께 [모델을 튜닝](/start/tuning/)하는 것은 모델 specification 을 사용하여 모델의 어느 부분을 튜닝해야하는지를 선언합니다. 만약 `linear_reg()` 가 즉각 모델을 적합한다면 이 작업을 하는 것은 매우 어렵습니다.
 
@@ -391,7 +391,7 @@ bayes_mod %>%
   fit(width ~ initial_volume * food_regime, data = urchins)
 ```
 
-dplyr 을 많이 사용해왔다면 이는 jarring 한 것 처럼 보이지만, ggplot2 가 작동하는 방식과 매우 유사합니다:
+dplyr 을 많이 사용해왔다면 파이프를 이렇게 사용하는 것이 적절하지 않아 보일 수 있지만, ggplot2 가 작동하는 방식과 매우 유사합니다:
 
 
 ```r
