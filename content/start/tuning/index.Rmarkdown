@@ -1,10 +1,10 @@
 ---
-title: "모델 파라미터 튜닝하기"
+title: "모델 파라미터 tune 하기"
 weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
 description: | 
-  모델 훈련동안 직접 학습될 수 엇ㅂ는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
+  모델 훈련동안 직접 학습될 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -25,9 +25,8 @@ pkgs <- c("tidymodels", "rpart", "rpart.plot", "vip")
 
 ## 들어가기 {#intro}
 
-모델 파라미터 중 어떤 것들은 모델 트레이닝 중 데이터셋으로 부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 숫자 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. 모델 트레이닝 중 하이퍼파라미터를 학습하는것 대신, 리샘플한 데이터셋에 많은 모형을 훈련하고 이 모델들의 성능을 탐색해서 가장 좋은 값을 _추정_ 할 수 있습니다. 이 프로세스를 **튜닝** 이라고 부릅니다.
+어떤 모델 파라미터는 모델 트레이닝 중 데이터셋으로부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 개수 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. 모델 트레이닝 중 하이퍼파라미터를 학습하는것 대신, 리샘플한 데이터셋에 여러 모형을 훈련하고 이 모델들의 성능을 탐색해서 가장 좋은 값을 _추정_ 할 수 있습니다. 이와 같은 프로세스를 **튜닝** 이라고 부릅니다.
 
-하이퍼파라미터의 예로, 트리-기반 모델에서 쪼개짐에서 샘플된 설명변수의 숫자 (tidymodels 에서 `mtry` 라고 부름), 혹은 부스티드 트리모델에서 학습속도(`learning_rate` 이라고 부름)가 있습니다. 
 
 `r req_pkgs(pkgs)`
 
@@ -43,7 +42,7 @@ library(vip)         # for variable importance plots
 
 ## 세포 이미지 데이터, 계속 {#data}
 
-이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 여기서 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
+이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
