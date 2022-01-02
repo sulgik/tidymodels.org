@@ -1,5 +1,5 @@
 ---
-title: "Create your own recipe step function"
+title: "recipe 스텝 함수 만들기"
 tags: [recipes]
 categories: []
 type: learn-subsection
@@ -66,9 +66,9 @@ Our new step will do this computation for any numeric variables of interest. We 
 
 ## Create the function
 
-To start, there is a _user-facing_ function. Let's call that `step_percentile()`. This is just a simple wrapper around a _constructor function_, which defines the rules for any step object that defines a percentile transformation. We'll call this constructor `step_percentile_new()`. 
+_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수는 `step_percentile_new()` 라고 부릅시다. 
 
-The function `step_percentile()` takes the same arguments as your function and simply adds it to a new recipe. The `...` signifies the variable selectors that can be used.
+`step_percentile()` 함수는 당신의 함수와 같은 인수를 입력으로, 새로운 레시피에 추가합니다. `...` 은 사용할 수 있는 변수 selector 를 의미합니다.
 
 ```{r initial_def}
 step_percentile <- function(
@@ -102,30 +102,30 @@ step_percentile <- function(
 }
 ```
 
-You should always keep the first four arguments (`recipe` though `trained`) the same as listed above. Some notes:
+(`recipe` 에서 `trained` 까지) 첫 네 개의 인수를 항상 위에 나열한 것과 같이 해야 합니다. 몇가지 주목할 사항이 있습니다:
 
- * the `role` argument is used when you either 1) create new variables and want their role to be pre-set or 2) replace the existing variables with new values. The latter is what we will be doing and using `role = NA` will leave the existing role intact. 
- * `trained` is set by the package when the estimation step has been run. You should default your function definition's argument to `FALSE`. 
- * `skip` is a logical. Whenever a recipe is prepped, each step is trained and then baked. However, there are some steps that should not be applied when a call to `bake()` is used. For example, if a step is applied to the variables with roles of "outcomes", these data would not be available for new samples. 
- * `id` is a character string that can be used to identify steps in package code. `rand_id()` will create an ID that has the prefix and a random character sequence. 
+ * `role` 인수는 다음 경우 중 하나에 사용됩니다 1) 새 변수를 생성하고 생성된 변수의 롤들이 프리셋되길 원하는 경우 2) 기존의 변수를 새로운 값들로 대체하는 경우. 우리는 후자를 할 것이고, `role = NA` 을 사용하면 기존의 룰 내용을 유지할 것입니다. 
+ * `trained` 는 estimation 스텝이 실행되었을 때 패키지가 설정합니다. 함수 정의의 인수의 기본값을 `FALSE` 로 해야합니다. 
+ * `skip` 은 논리형입니다. 레시피가 준비되었을 때마다 각 단계는 훈련된 뒤 적용됩니다. 하지만, `bake()` 호출이 사용될 때 적용되지 않아야 할 단계들이 있습니다. 예를 들어, 한 단계가 "outcomes" 롤이 있는 변수에 적용된다면, 이 데이터는 새로운 샘플에서 사용할 수 없습니다.
+* `id` 는 패키지 코드의 단계를 식별할 때 사용할 문자열 입니다. `rand_id()` 는 접두사와 랜덤 문자열을 가진 ID 를 생성할 것입니다.
 
-We can estimate the percentiles of new data points based on the percentiles from the training set with `approx()`. Our `step_percentile` contains a `ref_dist` object to store these percentiles (pre-computed from the training set in `prep()`) for later use in `bake()`.
+`approx()` 로 트레이닝 셋으로 부터의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. 우리 `step_percentile` 는 `ref_dist` 객체를 포함하여 이러한 퍼센타일을 저장하여 (`prep()` 을 하여 트레이닝셋으로부터 미리 계산하여) `bake()` 에서 나중에 사용하게 합니다.
 
-We will use `stats::quantile()` to compute the grid. However, we might also want to have control over the granularity of this grid, so the `options` argument will be used to define how that calculation is done. We could use the ellipses (aka `...`) so that any options passed to `step_percentile()` that are not one of its arguments will then be passed to `stats::quantile()`. However, we recommend making a separate list object with the options and use these inside the function because `...` is already used to define the variable selection. 
+`stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 인수가 아닌 전달된 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
-It is also important to consider if there are any _main arguments_ to the step. For example, for spline-related steps such as `step_ns()`, users typically want to adjust the argument for the degrees of freedom in the spline (e.g. `splines::ns(x, df)`). Rather than letting users add `df` to the `options` argument: 
+단계에 _메인 인수들_ 이 있다면, 고려하는 것이 중요합니다. 예를 들어, `step_ns()` 같은 spline-관련 스텝들에 대해, 사용자들은 spline 에서 자유도 인수를 조정하길 원합니다 (e.g. `splines::ns(x, df)`). 사용자들에게 `df` 를 `options` 인수에 추가하는 것 대신:
 
-* Allow the important arguments to be main arguments to the step function. 
+* 중요한 인수들이 스텝 함수의 메인 인수들로 합니다. 
 
-* Follow the tidymodels [conventions for naming arguments](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html). Whenever possible, avoid jargon and keep common argument names.  
+* [인수 명명 컨벤션](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html)을 따른다. 가능한한 은어를 피하고 공통 인수 이름을 따릅니다.  
 
-There are benefits to following these principles (as shown below). 
+이 원칙을 따르면 이점이 있습니다. (아래 참고). 
 
-## Initialize a new object
+## 새 객체 초기화하기
 
-Now, the constructor function can be created.
+이제, 생성자 함수를 생성할 수 있습니다.
 
-The function cascade is: 
+함수 케스케이드는: 
 
 ```
 step_percentile() calls recipes::add_step()
@@ -133,7 +133,7 @@ step_percentile() calls recipes::add_step()
     └──> step_percentile_new() calls recipes::step()
 ```
 
-`step()` is a general constructor for recipes that mainly makes sure that the resulting step object is a list with an appropriate S3 class structure. Using `subclass = "percentile"` will set the class of new objects to `"step_percentile"`. 
+`step()` 은 레시피를 위한 일반 생성자인데, 결과 스텝 객체는 적절한 S3 클래스 구조를 가진 리스트입니다. `subclass = "percentile"` 을 하면, 새 객체의 클래스를 `"step_percentile"` 로 설정합니다.
 
 ```{r initialize}
 step_percentile_new <- 
@@ -151,20 +151,18 @@ step_percentile_new <-
   }
 ```
 
-This constructor function should have no default argument values. Defaults should be set in the user-facing step object. 
+이 생성자 함수는 기본 인수값이 없어야 합니다. 기본값은 이용자향 스텝 객체에서 설정되어야 햡니다. 
 
-## Create the `prep` method
+## `prep` 메소드 생성하기
 
-You will need to create a new `prep()` method for your step's class. To do this, three arguments that the method should have are:
+당신의 스텝의 클래스를 위한 새로운 `prep()` 메소드를 생성해야 합니다. 메소드가 가져야 할 세 가지 인수는 다음과 같습니다:
 
 ```r
 function(x, training, info = NULL)
 ```
 
-where
-
- * `x` will be the `step_percentile` object,
- * `training` will be a _tibble_ that has the training set data, and
+ * `x` 는 `step_percentile` 객체입니다.
+ * `training` 트레이닝셋 데이터를 가진 _티블_ 입니다.
  * `info` will also be a tibble that has information on the current set of data available. This information is updated as each step is evaluated by its specific `prep()` method so it may not have the variables from the original data. The columns in this tibble are `variable` (the variable name), `type` (currently either "numeric" or "nominal"), `role` (defining the variable's role), and `source` (either "original" or "derived" depending on where it originated).
 
 You can define other arguments as well. 

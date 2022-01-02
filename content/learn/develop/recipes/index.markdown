@@ -1,5 +1,5 @@
 ---
-title: "Create your own recipe step function"
+title: "recipe 스텝 함수 만들기"
 tags: [recipes]
 categories: []
 type: learn-subsection
@@ -14,7 +14,7 @@ description: |
 
 ## Introduction
 
-To use the code in this article, you will need to install the following packages: modeldata and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: modeldata and tidymodels.
 
 There are many existing recipe steps in packages like recipes, themis, textrecipes, and others. A full list of steps in CRAN packages [can be found here](/find/recipes/). However, you might need to define your own preprocessing operations; this article describes how to do that. If you are looking for good examples of existing steps, we suggest looking at the code for [centering](https://github.com/tidymodels/recipes/blob/master/R/center.R) or [PCA](https://github.com/tidymodels/recipes/blob/master/R/pca.R) to start. 
 
@@ -48,6 +48,7 @@ str(biomass)
 #>  $ nitrogen: num  0.41 0.2 0.11 3.3 1 2.04 2.68 1.7 0.8 1.2 ...
 #>  $ sulfur  : num  0 0 0.02 0.16 0.02 0.1 0.2 0.2 0 0.1 ...
 #>  $ HHV     : num  20 19.2 18.3 18.2 18.4 ...
+
 biomass_tr <- biomass[biomass$dataset == "Training",]
 biomass_te <- biomass[biomass$dataset == "Testing",]
 ```
@@ -71,9 +72,9 @@ Our new step will do this computation for any numeric variables of interest. We 
 
 ## Create the function
 
-To start, there is a _user-facing_ function. Let's call that `step_percentile()`. This is just a simple wrapper around a _constructor function_, which defines the rules for any step object that defines a percentile transformation. We'll call this constructor `step_percentile_new()`. 
+_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수는 `step_percentile_new()` 라고 부릅시다. 
 
-The function `step_percentile()` takes the same arguments as your function and simply adds it to a new recipe. The `...` signifies the variable selectors that can be used.
+`step_percentile()` 함수는 당신의 함수와 같은 인수를 입력으로, 새로운 레시피에 추가합니다. `...` 은 사용할 수 있는 변수 selector 를 의미합니다.
 
 
 ```r
@@ -108,30 +109,30 @@ step_percentile <- function(
 }
 ```
 
-You should always keep the first four arguments (`recipe` though `trained`) the same as listed above. Some notes:
+(`recipe` 에서 `trained` 까지) 첫 네 개의 인수를 항상 위에 나열한 것과 같이 해야 합니다. 몇가지 주목할 사항이 있습니다:
 
- * the `role` argument is used when you either 1) create new variables and want their role to be pre-set or 2) replace the existing variables with new values. The latter is what we will be doing and using `role = NA` will leave the existing role intact. 
- * `trained` is set by the package when the estimation step has been run. You should default your function definition's argument to `FALSE`. 
- * `skip` is a logical. Whenever a recipe is prepped, each step is trained and then baked. However, there are some steps that should not be applied when a call to `bake()` is used. For example, if a step is applied to the variables with roles of "outcomes", these data would not be available for new samples. 
- * `id` is a character string that can be used to identify steps in package code. `rand_id()` will create an ID that has the prefix and a random character sequence. 
+ * `role` 인수는 다음 경우 중 하나에 사용됩니다 1) 새 변수를 생성하고 생성된 변수의 롤들이 프리셋되길 원하는 경우 2) 기존의 변수를 새로운 값들로 대체하는 경우. 우리는 후자를 할 것이고, `role = NA` 을 사용하면 기존의 룰 내용을 유지할 것입니다. 
+ * `trained` 는 estimation 스텝이 실행되었을 때 패키지가 설정합니다. 함수 정의의 인수의 기본값을 `FALSE` 로 해야합니다. 
+ * `skip` 은 논리형입니다. 레시피가 준비되었을 때마다 각 단계는 훈련된 뒤 적용됩니다. 하지만, `bake()` 호출이 사용될 때 적용되지 않아야 할 단계들이 있습니다. 예를 들어, 한 단계가 "outcomes" 롤이 있는 변수에 적용된다면, 이 데이터는 새로운 샘플에서 사용할 수 없습니다.
+* `id` 는 패키지 코드의 단계를 식별할 때 사용할 문자열 입니다. `rand_id()` 는 접두사와 랜덤 문자열을 가진 ID 를 생성할 것입니다.
 
-We can estimate the percentiles of new data points based on the percentiles from the training set with `approx()`. Our `step_percentile` contains a `ref_dist` object to store these percentiles (pre-computed from the training set in `prep()`) for later use in `bake()`.
+`approx()` 로 트레이닝 셋으로 부터의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. 우리 `step_percentile` 는 `ref_dist` 객체를 포함하여 이러한 퍼센타일을 저장하여 (`prep()` 을 하여 트레이닝셋으로부터 미리 계산하여) `bake()` 에서 나중에 사용하게 합니다.
 
-We will use `stats::quantile()` to compute the grid. However, we might also want to have control over the granularity of this grid, so the `options` argument will be used to define how that calculation is done. We could use the ellipses (aka `...`) so that any options passed to `step_percentile()` that are not one of its arguments will then be passed to `stats::quantile()`. However, we recommend making a separate list object with the options and use these inside the function because `...` is already used to define the variable selection. 
+`stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 인수가 아닌 전달된 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
-It is also important to consider if there are any _main arguments_ to the step. For example, for spline-related steps such as `step_ns()`, users typically want to adjust the argument for the degrees of freedom in the spline (e.g. `splines::ns(x, df)`). Rather than letting users add `df` to the `options` argument: 
+단계에 _메인 인수들_ 이 있다면, 고려하는 것이 중요합니다. 예를 들어, `step_ns()` 같은 spline-관련 스텝들에 대해, 사용자들은 spline 에서 자유도 인수를 조정하길 원합니다 (e.g. `splines::ns(x, df)`). 사용자들에게 `df` 를 `options` 인수에 추가하는 것 대신:
 
-* Allow the important arguments to be main arguments to the step function. 
+* 중요한 인수들이 스텝 함수의 메인 인수들로 합니다. 
 
-* Follow the tidymodels [conventions for naming arguments](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html). Whenever possible, avoid jargon and keep common argument names.  
+* [인수 명명 컨벤션](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html)을 따른다. 가능한한 은어를 피하고 공통 인수 이름을 따릅니다.  
 
-There are benefits to following these principles (as shown below). 
+이 원칙을 따르면 이점이 있습니다. (아래 참고). 
 
-## Initialize a new object
+## 새 객체 초기화하기
 
-Now, the constructor function can be created.
+이제, 생성자 함수를 생성할 수 있습니다.
 
-The function cascade is: 
+함수 케스케이드는: 
 
 ```
 step_percentile() calls recipes::add_step()
@@ -139,7 +140,7 @@ step_percentile() calls recipes::add_step()
     └──> step_percentile_new() calls recipes::step()
 ```
 
-`step()` is a general constructor for recipes that mainly makes sure that the resulting step object is a list with an appropriate S3 class structure. Using `subclass = "percentile"` will set the class of new objects to `"step_percentile"`. 
+`step()` 은 레시피를 위한 일반 생성자인데, 결과 스텝 객체는 적절한 S3 클래스 구조를 가진 리스트입니다. `subclass = "percentile"` 을 하면, 새 객체의 클래스를 `"step_percentile"` 로 설정합니다.
 
 
 ```r
@@ -158,11 +159,11 @@ step_percentile_new <-
   }
 ```
 
-This constructor function should have no default argument values. Defaults should be set in the user-facing step object. 
+이 생성자 함수는 기본 인수값이 없어야 합니다. 기본값은 이용자향 스텝 객체에서 설정되어야 햡니다. 
 
-## Create the `prep` method
+## `prep` 메소드 생성하기
 
-You will need to create a new `prep()` method for your step's class. To do this, three arguments that the method should have are:
+당신의 스텝의 클래스를 위한 새로운 `prep()` 메소드를 생성해야 합니다. 메소드가 가져야 할 세 가지 인수는 다음과 같습니다:
 
 ```r
 function(x, training, info = NULL)
@@ -179,6 +180,7 @@ You can define other arguments as well.
 The first thing that you might want to do in the `prep()` function is to translate the specification listed in the `terms` argument to column names in the current data. There is a function called `recipes_eval_select()` that can be used to obtain this. 
 
 {{% warning %}} The `recipes_eval_select()` function is not one you interact with as a typical recipes user, but it is helpful if you develop your own custom recipe steps. {{%/ warning %}}
+
 
 ```r
 prep.step_percentile <- function(x, training, info = NULL, ...) {
@@ -310,6 +312,7 @@ bake(rec_obj, biomass_te %>% slice(1:2), ends_with("gen"))
 #>      <dbl>  <dbl>    <dbl>
 #> 1     0.45  0.903    0.21 
 #> 2     0.38  0.922    0.928
+
 # Checking to get approximate result: 
 mean(biomass_tr$hydrogen <= biomass_te$hydrogen[1])
 #> [1] 0.452
@@ -393,6 +396,7 @@ recipe(HHV ~ ., data = biomass_tr) %>%
 #> Operations:
 #> 
 #> Percentile transformation on ends_with("gen")
+
 # Results after `prep()`: 
 rec_obj
 #> Recipe
@@ -504,16 +508,16 @@ tidy(rec_obj, number = 1)
 #> # A tibble: 274 × 4
 #>    term     value percentile id              
 #>    <chr>    <dbl>      <dbl> <chr>           
-#>  1 hydrogen 0.03           0 percentile_Sp98p
-#>  2 hydrogen 0.934          1 percentile_Sp98p
-#>  3 hydrogen 1.60           2 percentile_Sp98p
-#>  4 hydrogen 2.07           3 percentile_Sp98p
-#>  5 hydrogen 2.45           4 percentile_Sp98p
-#>  6 hydrogen 2.74           5 percentile_Sp98p
-#>  7 hydrogen 3.15           6 percentile_Sp98p
-#>  8 hydrogen 3.49           7 percentile_Sp98p
-#>  9 hydrogen 3.71           8 percentile_Sp98p
-#> 10 hydrogen 3.99           9 percentile_Sp98p
+#>  1 hydrogen 0.03           0 percentile_qi6LP
+#>  2 hydrogen 0.934          1 percentile_qi6LP
+#>  3 hydrogen 1.60           2 percentile_qi6LP
+#>  4 hydrogen 2.07           3 percentile_qi6LP
+#>  5 hydrogen 2.45           4 percentile_qi6LP
+#>  6 hydrogen 2.74           5 percentile_qi6LP
+#>  7 hydrogen 3.15           6 percentile_qi6LP
+#>  8 hydrogen 3.49           7 percentile_qi6LP
+#>  9 hydrogen 3.71           8 percentile_qi6LP
+#> 10 hydrogen 3.99           9 percentile_qi6LP
 #> # … with 264 more rows
 ```
 
@@ -592,38 +596,43 @@ tunable.step_poly <- function (x, ...) {
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 11.6          
-#>  system   aarch64, darwin20           
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2021-09-27                  
+#> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
+#>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.1)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-02
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> 
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
 #>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.1)
-#>  rlang        0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  tibble     * 3.1.4   2021-08-25 [1] CRAN (R 4.1.1)
-#>  tidymodels * 0.1.3   2021-04-19 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
 #>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.3   2021-07-16 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  
  
