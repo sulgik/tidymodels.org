@@ -5,34 +5,34 @@ categories: []
 type: learn-subsection
 weight: 1
 description: | 
-  Write a new recipe step for data preprocessing.
+  데이터 전처리 레시피 단계 작성하기.
 ---
 
 
 
 
 
-## Introduction
+## 들어가기
 
 이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: modeldata and tidymodels.
 
-There are many existing recipe steps in packages like recipes, themis, textrecipes, and others. A full list of steps in CRAN packages [can be found here](/find/recipes/). However, you might need to define your own preprocessing operations; this article describes how to do that. If you are looking for good examples of existing steps, we suggest looking at the code for [centering](https://github.com/tidymodels/recipes/blob/master/R/center.R) or [PCA](https://github.com/tidymodels/recipes/blob/master/R/pca.R) to start. 
+recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 많이 있습니다. CRAN 패지키들에 있는 전체 스텝 목록은 [여기에 있습니다](/find/recipes/). 한편, 당신만의 전처리 작업들을 정의할 필요가 있을 것입니다; 어떻게 하는지 이 장에서 살펴볼 것입니다. 좋은 스텝의 예를 찾고 있다면, [centering 코드](https://github.com/tidymodels/recipes/blob/master/R/center.R)나  [PCA 코드](https://github.com/tidymodels/recipes/blob/master/R/pca.R)부터 살펴볼 것을 추천합니다.
 
-For check operations (e.g. `check_class()`), the process is very similar. Notes on this are available at the end of this article. 
+체크 작업 (예: `check_class()`) 프로세스는 매우 유사합니다. 이에 관한 내용은 이 장 마지막에서 볼 수 있습니다. 
 
-The general process to follow is to:
+일반적인 프로세스는:
 
-1. Define a step constructor function.
+1. 스텝 생성자함수를 정의한다.
 
-2. Create the minimal S3 methods for `prep()`, `bake()`, and `print()`.  
+2. 최소한의 S3 메소드인 `prep()`, `bake()`, `print()` 을 생성한다.  
 
-3. Optionally add some extra methods to work with other tidymodels packages, such as `tunable()` and `tidy()`. 
+3. (선택적으로) `tunable()` 와 `tidy()` 같은 tidymodels 패키지작업 메소드를 추가한다. 
 
-As an example, we will create a step for converting data into percentiles. 
+데이터를 퍼센타일로 변환하는 스텝을 예시로 생성할 것입니다.
 
-## A new step definition
+## 새로운 스텝 정의
 
-Let's create a step that replaces the value of a variable with its percentile from the training set. The example data we'll use is from the modeldata package:
+트레이닝셋에서 변수값을 퍼센타일로 변환하는 스텝을 생성해 봅시다. modeldata 패키지에 있는 데이터를 예시로 이용해 봅시다:
 
 
 ```r
@@ -53,7 +53,7 @@ biomass_tr <- biomass[biomass$dataset == "Training",]
 biomass_te <- biomass[biomass$dataset == "Testing",]
 ```
 
-To illustrate the transformation with the `carbon` variable, note the training set distribution of this variable with a vertical line below for the first value of the test set. 
+`carbon` 변수 변환 설명을 위해, 변수의 트레이닝셋 분포 위에 테스트셋의 첫번째 값에 수직선을 그은 시각화를 살펴봅시다. 
 
 
 ```r
@@ -66,13 +66,13 @@ ggplot(biomass_tr, aes(x = carbon)) +
 
 <img src="figs/carbon_dist-1.svg" width="100%" />
 
-Based on the training set, 42.1% of the data are less than a value of 46.35. There are some applications where it might be advantageous to represent the predictor values as percentiles rather than their original values. 
+트레이닝셋에 기반하여, 데이터의 42.1% 가 46.35 값 이하입니다. 설명변수 값을 원래 값보다는 퍼센타일로 표현하는 것이 이점이 있는 경우가 있습니다. 
 
-Our new step will do this computation for any numeric variables of interest. We will call this new recipe step `step_percentile()`. The code below is designed for illustration and not speed or best practices. We've left out a lot of error trapping that we would want in a real implementation.  
+임의의 수치형 변수에 대해서 이러한 계산을 하는 새로운 스텝을 만들어 봅시다. 이 레시피 스텝을 `step_percentile()` 라고 부릅니다. 아래 코드는 설명을 위한 것이고 속도를 고려했거나 제일 좋은 방법은 아닙니다. 실제 구현할 때 필요한 에러 트래핑은 여기서 다루지 않습니다.
 
-## Create the function
+## 함수 생성
 
-_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수는 `step_percentile_new()` 라고 부릅시다. 
+_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 생성자 함수는 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수를 `step_percentile_new()` 라고 부릅시다. 
 
 `step_percentile()` 함수는 당신의 함수와 같은 인수를 입력으로, 새로운 레시피에 추가합니다. `...` 은 사용할 수 있는 변수 selector 를 의미합니다.
 
@@ -109,14 +109,14 @@ step_percentile <- function(
 }
 ```
 
-(`recipe` 에서 `trained` 까지) 첫 네 개의 인수를 항상 위에 나열한 것과 같이 해야 합니다. 몇가지 주목할 사항이 있습니다:
+(`recipe` 에서 `trained` 까지) 첫 4개의 인수를 항상 위에 나열한 것과 같이 해야 합니다:
 
  * `role` 인수는 다음 경우 중 하나에 사용됩니다 1) 새 변수를 생성하고 생성된 변수의 롤들이 프리셋되길 원하는 경우 2) 기존의 변수를 새로운 값들로 대체하는 경우. 우리는 후자를 할 것이고, `role = NA` 을 사용하면 기존의 룰 내용을 유지할 것입니다. 
- * `trained` 는 estimation 스텝이 실행되었을 때 패키지가 설정합니다. 함수 정의의 인수의 기본값을 `FALSE` 로 해야합니다. 
+ * `trained` 는 estimation 스텝이 언제 실행되었는지 패키지가 설정합니다. 함수 정의의 인수의 기본값을 `FALSE` 로 해야합니다. 
  * `skip` 은 논리형입니다. 레시피가 준비되었을 때마다 각 단계는 훈련된 뒤 적용됩니다. 하지만, `bake()` 호출이 사용될 때 적용되지 않아야 할 단계들이 있습니다. 예를 들어, 한 단계가 "outcomes" 롤이 있는 변수에 적용된다면, 이 데이터는 새로운 샘플에서 사용할 수 없습니다.
 * `id` 는 패키지 코드의 단계를 식별할 때 사용할 문자열 입니다. `rand_id()` 는 접두사와 랜덤 문자열을 가진 ID 를 생성할 것입니다.
 
-`approx()` 로 트레이닝 셋으로 부터의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. 우리 `step_percentile` 는 `ref_dist` 객체를 포함하여 이러한 퍼센타일을 저장하여 (`prep()` 을 하여 트레이닝셋으로부터 미리 계산하여) `bake()` 에서 나중에 사용하게 합니다.
+`approx()` 로 트레이닝셋에서의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 퍼센타일을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
 
 `stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 인수가 아닌 전달된 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
@@ -127,6 +127,7 @@ step_percentile <- function(
 * [인수 명명 컨벤션](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html)을 따른다. 가능한한 은어를 피하고 공통 인수 이름을 따릅니다.  
 
 이 원칙을 따르면 이점이 있습니다. (아래 참고). 
+
 
 ## 새 객체 초기화하기
 
@@ -169,15 +170,13 @@ step_percentile_new <-
 function(x, training, info = NULL)
 ```
 
-where
+ * `x` 는 `step_percentile` 객체입니다.
+ * `training` 트레이닝셋 데이터를 가진 _티블_ 입니다.
+ * `info` 또한 티블인데, 현재 가능한 데이터셋에 관한 정보가 있습니다. 각 스텝에 해당하는 `prep()` 메소드가 스텝을 evaluation 할 때마다 이 정보가 업데이트 되어 원데이터의 변수가 없을 수 있습니다. 이 티블에 있는 변수는 `variable` (변수이름), `type` (현재 "numeric" 나 "nominal"), `role` (변수의 역할을 정의), `source` (어디에서 생겼는지에 따라 "original" 이나 "derived") 입니다.
 
- * `x` will be the `step_percentile` object,
- * `training` will be a _tibble_ that has the training set data, and
- * `info` will also be a tibble that has information on the current set of data available. This information is updated as each step is evaluated by its specific `prep()` method so it may not have the variables from the original data. The columns in this tibble are `variable` (the variable name), `type` (currently either "numeric" or "nominal"), `role` (defining the variable's role), and `source` (either "original" or "derived" depending on where it originated).
+다른 인수들도 정의할 수 있습니다. 
 
-You can define other arguments as well. 
-
-The first thing that you might want to do in the `prep()` function is to translate the specification listed in the `terms` argument to column names in the current data. There is a function called `recipes_eval_select()` that can be used to obtain this. 
+`prep()` 함수에서 처음으로 해야할 것은 `terms` 인수에 나열된 스펙을 현재데이터의 컬럼 이름으로 다시쓰는 것입니다. 이를 수행하기 위해 `recipes_eval_select()` 라 불리는 함수를 사용할 수 있습니다.
 
 {{% warning %}} The `recipes_eval_select()` function is not one you interact with as a typical recipes user, but it is helpful if you develop your own custom recipe steps. {{%/ warning %}}
 
@@ -189,9 +188,9 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 }
 ```
 
-After this function call, it is a good idea to check that the selected columns have the appropriate type (e.g. numeric for this example). See `recipes::check_type()` to do this for basic types. 
+이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기초유형의 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
 
-Once we have this, we can save the approximation grid. For the grid, we will use a helper function that enables us to run `rlang::exec()` to splice in any extra arguments contained in the `options` list to the call to `quantile()`: 
+이를 했다면, 우리는 근사 그리드를 저장할 수 있습니다. 그리드에 있어, 도우미 함수를 사용할 것입니다. 이 함수는 `rlang::exec()` 을 실행하여 `options` 리스트에 포함된 추가 인수들에서 `quantile()` 호출로 splice 합니다.
 
 
 ```r
@@ -210,7 +209,7 @@ get_train_pctl(biomass_tr$carbon)
 #> 14.6 44.7 47.1 49.7 97.2
 ```
 
-Now, the `prep()` method can be created: 
+이제 `prep()` 메소드를 생성할 수 있습니다: 
 
 
 ```r
@@ -247,10 +246,10 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 }
 ```
 
-We suggest favoring `rlang::abort()` and `rlang::warn()` over `stop()` and `warning()`. The former can be used for better traceback results.
+`stop()`, `warning()` 보다 `rlang::abort()`, `rlang::warn()` 을 사용할 것을 제안합니다. traceback 결과가 더 좋기 때문입니다.
 
 
-## Create the `bake` method
+## `bake` 메소드 생성
 
 Remember that the `prep()` function does not _apply_ the step to the data; it only estimates any required values such as `ref_dist`. We will need to create a new method for our `step_percentile()` class. The minimum arguments for this are
 
@@ -291,7 +290,7 @@ bake.step_percentile <- function(object, new_data, ...) {
 
 {{% note %}} You need to import `recipes::prep()` and `recipes::bake()` to create your own step function in a package. {{%/ note %}}
 
-## Run the example
+## 예제 실행
 
 Let's use the example data to make sure that it works: 
 
@@ -508,16 +507,16 @@ tidy(rec_obj, number = 1)
 #> # A tibble: 274 × 4
 #>    term     value percentile id              
 #>    <chr>    <dbl>      <dbl> <chr>           
-#>  1 hydrogen 0.03           0 percentile_qi6LP
-#>  2 hydrogen 0.934          1 percentile_qi6LP
-#>  3 hydrogen 1.60           2 percentile_qi6LP
-#>  4 hydrogen 2.07           3 percentile_qi6LP
-#>  5 hydrogen 2.45           4 percentile_qi6LP
-#>  6 hydrogen 2.74           5 percentile_qi6LP
-#>  7 hydrogen 3.15           6 percentile_qi6LP
-#>  8 hydrogen 3.49           7 percentile_qi6LP
-#>  9 hydrogen 3.71           8 percentile_qi6LP
-#> 10 hydrogen 3.99           9 percentile_qi6LP
+#>  1 hydrogen 0.03           0 percentile_e6ECa
+#>  2 hydrogen 0.934          1 percentile_e6ECa
+#>  3 hydrogen 1.60           2 percentile_e6ECa
+#>  4 hydrogen 2.07           3 percentile_e6ECa
+#>  5 hydrogen 2.45           4 percentile_e6ECa
+#>  6 hydrogen 2.74           5 percentile_e6ECa
+#>  7 hydrogen 3.15           6 percentile_e6ECa
+#>  8 hydrogen 3.49           7 percentile_e6ECa
+#>  9 hydrogen 3.71           8 percentile_e6ECa
+#> 10 hydrogen 3.99           9 percentile_e6ECa
 #> # … with 264 more rows
 ```
 
@@ -608,7 +607,7 @@ tunable.step_poly <- function (x, ...) {
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-02
+#>  date     2022-01-05
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
