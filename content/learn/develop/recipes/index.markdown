@@ -118,13 +118,13 @@ step_percentile <- function(
 
 `approx()` 로 트레이닝셋에서의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 퍼센타일을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
 
-`stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 인수가 아닌 전달된 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
+`stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 것이 아닌 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
-단계에 _메인 인수들_ 이 있다면, 고려하는 것이 중요합니다. 예를 들어, `step_ns()` 같은 spline-관련 스텝들에 대해, 사용자들은 spline 에서 자유도 인수를 조정하길 원합니다 (e.g. `splines::ns(x, df)`). 사용자들에게 `df` 를 `options` 인수에 추가하는 것 대신:
+스텝에 _메인 인수들_ 이 있다면, 고려하는 것이 중요합니다. 예를 들어, `step_ns()` 같은 spline-관련 스텝들에 대해, 사용자들은 spline 에서 자유도 인수를 조정하길 원합니다 (예: `splines::ns(x, df)`). 사용자들에게 `df` 를 `options` 인수에 추가하는 것 대신:
 
-* 중요한 인수들이 스텝 함수의 메인 인수들로 합니다. 
+* 중요한 인수들을 스텝 함수의 메인 인수들로 합니다. 
 
-* [인수 명명 컨벤션](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html)을 따른다. 가능한한 은어를 피하고 공통 인수 이름을 따릅니다.  
+* [인수 명명 컨벤션](https://tidymodels.github.io/model-implementation-principles/standardized-argument-names.html)을 따릅니다. 가능한 한 은어를 피하고 공통 인수 이름을 따릅니다.  
 
 이 원칙을 따르면 이점이 있습니다. (아래 참고). 
 
@@ -141,7 +141,7 @@ step_percentile() calls recipes::add_step()
     └──> step_percentile_new() calls recipes::step()
 ```
 
-`step()` 은 레시피를 위한 일반 생성자인데, 결과 스텝 객체는 적절한 S3 클래스 구조를 가진 리스트입니다. `subclass = "percentile"` 을 하면, 새 객체의 클래스를 `"step_percentile"` 로 설정합니다.
+`step()` 은 레시피를 위한 일반 생성자인데, 출력되는 스텝 객체는 적절한 S3 클래스 구조를 가진 리스트입니다. `subclass = "percentile"` 을 하면, 새 객체의 클래스가 `"step_percentile"` 가 됩니다.
 
 
 ```r
@@ -164,7 +164,7 @@ step_percentile_new <-
 
 ## `prep` 메소드 생성하기
 
-당신의 스텝의 클래스를 위한 새로운 `prep()` 메소드를 생성해야 합니다. 메소드가 가져야 할 세 가지 인수는 다음과 같습니다:
+당신의 스텝의 클래스를 위한 `prep()` 메소드를 새로 생성해야 합니다. 메소드가 가져야 할 세 가지 인수는 다음과 같습니다:
 
 ```r
 function(x, training, info = NULL)
@@ -190,7 +190,7 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 
 이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기초유형의 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
 
-이를 했다면, 우리는 근사 그리드를 저장할 수 있습니다. 그리드에 있어, 도우미 함수를 사용할 것입니다. 이 함수는 `rlang::exec()` 을 실행하여 `options` 리스트에 포함된 추가 인수들에서 `quantile()` 호출로 splice 합니다.
+이를 했다면, 우리는 근사 그리드를 저장할 수 있습니다. 그리드에 있어, 도우미 함수를 사용할 것입니다. 이 함수는 `rlang::exec()` 을 실행하여 `options` 리스트에 포함된 추가 인수들을 사용하여 `quantile()` 호출하여 splice 합니다.
 
 
 ```r
@@ -507,16 +507,16 @@ tidy(rec_obj, number = 1)
 #> # A tibble: 274 × 4
 #>    term     value percentile id              
 #>    <chr>    <dbl>      <dbl> <chr>           
-#>  1 hydrogen 0.03           0 percentile_e6ECa
-#>  2 hydrogen 0.934          1 percentile_e6ECa
-#>  3 hydrogen 1.60           2 percentile_e6ECa
-#>  4 hydrogen 2.07           3 percentile_e6ECa
-#>  5 hydrogen 2.45           4 percentile_e6ECa
-#>  6 hydrogen 2.74           5 percentile_e6ECa
-#>  7 hydrogen 3.15           6 percentile_e6ECa
-#>  8 hydrogen 3.49           7 percentile_e6ECa
-#>  9 hydrogen 3.71           8 percentile_e6ECa
-#> 10 hydrogen 3.99           9 percentile_e6ECa
+#>  1 hydrogen 0.03           0 percentile_60h51
+#>  2 hydrogen 0.934          1 percentile_60h51
+#>  3 hydrogen 1.60           2 percentile_60h51
+#>  4 hydrogen 2.07           3 percentile_60h51
+#>  5 hydrogen 2.45           4 percentile_60h51
+#>  6 hydrogen 2.74           5 percentile_60h51
+#>  7 hydrogen 3.15           6 percentile_60h51
+#>  8 hydrogen 3.49           7 percentile_60h51
+#>  9 hydrogen 3.71           8 percentile_60h51
+#> 10 hydrogen 3.99           9 percentile_60h51
 #> # … with 264 more rows
 ```
 
@@ -607,7 +607,7 @@ tunable.step_poly <- function (x, ...) {
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-05
+#>  date     2022-01-08
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
