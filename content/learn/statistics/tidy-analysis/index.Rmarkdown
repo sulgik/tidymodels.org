@@ -1,11 +1,11 @@
 ---
-title: "Correlation and regression fundamentals with tidy data principles"
+title: "상관도와 회귀의 기초사항에 관한 타이디한 데이터 원칙"
 tags: [broom]
 categories: [statistical analysis]
 type: learn-subsection
 weight: 1
 description: | 
-  Analyze the results of correlation tests and simple regression models for many data sets at once.
+  상관검정과 단순 회귀모델의 결과 분석을 여러 데이터셋에 대해 동시에 수행한다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -18,15 +18,19 @@ pkgs <- c("tidymodels")
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package.
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-While the tidymodels package [broom](https://broom.tidyverse.org/) is useful for summarizing the result of a single analysis in a consistent format, it is really designed for high-throughput applications, where you must combine results from multiple analyses. These could be subgroups of data, analyses using different models, bootstrap replicates, permutations, and so on. In particular, it plays well with the `nest()/unnest()` functions from [tidyr](https://tidyr.tidyverse.org/) and the `map()` function in [purrr](https://purrr.tidyverse.org/).
+tidymodels 패키지인 [broom](https://broom.tidyverse.org/) 패키지가 단일 분석 결과를 일관성있는 형태로 요약하는데 유용하지만, 여러 분석결과를 합쳐야하는 high-throuput 을 위해 고안된 것입니다.
+합쳐지는 것들은 데이터의 서브그룹, 다른 모델을 사용한 분석들, bootstrap replicates, permutations 등이 될 수 있습니다. 
+특별이 이 패키지는 [tidyr](https://tidyr.tidyverse.org/) 의 `nest()/unnest()` 함수들, [purrr](https://purrr.tidyverse.org/) 의 `map()` 함수와 잘 작동합니다.
 
-## Correlation analysis
+## 상관 분석
 
-Let's demonstrate this with a simple data set, the built-in `Orange`. We start by coercing `Orange` to a `tibble`. This gives a nicer print method that will be especially useful later on when we start working with list-columns.
+빌트인 데이터셋 `Orange` 으로 한번 살펴봅시다. 
+`Orange` 를 `tibble` 로 강제변환하는 것부터 시작해봅시다. 
+이렇게하면 더 나은 print 메소드를 제공하는데, 이는 나중에 리스트컬럼으로 작업하기 시작할 때 매우 유용하게 될 것입니다.
 
 ```{r}
 library(tidymodels)
@@ -37,7 +41,7 @@ Orange <- as_tibble(Orange)
 Orange
 ```
 
-This contains 35 observations of three variables: `Tree`, `age`, and `circumference`. `Tree` is a factor with five levels describing five trees. As might be expected, age and circumference are correlated:
+35 개의 관측값들이 다음 3 개의 변수들을 가지고 있습니다: `Tree`, `age`, `circumference`. `Tree` 는 각각 다섯 나무를 의미하는 레벨 가진 팩터형입니다. 예상했듯이, 나이와 둘레길이는 상관관계가 있습니다:
 
 ```{r}
 cor(Orange$age, Orange$circumference)
@@ -48,7 +52,8 @@ ggplot(Orange, aes(age, circumference, color = Tree)) +
   geom_line()
 ```
 
-Suppose you want to test for correlations individually *within* each tree. You can do this with dplyr's `group_by`:
+각 나무 *내(within)* 에서 개별적으로 상관관계가 있는지 테스트하고 싶다고 하자. 
+dplyr 의 `group_by` 으로 할 수 있다:
 
 ```{r}
 Orange %>% 
@@ -109,7 +114,7 @@ Orange %>%
   select(-data, -test)
 ```
 
-## Regression models
+## 회귀 모델
 
 This type of workflow becomes even more useful when applied to regressions. Untidy output for a regression looks like:
 
