@@ -1,11 +1,11 @@
 ---
-title: "Modeling time series with tidy resampling"
+title: "타이디한 리샘플링으로 시계열 모델링하기"
 tags: [rsample]
 categories: [model fitting, resampling]
 type: learn-subsection
 weight: 4
 description: | 
-  Calculate performance estimates for time series forecasts using resampling.
+  리샘플링을 사용하여 시계열 예측 성능 추정치를 계산합니다.
 ---
 
 
@@ -13,15 +13,15 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
-To use the code in this article, you will need to install the following packages: forecast, sweep, tidymodels, timetk, and zoo.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: forecast, sweep, tidymodels, timetk, and zoo.
 
-"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" is an excellent article that uses tidy methods with time series. This article uses their analysis with rsample to find performance estimates for future observations using [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/). 
+"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" 는 시계열에 타이디한 방법을 사용하는 훌륭한 기사입니다. 이 기사는 rsample 을 분석에 사용하는데, [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/) 을 사용하여 미래 관측값에 관한 성능 추정값을 구합니다. 
 
-## Example data
+## 예제 데이터
 
-The data for this article are sales of alcoholic beverages originally from [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN).
+이 기사의 데이터는 [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN) 에서 가져온 주류 음료 매출에 관한 것입니다.
 
 
 ```r
@@ -31,15 +31,15 @@ data("drinks")
 glimpse(drinks)
 #> Rows: 309
 #> Columns: 2
-#> $ date           <date> 1992-01-01, 1992-02-01, 1992-03-01, 1992-04-01, 1992-…
-#> $ S4248SM144NCEN <dbl> 3459, 3458, 4002, 4564, 4221, 4529, 4466, 4137, 4126, …
+#> $ date           <date> 1992-01-01, 1992-02-01, 1992-03-01, 1992-04-01, 1992-0…
+#> $ S4248SM144NCEN <dbl> 3459, 3458, 4002, 4564, 4221, 4529, 4466, 4137, 4126, 4…
 ```
 
-Each row represents one month of sales (in millions of US dollars). 
+각 행은 월간 매출을 나타냅니다 (백만 미달러 단위). 
 
-## Time series resampling
+## 시계열 리샘플링
 
-Suppose that we need predictions for one year ahead and our model should use the most recent data from the last 20 years. To set up this resampling scheme:
+1년 후 예측값이 필요하고 우리 모델은 20년에서 가장 최근 데이터를 사용해야 한다고 가정합시다. 이 리샘플링 스킴을 설정하기 위해:
 
 
 ```r
@@ -55,7 +55,7 @@ nrow(roll_rs)
 
 roll_rs
 #> # Rolling origin forecast resampling 
-#> # A tibble: 58 x 2
+#> # A tibble: 58 × 2
 #>    splits           id     
 #>    <list>           <chr>  
 #>  1 <split [240/12]> Slice01
@@ -219,7 +219,7 @@ roll_rs_annual <- drinks %>%
   )
 
 analysis(roll_rs_annual$splits[[1]])
-#> # A tibble: 20 x 2
+#> # A tibble: 20 × 2
 #>     year data             
 #>    <dbl> <list>           
 #>  1  1992 <tibble [12 × 2]>
@@ -254,7 +254,7 @@ mutate(
   extracted_slice = map(splits, ~ bind_rows(analysis(.x)$data))
 )
 #> # Rolling origin forecast resampling 
-#> # A tibble: 6 x 3
+#> # A tibble: 6 × 3
 #>   splits         id     extracted_slice   
 #>   <list>         <chr>  <list>            
 #> 1 <split [20/1]> Slice1 <tibble [240 × 2]>
@@ -270,40 +270,45 @@ mutate(
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#> ─ Session info  ⏏️  👐  ☣️   ─────────────────────────────────────────
+#>  hash: eject button, open hands, biohazard
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  forecast   * 8.13    2020-09-12 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  sweep      * 0.2.3   2020-07-10 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  timetk     * 2.6.0   2020-11-21 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
-#>  zoo        * 1.8-8   2020-05-02 [1] CRAN (R 4.0.0)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-09
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  forecast   * 8.15    2021-06-01 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  sweep      * 0.2.3   2020-07-10 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  timetk     * 2.6.2   2021-11-16 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#>  zoo        * 1.8-9   2021-03-09 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  
