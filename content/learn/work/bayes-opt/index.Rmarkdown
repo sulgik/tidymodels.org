@@ -1,11 +1,11 @@
 ---
-title: "Iterative Bayesian optimization of a classification model"
+title: "분류 모델의 반복적 베이지언 최적화"
 tags: [tune, dials, parsnip, recipes, workflows]
 categories: [model tuning]
 type: learn-subsection
 weight: 3
 description: | 
-  Identify the best hyperparameters for a model using Bayesian optimization of iterative search.
+  반복적 탐색의 베이지언 최적화를 사용한 최적 모델 하이퍼파라미터 식별하기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -26,13 +26,13 @@ pkgs <- c("modeldata", "kernlab", "tidymodels", "themis")
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
-Many of the examples for model tuning focus on [grid search](/learn/work/tune-svm/). For that method, all the candidate tuning parameter combinations are defined prior to evaluation. Alternatively, _iterative search_ can be used to analyze the existing tuning parameter results and then _predict_ which tuning parameters to try next. 
+모델 튜닝의 많은 예제들은 [grid search](/learn/work/tune-svm/)에 집중합니다. 이 방법에 관해, 모든 후보 튜닝 파라미터 조합들은 평가 이전에 정의됩니다. 대안적인 방법으로 _반복탐색(iterative search)_ 을 사용하여 기존 튜닝파라미터 결과를 분석하고 어떤 튜닝 파라미터를 다음에 시도해야하는지 _예측_ 하는 방법도 있습니다. 
 
-There are a variety of methods for iterative search and the focus in this article is on _Bayesian optimization_. For more information on this method, these resources might be helpful:
+다양한 반복탐색 방법이 있는데 이 장의 주제는 _베이지언최적화_ 입니다. 이 방법에 관한 정보는 다음의 자료들이 도움을 줍니다:
 
 * [_Practical bayesian optimization of machine learning algorithms_](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=Practical+Bayesian+Optimization+of+Machine+Learning+Algorithms&btnG=) (2012). J Snoek, H Larochelle, and RP Adams. Advances in neural information.  
 
@@ -43,9 +43,9 @@ There are a variety of methods for iterative search and the focus in this articl
 * [Other articles!](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q="Bayesian+Optimization"&btnG=)
 
 
-## Cell segmenting revisited
+## 세포 세그멘팅 - 계속
 
-To demonstrate this approach to tuning models, let's return to the cell segmentation data from the [Getting Started](/start/resampling/) article on resampling: 
+튜닝 모델에 관한 이 접근법을 시연하기 위해, 리샘플링에 관한 [시작하기](/start/resampling/) 장의 세포 세그멘테이션 데이터를 다시 살펴봅시다: 
 
 ```{r import-data}
 library(tidymodels)
@@ -63,9 +63,9 @@ set.seed(1697)
 folds <- vfold_cv(cell_train, v = 10)
 ```
 
-## The tuning scheme
+## 튜닝 스킴
 
-Since the predictors are highly correlated, we can used a recipe to convert the original predictors to principal component scores. There is also slight class imbalance in these data; about `r floor(mean(cells$class == "PS") * 100)`% of the data are poorly segmented. To mitigate this, the data will be down-sampled at the end of the pre-processing so that the number of poorly and well segmented cells occur with equal frequency. We can use a recipe for all this pre-processing, but the number of principal components will need to be _tuned_ so that we have enough (but not too many) representations of the data. 
+설명변수들이 상당히 상관되어있기 때문에, 레시피를 사용하여 원 설명변수를 주성분 점수로 변환할 수 있습니다. 이 데이터에는 클래스 불균형이 약간 있습니다; 약 `r floor(mean(cells$class == "PS") * 100)`% 의 데이터가 잘못 세그멘트되었습니다. 이를 개선시키기 위해, 데이터는 전처리의 마지막에 다운샘플해서 잘못/잘 세그멘트된 세포가 같은 빈도로 일어나도록 할 것입니다. 레시피를 사용하여 이 모든 전처리를 할 수 있지만, 주성분 개수는 _튜닝_되어서 충분한 (하지만 너무 많지 않은) 데이터 representation 을 가지도록 할 필요가 있을 것입니다.
 
 ```{r recipe}
 library(themis)
@@ -78,7 +78,7 @@ cell_pre_proc <-
   step_downsample(class)
 ```
 
-In this analysis, we will use a support vector machine to model the data. Let's use a radial basis function (RBF) kernel and tune its main parameter ($\sigma$). Additionally, the main SVM parameter, the cost value, also needs optimization. 
+이 분석에서, 서포트벡터머신을 사용하여 데이터 모델링을 할 것입니다. radial basis function (RBF) 커널을 사용하고 메인 파라미터 ($\sigma$) 를 튜닝해 봅시다. 또한 메인 SVM 파라미터, 비용값도 최적화 될 필요가 있습니다. 
 
 ```{r model}
 svm_mod <-
