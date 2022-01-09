@@ -53,7 +53,7 @@ ggplot(Orange, aes(age, circumference, color = Tree)) +
 ```
 
 각 나무 *내(within)* 에서 개별적으로 상관관계가 있는지 테스트하고 싶다고 하자. 
-dplyr 의 `group_by` 으로 할 수 있다:
+dplyr 의 `group_by` 로 할 수 있다:
 
 ```{r}
 Orange %>% 
@@ -61,22 +61,22 @@ Orange %>%
   summarize(correlation = cor(age, circumference))
 ```
 
-(Note that the correlations are much higher than the aggregated one, and also we can now see the correlation is similar across trees).
+(상관도가 취합본에서보다 훨씬 크다는 것과 상관도가 트리마다 비슷하다는 것을 주목하라). 
 
-Suppose that instead of simply estimating a correlation, we want to perform a hypothesis test with `cor.test()`:
+단순히 상관도를 추정하는 것보다 `cor.test()` 로 가설 검정을 해보자:
 
 ```{r}
 ct <- cor.test(Orange$age, Orange$circumference)
 ct
 ```
 
-This test output contains multiple values we may be interested in. Some are vectors of length 1, such as the p-value and the estimate, and some are longer, such as the confidence interval. We can get this into a nicely organized tibble using the `tidy()` function:
+이 테스트 출력에는 관심있는 값들이 많이 있습니다. p-value 와 추정값같이 길이 1 인 벡터도 있고, 신뢰구간과 같이 길이가 긴 것들도 있습니다. `tidy()` 함수를 사용하여 잘 정리된 티블로 만들 수 있습니다:
 
 ```{r}
 tidy(ct)
 ```
 
-Often, we want to perform multiple tests or fit multiple models, each on a different part of the data. In this case, we recommend a `nest-map-unnest` workflow. For example, suppose we want to perform correlation tests for each different tree. We start by `nest`ing our data based on the group of interest:
+종종 우리는 데이터의 다른 부분들을 사용하여, 다중 테스트를 수행하거나 다중모델을 적합하는 경우가 있습니다. 이 경우, `nest-map-unnest` 워크플로를 추천합니다. 예를 들어, 각 다른 트리에 대해 상관도 검정을 수행하고 싶다고 해 봅시다. 관심있는 그룹에 기반하여 데이터를 `nest` (중첩) 하는 것부터 시작합니다:
 
 ```{r}
 nested <- 
@@ -84,14 +84,15 @@ nested <-
   nest(data = c(age, circumference))
 ```
 
-Then we perform a correlation test for each nested tibble using `purrr::map()`:
+이제 `purrr::map()` 를 사용하여 각 중첩된 티블에 대해 상관검정을 수행합니다:
 
 ```{r}
 nested %>% 
   mutate(test = map(data, ~ cor.test(.x$age, .x$circumference)))
 ```
 
-This results in a list-column of S3 objects. We want to tidy each of the objects, which we can also do with `map()`.
+S3 객체의 리스트컬럼을 출력합니다.
+`map()` 으로 각 객체들을 타이디하게 합니다.
 
 ```{r}
 nested %>% 
@@ -101,7 +102,7 @@ nested %>%
   ) 
 ```
 
-Finally, we want to unnest the tidied data frames so we can see the results in a flat tibble. All together, this looks like:
+마지막으로 타이디하게된 데이터프레임의 중첩을 풀어서 플랫티블로 볼 수 있게 합니다. 전체과정은 다음과 같게 됩니다: 
 
 ```{r}
 Orange %>% 
@@ -116,20 +117,20 @@ Orange %>%
 
 ## 회귀 모델
 
-This type of workflow becomes even more useful when applied to regressions. Untidy output for a regression looks like:
+이런 유형의 워크플로는 회귀모델에 적용될 때 더 유용하게 됩니다. 타이디하지 않은 회귀결과는 다음과 같게 됩니다:
 
 ```{r}
 lm_fit <- lm(age ~ circumference, data = Orange)
 summary(lm_fit)
 ```
 
-When we tidy these results, we get multiple rows of output for each model:
+이 결과를 타이디하게 하면, 각 모델에 대해 출력이 여러 행이 됩니다:
 
 ```{r}
 tidy(lm_fit)
 ```
 
-Now we can handle multiple regressions at once using exactly the same workflow as before:
+이제 여러 회귀들을 정확히 전과 같은 워크플로를 사용하여 한번에 다룰 수 있습니다:
 
 ```{r}
 Orange %>%
@@ -142,7 +143,7 @@ Orange %>%
   select(-data, -fit)
 ```
 
-You can just as easily use multiple predictors in the regressions, as shown here on the `mtcars` dataset. We nest the data into automatic vs. manual cars (the `am` column), then perform the regression within each nested tibble.
+여기 `mtcars` 데이터셋에서 보았듯이 회귀의 여러 설명변수를 쉽게 이용할 수 있습니다. 우리는 데이터를 자동변속 vs. 수동변속 (`am` 열) 으로 데이터를 중첩한 뒤 각 중첩된 티블 내에서 회귀를 수행합니다.
 
 ```{r}
 data(mtcars)
@@ -159,7 +160,7 @@ mtcars %>%
   select(-data, -fit)
 ```
 
-What if you want not just the `tidy()` output, but the `augment()` and `glance()` outputs as well, while still performing each regression only once? Since we're using list-columns, we can just fit the model once and use multiple list-columns to store the tidied, glanced and augmented outputs.
+우리가 만약 `tidy()` 출력 뿐만 아니라 `augment()` 와 `glance()` 출력까지 원하지만, 각 회귀를 한번만 수행하고 싶다면 어떻게 해야 할까요? 리스트컬럼을 이용하고 있기 때문에, 모델을 한번만 적합하고 다중 리스트열을 사용하여 타이디되고, glance 되고, augment 된 출력을 저장할 수 있습니다.
 
 ```{r}
 regressions <- 
@@ -185,14 +186,13 @@ regressions %>%
   unnest(augmented)
 ```
 
-By combining the estimates and p-values across all groups into the same tidy data frame (instead of a list of output model objects), a new class of analyses and visualizations becomes straightforward. This includes:
+모든그룹에 대한 추정값들과 p-value 들을 (출력 모델 객체들의 리스트 대신) 같은 타이디한 데이터프레임으로 결합함으로써, 새로운 클래스의 분석과 시각화가 직관적이게 됩니다. 다음을 포함합니다: 
 
-- sorting by p-value or estimate to find the most significant terms across all tests,
-- p-value histograms, and
-- volcano plots comparing p-values to effect size estimates.
+- p-value 나 추정값으로 정렬하여 모든 테스트를 통틀어 가장 유의한 항을 찾음
+- p-value 히스토그램
+- p-value 를 effect size 추정값과 비교하는 volcano plots.
 
-In each of these cases, we can easily filter, facet, or distinguish based on the `term` column. In short, this makes the tools of tidy data analysis available for the *results* of data analysis and models, not just the inputs.
-
+이들 케이스 각각에서, `terms` 열에 기반하여 쉽게 필터링, facet, 비교할 수 있습니다. 요약하면, 이전에는 타이디한 데이터 분석 도구들이 입력데이터에서만 사용할 수 있었는데, 데이터분석과 모델의 *결과*에도 사용할 수 있게 됩니다.
 
 ## Session information
 
