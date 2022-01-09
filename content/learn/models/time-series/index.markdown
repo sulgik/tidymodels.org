@@ -71,7 +71,7 @@ roll_rs
 #> # … with 48 more rows
 ```
 
-Each `split` element contains the information about that resample:
+각 `split` 요소에는 리샘플에 관한 정보가 있습니다:
 
 
 ```r
@@ -80,7 +80,7 @@ roll_rs$splits[[1]]
 #> <240/12/309>
 ```
 
-For plotting, let's index each split by the first day of the assessment set:
+플롯을 그려봅시다. 각 스플릿은 평가셋의 첫번째 날 기준으로 인텍싱합니다:
 
 
 ```r
