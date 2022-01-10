@@ -164,15 +164,15 @@ estimates
 show_best(search_res, metric = "roc_auc")
 ```
 
-A plot of the search iterations can be created via:
+탐색 반복 플롯은 다음으로 생성할 수 있습니다:
 
 ```{r bo-plot}
 autoplot(search_res, type = "performance")
 ```
 
-There are many parameter combinations have roughly equivalent results. 
+대략 비슷한 결과를 낳는 파라미터 조합이 많이 있습니다.
 
-How did the parameters change over iterations? 
+파라미터들이 반복하면서 어떻게 변화했습니까?
 
 
 ```{r bo-param-plot, fig.width=9}

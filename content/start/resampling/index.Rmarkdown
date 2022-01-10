@@ -1,5 +1,5 @@
 ---
-title: "resampling 으로 모델 평가하기"
+title: "리샘플링으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
