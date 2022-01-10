@@ -1,5 +1,5 @@
 ---
-title: "recipe 로 데이터 전처리하기"
+title: "레시피로 데이터 전처리하기"
 weight: 2
 tags: [recipes, parsnip, workflows, yardstick, broom]
 categories: [pre-processing]
@@ -576,7 +576,7 @@ flights_aug %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-02
+#>  date     2022-01-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

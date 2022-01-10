@@ -123,7 +123,7 @@ summary(kclust)
 - `centers`, `withinss`, `size` (3 values) 는 각 *클러스터* 에 관한 정보가 있습니다
 - `totss`, `tot.withinss`, `betweenss`, `iter` (1 값) 에는 *full clustering* 에 관한 정보가 있습니다
 
-Which of these do we want to extract? There is no right answer; each of them may be interesting to an analyst. Because they communicate entirely different information (not to mention there's no straightforward way to combine them), they are extracted by separate functions. `augment` adds the point classifications to the original data set:
+이 것들 중 어떤 것을 추출하고 싶을까요? 정답은 없습니다; 분석가는 각각에 관심이 있을 수 있습니다. 이것들은 완전히 다른 정보 (이것들을 결합하는 직관적인 방법이 없다는 것은 말할 필요도 없음) 를 제공하기 때문에, 추출하기 위해서 구분된 함수들이 사용됩니다. `augment` 는 point 분류를 원 데이터셋에 추가합니다:
 
 
 ```r
@@ -157,7 +157,7 @@ tidy(kclust)
 #> 3  5.00   -1.05   101     243. 3
 ```
 
-And as it always does, the `glance()` function extracts a single-row summary:
+그리고 늘 그렇듯, `glance()` 함수는 단일행 요약을 추출합니다:
 
 
 ```r
@@ -168,7 +168,7 @@ glance(kclust)
 #> 1 3724.         651.     3073.     2
 ```
 
-## Exploratory clustering
+## 탐색적 클러스터링
 
 While these summaries are useful, they would not have been too difficult to extract out from the data set yourself. The real power comes from combining these analyses with other tools like [dplyr](https://dplyr.tidyverse.org/).
 

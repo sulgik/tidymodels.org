@@ -1,10 +1,10 @@
 ---
-title: "모델 파라미터 tune 하기"
+title: "모델 파라미터 튜닝하기"
 weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
 description: | 
-  모델 훈련동안 직접 학습될 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
+  모델 훈련동안 직접 학습할 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
 ---
 
 
@@ -424,7 +424,7 @@ args(decision_tree)
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-28
+#>  date     2022-01-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

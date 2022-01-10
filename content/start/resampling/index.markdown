@@ -1,5 +1,5 @@
 ---
-title: "resampling 으로 모델 평가하기"
+title: "리샘플링으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
@@ -500,7 +500,7 @@ rf_testing_pred %>%                   # test set predictions
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-28
+#>  date     2022-01-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

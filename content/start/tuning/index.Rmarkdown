@@ -1,10 +1,10 @@
 ---
-title: "모델 파라미터 tune 하기"
+title: "모델 파라미터 튜닝하기"
 weight: 4
 tags: [rsample, parsnip, tune, dials, workflows, yardstick]
 categories: [tuning]
 description: | 
-  모델 훈련동안 직접 학습될 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
+  모델 훈련동안 직접 학습할 수 없는 하이퍼파라미터의 가장 좋은 값을 추정합니다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
