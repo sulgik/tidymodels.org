@@ -28,11 +28,11 @@ recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 �
 
 3. (선택적으로) `tunable()` 와 `tidy()` 같은 tidymodels 패키지작업 메소드를 추가한다. 
 
-데이터를 퍼센타일로 변환하는 스텝을 예시로 생성할 것입니다.
+데이터를 백분율로 변환하는 스텝을 예시로 생성할 것입니다.
 
 ## 새로운 스텝 정의
 
-트레이닝셋에서 변수값을 퍼센타일로 변환하는 스텝을 생성해 봅시다. modeldata 패키지에 있는 데이터를 예시로 이용해 봅시다:
+트레이닝셋에서 변수값을 백분율로 변환하는 스텝을 생성해 봅시다. modeldata 패키지에 있는 데이터를 예시로 이용해 봅시다:
 
 
 ```r
@@ -66,13 +66,13 @@ ggplot(biomass_tr, aes(x = carbon)) +
 
 <img src="figs/carbon_dist-1.svg" width="100%" />
 
-트레이닝셋에 기반하여, 데이터의 42.1% 가 46.35 값 이하입니다. 설명변수 값을 원래 값보다는 퍼센타일로 표현하는 것이 이점이 있는 경우가 있습니다. 
+트레이닝셋에 기반하여, 데이터의 42.1% 가 46.35 값 이하입니다. 설명변수 값을 원래 값보다는 백분율로 표현하는 것이 이점이 있는 경우가 있습니다. 
 
 임의의 수치형 변수에 대해서 이러한 계산을 하는 새로운 스텝을 만들어 봅시다. 이 레시피 스텝을 `step_percentile()` 라고 부릅니다. 아래 코드는 설명을 위한 것이고 속도를 고려했거나 제일 좋은 방법은 아닙니다. 실제 구현할 때 필요한 에러 트래핑은 여기서 다루지 않습니다.
 
 ## 함수 생성
 
-_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 생성자 함수는 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수를 `step_percentile_new()` 라고 부릅시다. 
+_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 생성자 함수는 백분율 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수를 `step_percentile_new()` 라고 부릅시다. 
 
 `step_percentile()` 함수는 당신의 함수와 같은 인수를 입력으로, 새로운 레시피에 추가합니다. `...` 은 사용할 수 있는 변수 selector 를 의미합니다.
 
@@ -116,7 +116,7 @@ step_percentile <- function(
  * `skip` 은 논리형입니다. 레시피가 준비되었을 때마다 각 단계는 훈련된 뒤 적용됩니다. 하지만, `bake()` 호출이 사용될 때 적용되지 않아야 할 단계들이 있습니다. 예를 들어, 한 단계가 "outcomes" 롤이 있는 변수에 적용된다면, 이 데이터는 새로운 샘플에서 사용할 수 없습니다.
 * `id` 는 패키지 코드의 단계를 식별할 때 사용할 문자열 입니다. `rand_id()` 는 접두사와 랜덤 문자열을 가진 ID 를 생성할 것입니다.
 
-`approx()` 로 트레이닝셋에서의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 퍼센타일을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
+`approx()` 로 트레이닝셋에서의 백분율에 기반하여 새로운 데이터 포인트의 백분율을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 백분율을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
 
 `stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 것이 아닌 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
@@ -188,7 +188,7 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 }
 ```
 
-이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기초유형의 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
+이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기본유형인 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
 
 이를 했다면, 우리는 근사 그리드를 저장할 수 있습니다. 그리드에 있어, 도우미 함수를 사용할 것입니다. 이 함수는 `rlang::exec()` 을 실행하여 `options` 리스트에 포함된 추가 인수들을 사용하여 `quantile()` 호출하여 splice 합니다.
 
@@ -251,15 +251,15 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 
 ## `bake` 메소드 생성
 
-Remember that the `prep()` function does not _apply_ the step to the data; it only estimates any required values such as `ref_dist`. We will need to create a new method for our `step_percentile()` class. The minimum arguments for this are
+`prep()` 함수는 데이터에 스텝을 _적용_ 하지 않음을 기억하세요; `ref_dist` 와 같은 필수 값을 추정하기만 합니다. 우리가 만든 `step_percentile()` 클래스에 사용할 새로운 메소드를 만들 필요가 있습니다. 꼭 있어야할 인수들은
 
 ```r
 function(object, new_data, ...)
 ```
 
-where `object` is the updated step function that has been through the corresponding `prep()` code and `new_data` is a tibble of data to be processed. 
+`object` 는 해당하는 `prep()` 코드를 거친 업데이트된 스텝 함수이고 `new_data` 는 처리할 데이터 티블입니다.
 
-Here is the code to convert the new data to percentiles. The input data (`x` below) comes in as a numeric vector and the output is a vector of approximate percentiles: 
+새로운 데이터를 백분율로 변환하는 코드가 여기 있습니다. 입력 데이터 (아래에서 `x`) 는 수치형 벡터이고 출력은 근사 백분율 벡터입니다: 
 
 
 ```r
@@ -271,7 +271,7 @@ pctl_by_approx <- function(x, ref) {
 }
 ```
 
-These computations are done column-wise using `purrr::map2_dfc()` to modify the new data in-place:
+`purrr::map2_dfc()` 를 사용하여 열을 기준으로 위의 연산이 하고 새로운 데이터를 제 위치로 넣습니다:
 
 
 ```r
@@ -292,7 +292,7 @@ bake.step_percentile <- function(object, new_data, ...) {
 
 ## 예제 실행
 
-Let's use the example data to make sure that it works: 
+잘 작동하는지 예제 데이터에 사용해봅니다: 
 
 
 ```r
@@ -319,7 +319,7 @@ mean(biomass_tr$oxygen   <= biomass_te$oxygen[1])
 #> [1] 0.901
 ```
 
-The plot below shows how the original hydrogen percentiles line up with the estimated values:
+아래 플롯은 원 수소 백분율이 예측값과 일치하는지를 나타냅니다:
 
 
 ```r
@@ -340,24 +340,24 @@ ggplot(biomass_tr, aes(x = hydrogen)) +
 
 <img src="figs/cdf_plot-1.svg" width="672" />
 
-These line up very nicely! 
+매우 잘 일치하네요! 
 
-## Custom check operations 
+## 커스텀 체크 동작
 
-The process here is exactly the same as steps; the internal functions have a similar naming convention: 
+체크 프로세스는 스텝과 정확히 같습니다; 내부 함수들은 유사한 명명 컨벤션을 가집니다:
 
- * `add_check()` instead of `add_step()`
- * `check()` instead of `step()`, and so on. 
+ * `add_step()` 대신 `add_check()`
+ * `step()` 대신 `check()` 등등. 
  
-It is strongly recommended that:
+다음과 같이 하는 것이 매우 좋습니다:
  
- 1. The operations start with `check_` (i.e. `check_range()` and `check_range_new()`)
- 1. The check uses `rlang::abort(paste0(...))` when the conditions are not met
- 1. The original data are returned (unaltered) by the check when the conditions are satisfied. 
+ 1. 동작(operations)은 `check_` 으로 시작 (예: `check_range()` 과 `check_range_new()`)
+ 1. 조건들이 만족되지 않았을 때 체크는 `rlang::abort(paste0(...))` 을 사용
+ 1. 조건들이 만족될 때 체크는 원데이터를 (손대지않고) 반환. 
 
-## Other step methods
+## 기타 스텝 메소드
 
-There are a few other S3 methods that can be created for your step function. They are not required unless you plan on using your step in the broader tidymodels package set. 
+스텝 함수를 위해 생성할 수 있는 S3 메소드들은 이 외에도 몇몇이 있습니다.스텝을 더 넓은 tidymodels 패키지들에서 사용할 계획이 없는 한 필요하지 않습니다.
 
 ### A print method
 
@@ -507,16 +507,16 @@ tidy(rec_obj, number = 1)
 #> # A tibble: 274 × 4
 #>    term     value percentile id              
 #>    <chr>    <dbl>      <dbl> <chr>           
-#>  1 hydrogen 0.03           0 percentile_60h51
-#>  2 hydrogen 0.934          1 percentile_60h51
-#>  3 hydrogen 1.60           2 percentile_60h51
-#>  4 hydrogen 2.07           3 percentile_60h51
-#>  5 hydrogen 2.45           4 percentile_60h51
-#>  6 hydrogen 2.74           5 percentile_60h51
-#>  7 hydrogen 3.15           6 percentile_60h51
-#>  8 hydrogen 3.49           7 percentile_60h51
-#>  9 hydrogen 3.71           8 percentile_60h51
-#> 10 hydrogen 3.99           9 percentile_60h51
+#>  1 hydrogen 0.03           0 percentile_baW41
+#>  2 hydrogen 0.934          1 percentile_baW41
+#>  3 hydrogen 1.60           2 percentile_baW41
+#>  4 hydrogen 2.07           3 percentile_baW41
+#>  5 hydrogen 2.45           4 percentile_baW41
+#>  6 hydrogen 2.74           5 percentile_baW41
+#>  7 hydrogen 3.15           6 percentile_baW41
+#>  8 hydrogen 3.49           7 percentile_baW41
+#>  9 hydrogen 3.71           8 percentile_baW41
+#> 10 hydrogen 3.99           9 percentile_baW41
 #> # … with 264 more rows
 ```
 
@@ -595,43 +595,38 @@ tunable.step_poly <- function (x, ...) {
 
 
 ```
-#> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
-#>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
+#> ─ Session info ───────────────────────────────────────────────────────────────
+#>  setting  value                       
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
+#>  system   x86_64, darwin17.0          
+#>  ui       X11                         
+#>  language (EN)                        
+#>  collate  en_US.UTF-8                 
+#>  ctype    en_US.UTF-8                 
+#>  tz       Asia/Seoul                  
+#>  date     2022-01-10                  
 #> 
-#>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
-#>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
-#>  tz       Asia/Seoul
-#>  date     2022-01-08
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package    * version date       lib source        
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
-#>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
-#> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-#> 
-#> ────────────────────────────────────────────────────────────────────
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
  
  

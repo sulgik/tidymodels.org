@@ -42,7 +42,7 @@ library(vip)         # for variable importance plots
 
 ## 세포 이미지 데이터, 계속 {#data}
 
-이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling)을 사용했었습니다.
+이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling) 을 사용했었습니다.
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
@@ -58,7 +58,7 @@ cells
 
 이러한 하이퍼파라미터를 튜닝하면 모델 성능을 개선할 수 있는데 decision tree 모델은 [overfitting](https://bookdown.org/max/FES/important-concepts.html#overfitting)되는 경향이 있기 때문입니다. 하나의 트리모델은 트레이닝 데이터에 _너무 잘_ 적합되는 경향이 있기 때문에 그렇습니다. &mdash; 사실 트레이닝 데이터에 존재하는 패턴들을 과학습해서 새로운 데이터를 예측할 때 방해가 될 정도가 됩니다.
 
-과적합을 피하기 위해 모델 하이퍼파라미터를 튜닝할 것입니다. `cost_complexity` 의 값을 튜닝하면 우리 트리를  [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) 하여 도움이 됩니다. 더 복잡한 트리의 에러 레이트에 코스트 혹은 페널티를 추가합니다; 0에 가까운 코스트는 프룬된 트리노드 개수를 감소시키고 과적합된 나무를 제공하기 쉽습니다. 그러나 높은 코스트는 프룬된 트리 노드의 개수를 증가시키고 상반된 문제&mdash;an underfit tree 를 산출할 수 있습니다. 반면에 `tree_depth` 를 튜닝하면 우리 트리를 어떤 뎁스에 다다른 뒤 더 자라는 것을 [방지](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping) 하는 도움을 줍니다. 우리의 목적은 이러한 하이퍼파라미터들을 튜닝하여 우리모델이 이미지 세그멘테이션을 가장 잘 예측하기 위한 값들로 튜닝하는 것입니다.
+과적합을 피하기 위해 모델 하이퍼파라미터를 튜닝할 것입니다. `cost_complexity` 의 값을 튜닝하면 우리 트리를  [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) 하여 도움이 됩니다. 더 복잡한 트리의 에러 레이트에 코스트 혹은 페널티를 추가합니다; 0 에 가까운 코스트는 프룬된 트리노드 개수를 감소시키고 과적합된 나무를 제공하기 쉽습니다. 그러나 높은 코스트는 프룬된 트리 노드의 개수를 증가시키고 상반된 문제&mdash;언더핏 트리를 산출할 수 있습니다. 반면에 `tree_depth` 를 튜닝하면 우리 트리를 어떤 뎁스에 다다른 뒤 더 자라는 것을 [방지](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping) 하는 도움을 줍니다. 우리의 목적은 이러한 하이퍼파라미터들을 튜닝하여 우리모델이 이미지 세그멘테이션을 가장 잘 예측하기 위한 값들로 튜닝하는 것입니다.
 
 튜닝 프로세스를 시작하기 전에, 하이퍼파라미터 기본값으로 모델을 훈련시켰을 때와 같이 우리 데이터를 트레이닝셋과 테스트 셋으로 분리합니다. [전](/start/resampling/)과 같이 `strata = class` 를 하여 층화 샘플링을 이용하여 트레이닝과 테스팅 셋이 세그멘테이션 종류비율이 같도록 합니다.
 

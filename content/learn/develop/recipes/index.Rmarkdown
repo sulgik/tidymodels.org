@@ -35,11 +35,11 @@ recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 �
 
 3. (선택적으로) `tunable()` 와 `tidy()` 같은 tidymodels 패키지작업 메소드를 추가한다. 
 
-데이터를 퍼센타일로 변환하는 스텝을 예시로 생성할 것입니다.
+데이터를 백분율로 변환하는 스텝을 예시로 생성할 것입니다.
 
 ## 새로운 스텝 정의
 
-트레이닝셋에서 변수값을 퍼센타일로 변환하는 스텝을 생성해 봅시다. modeldata 패키지에 있는 데이터를 예시로 이용해 봅시다:
+트레이닝셋에서 변수값을 백분율로 변환하는 스텝을 생성해 봅시다. modeldata 패키지에 있는 데이터를 예시로 이용해 봅시다:
 
 ```{r initial}
 library(modeldata)
@@ -60,13 +60,13 @@ ggplot(biomass_tr, aes(x = carbon)) +
   geom_vline(xintercept = biomass_te$carbon[1], lty = 2)
 ```
 
-트레이닝셋에 기반하여, 데이터의 `r round(mean(biomass_tr$carbon <= biomass_te$carbon[1])*100, 1)`% 가 `r biomass_te$carbon[1]` 값 이하입니다. 설명변수 값을 원래 값보다는 퍼센타일로 표현하는 것이 이점이 있는 경우가 있습니다. 
+트레이닝셋에 기반하여, 데이터의 `r round(mean(biomass_tr$carbon <= biomass_te$carbon[1])*100, 1)`% 가 `r biomass_te$carbon[1]` 값 이하입니다. 설명변수 값을 원래 값보다는 백분율로 표현하는 것이 이점이 있는 경우가 있습니다. 
 
 임의의 수치형 변수에 대해서 이러한 계산을 하는 새로운 스텝을 만들어 봅시다. 이 레시피 스텝을 `step_percentile()` 라고 부릅니다. 아래 코드는 설명을 위한 것이고 속도를 고려했거나 제일 좋은 방법은 아닙니다. 실제 구현할 때 필요한 에러 트래핑은 여기서 다루지 않습니다.
 
 ## 함수 생성
 
-_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 생성자 함수는 퍼센타일 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수를 `step_percentile_new()` 라고 부릅시다. 
+_사용자향(user-facing)_ 함수가 하나 있습니다. `step_percentile()` 라고 부릅시다. 이 함수는 _생성자 함수_ 를 둘러싼 단순한 래퍼인데, 생성자 함수는 백분율 변환을 정의하는 스텝 객체에 관한 법칙들을 정의합니다. 생성자 함수를 `step_percentile_new()` 라고 부릅시다. 
 
 `step_percentile()` 함수는 당신의 함수와 같은 인수를 입력으로, 새로운 레시피에 추가합니다. `...` 은 사용할 수 있는 변수 selector 를 의미합니다.
 
@@ -109,7 +109,7 @@ step_percentile <- function(
  * `skip` 은 논리형입니다. 레시피가 준비되었을 때마다 각 단계는 훈련된 뒤 적용됩니다. 하지만, `bake()` 호출이 사용될 때 적용되지 않아야 할 단계들이 있습니다. 예를 들어, 한 단계가 "outcomes" 롤이 있는 변수에 적용된다면, 이 데이터는 새로운 샘플에서 사용할 수 없습니다.
 * `id` 는 패키지 코드의 단계를 식별할 때 사용할 문자열 입니다. `rand_id()` 는 접두사와 랜덤 문자열을 가진 ID 를 생성할 것입니다.
 
-`approx()` 로 트레이닝셋에서의 퍼센타일에 기반하여 새로운 데이터 포인트의 퍼센타일을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 퍼센타일을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
+`approx()` 로 트레이닝셋에서의 백분율에 기반하여 새로운 데이터 포인트의 백분율을 추정할 수 있습니다. (`prep()` 을 하여 트레이닝셋으로부터 미리 계산된) 이러한 백분율을 저장한 `ref_dist` 가 `step_percentile` 안에 있는데, `bake()` 가 나중에 불러올 수 있습니다.
 
 `stats::quantile()` 을 사용하여 그리드를 계산할 것입니다. 하지만, 이 그리드의 granularity 를 조정하고 싶기 때문에, `options` 인수가 계산이 어떻게 수행될 것인지를 정의하는데 사용될 것입니다. `step_percentile()` 의 것이 아닌 옵션이 `stats::quantile()` 로 전달되도록 ellipses (다른 말로 `...`) 를 사용할 수 있습니다. 하지만, 옵션으로 분리된 리스트 객체를 만들고 함수 내에서 사용하기를 추천하는데, `...` 은 변수 선택을 정의하는 데 이미 사용되기 때문입니다.
 
@@ -179,7 +179,7 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 }
 ```
 
-이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기초유형의 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
+이 함수호출 이후, 선택한 열이 적절한 유형을 가졌는지 (이 예에서는 수치형인지) 확인하는 것이 좋습니다. 기본유형인 경우 이를 하려면 `recipes::check_type()` 를 실행하세요. 
 
 이를 했다면, 우리는 근사 그리드를 저장할 수 있습니다. 그리드에 있어, 도우미 함수를 사용할 것입니다. 이 함수는 `rlang::exec()` 을 실행하여 `options` 리스트에 포함된 추가 인수들을 사용하여 `quantile()` 호출하여 splice 합니다.
 
@@ -236,15 +236,15 @@ prep.step_percentile <- function(x, training, info = NULL, ...) {
 
 ## `bake` 메소드 생성
 
-Remember that the `prep()` function does not _apply_ the step to the data; it only estimates any required values such as `ref_dist`. We will need to create a new method for our `step_percentile()` class. The minimum arguments for this are
+`prep()` 함수는 데이터에 스텝을 _적용_ 하지 않음을 기억하세요; `ref_dist` 와 같은 필수 값을 추정하기만 합니다. 우리가 만든 `step_percentile()` 클래스에 사용할 새로운 메소드를 만들 필요가 있습니다. 꼭 있어야할 인수들은
 
 ```r
 function(object, new_data, ...)
 ```
 
-where `object` is the updated step function that has been through the corresponding `prep()` code and `new_data` is a tibble of data to be processed. 
+`object` 는 해당하는 `prep()` 코드를 거친 업데이트된 스텝 함수이고 `new_data` 는 처리할 데이터 티블입니다.
 
-Here is the code to convert the new data to percentiles. The input data (`x` below) comes in as a numeric vector and the output is a vector of approximate percentiles: 
+새로운 데이터를 백분율로 변환하는 코드가 여기 있습니다. 입력 데이터 (아래에서 `x`) 는 수치형 벡터이고 출력은 근사 백분율 벡터입니다: 
 
 ```{r bake-helpers}
 pctl_by_approx <- function(x, ref) {
@@ -255,7 +255,7 @@ pctl_by_approx <- function(x, ref) {
 }
 ```
 
-These computations are done column-wise using `purrr::map2_dfc()` to modify the new data in-place:
+`purrr::map2_dfc()` 를 사용하여 열을 기준으로 위의 연산이 하고 새로운 데이터를 제 위치로 넣습니다:
 
 ```{r bake-method}
 bake.step_percentile <- function(object, new_data, ...) {
@@ -275,7 +275,7 @@ bake.step_percentile <- function(object, new_data, ...) {
 
 ## 예제 실행
 
-Let's use the example data to make sure that it works: 
+잘 작동하는지 예제 데이터에 사용해봅니다: 
 
 ```{r example}
 rec_obj <- 
@@ -291,7 +291,7 @@ mean(biomass_tr$hydrogen <= biomass_te$hydrogen[1])
 mean(biomass_tr$oxygen   <= biomass_te$oxygen[1])
 ```
 
-The plot below shows how the original hydrogen percentiles line up with the estimated values:
+아래 플롯은 원 수소 백분율이 예측값과 일치하는지를 나타냅니다:
 
 ```{r cdf_plot,}
 hydrogen_values <- 
@@ -309,24 +309,24 @@ ggplot(biomass_tr, aes(x = hydrogen)) +
   labs(x = "New Hydrogen Values", y = "Percentile Based on Training Set")
 ```
 
-These line up very nicely! 
+매우 잘 일치하네요! 
 
-## Custom check operations 
+## 커스텀 체크 동작
 
-The process here is exactly the same as steps; the internal functions have a similar naming convention: 
+체크 프로세스는 스텝과 정확히 같습니다; 내부 함수들은 유사한 명명 컨벤션을 가집니다:
 
- * `add_check()` instead of `add_step()`
- * `check()` instead of `step()`, and so on. 
+ * `add_step()` 대신 `add_check()`
+ * `step()` 대신 `check()` 등등. 
  
-It is strongly recommended that:
+다음과 같이 하는 것이 매우 좋습니다:
  
- 1. The operations start with `check_` (i.e. `check_range()` and `check_range_new()`)
- 1. The check uses `rlang::abort(paste0(...))` when the conditions are not met
- 1. The original data are returned (unaltered) by the check when the conditions are satisfied. 
+ 1. 동작(operations)은 `check_` 으로 시작 (예: `check_range()` 과 `check_range_new()`)
+ 1. 조건들이 만족되지 않았을 때 체크는 `rlang::abort(paste0(...))` 을 사용
+ 1. 조건들이 만족될 때 체크는 원데이터를 (손대지않고) 반환. 
 
-## Other step methods
+## 기타 스텝 메소드
 
-There are a few other S3 methods that can be created for your step function. They are not required unless you plan on using your step in the broader tidymodels package set. 
+스텝 함수를 위해 생성할 수 있는 S3 메소드들은 이 외에도 몇몇이 있습니다.스텝을 더 넓은 tidymodels 패키지들에서 사용할 계획이 없는 한 필요하지 않습니다.
 
 ### A print method
 
