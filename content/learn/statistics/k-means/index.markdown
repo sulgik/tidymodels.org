@@ -52,17 +52,18 @@ ggplot(labelled_points, aes(x1, x2, color = cluster)) +
 
 <img src="figs/unnamed-chunk-1-1.svg" width="672" />
 
-This is an ideal case for k-means clustering. 
+k-means 크러스터링을 하기 이상적인 케이스입니다.
 
-## How does K-means work?
+## K-means 는 어떻게 작동하나요?
 
-Rather than using equations, this short animation using the [artwork](https://github.com/allisonhorst/stats-illustrations) of Allison Horst explains the clustering process:
+공식을 사용하기보다, Allison Horst 의 [artwork](https://github.com/allisonhorst/stats-illustrations) 를 이용한 이 짧은 애니메이션은 클러스터링 프로세스를 설명합니다:
 
 <img src="kmeans.gif" style="display: block; margin: auto;" />
 
-## Clustering in R
+## R 에서 클러스터링
 
-We'll use the built-in `kmeans()` function, which accepts a data frame with all numeric columns as it's primary argument.
+
+메인 입력인수가 모든 컬럼이 수치형인 데이터프레임인 빌트인 `kmeans()` 함수를 사용할 것입니다.
 
 
 ```r
@@ -112,20 +113,22 @@ summary(kclust)
 #> ifault         1    -none- numeric
 ```
 
-The output is a list of vectors, where each component has a different length. There's one of length 300, the same as our original data set. There are two elements of length 3 (`withinss` and `tot.withinss`) and `centers` is a matrix with 3 rows. And then there are the elements of length 1: `totss`, `tot.withinss`, `betweenss`, and `iter`. (The value `ifault` indicates possible algorithm problems.)
+출력은 길이가 다른 요소들의 벡터들로 이루어진 리스트입니다. 
+원 데이터셋과 같은 길이가 300 인 것이 하나 있습니다.
+길이가 3 인 두 요소 (`withinss` and `tot.withinss`) 가 있고, `centers` 는 행이 3 인 행렬입니다. 그리고 나서 길이가 1 인 요소들이 있습니다: `totss`, `tot.withinss`, `betweenss`, `iter`. (`ifault` 값은 가능항 알고리즘 문제들을 가리킵니다.)
 
-These differing lengths have important meaning when we want to tidy our data set; they signify that each type of component communicates a *different kind* of information.
+우리 데이터셋을 타이디하게 하고 싶을 때 이 다른 길이들은 중요한 의미를 갖습니다; 그들은 각 유형의 구성요소들이 *다른 종류* 의 정보를 소통함을 상징합니다.
 
-- `cluster` (300 values) contains information about each *point*
-- `centers`, `withinss`, and `size` (3 values) contain information about each *cluster*
-- `totss`, `tot.withinss`, `betweenss`, and `iter` (1 value) contain information about the *full clustering*
+- `cluster` (300 개의 값들) 는 각 *점* 에 관한 정보가 있습니다
+- `centers`, `withinss`, `size` (3 values) 는 각 *클러스터* 에 관한 정보가 있습니다
+- `totss`, `tot.withinss`, `betweenss`, `iter` (1 값) 에는 *full clustering* 에 관한 정보가 있습니다
 
 Which of these do we want to extract? There is no right answer; each of them may be interesting to an analyst. Because they communicate entirely different information (not to mention there's no straightforward way to combine them), they are extracted by separate functions. `augment` adds the point classifications to the original data set:
 
 
 ```r
 augment(kclust, points)
-#> # A tibble: 300 x 3
+#> # A tibble: 300 × 3
 #>       x1     x2 .cluster
 #>    <dbl>  <dbl> <fct>   
 #>  1  6.91 -2.74  3       
@@ -141,12 +144,12 @@ augment(kclust, points)
 #> # … with 290 more rows
 ```
 
-The `tidy()` function summarizes on a per-cluster level:
+`tidy()` 함수는 클러스터별 수준기반으로 요약합니다:
 
 
 ```r
 tidy(kclust)
-#> # A tibble: 3 x 5
+#> # A tibble: 3 × 5
 #>        x1    x2  size withinss cluster
 #>     <dbl> <dbl> <int>    <dbl> <fct>  
 #> 1  0.0885  1.05   148     299. 1      
@@ -159,7 +162,7 @@ And as it always does, the `glance()` function extracts a single-row summary:
 
 ```r
 glance(kclust)
-#> # A tibble: 1 x 4
+#> # A tibble: 1 × 4
 #>   totss tot.withinss betweenss  iter
 #>   <dbl>        <dbl>     <dbl> <int>
 #> 1 3724.         651.     3073.     2
@@ -183,7 +186,7 @@ kclusts <-
   )
 
 kclusts
-#> # A tibble: 9 x 5
+#> # A tibble: 9 × 5
 #>       k kclust   tidied           glanced          augmented         
 #>   <int> <list>   <list>           <list>           <list>            
 #> 1     1 <kmeans> <tibble [1 × 5]> <tibble [1 × 4]> <tibble [300 × 3]>
@@ -254,36 +257,41 @@ This represents the variance within the clusters. It decreases as `k` increases,
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
+#>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-10
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
 

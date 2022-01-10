@@ -56,19 +56,20 @@ ggplot(labelled_points, aes(x1, x2, color = cluster)) +
   geom_point(alpha = 0.3)
 ```
 
-This is an ideal case for k-means clustering. 
+k-means 크러스터링을 하기 이상적인 케이스입니다.
 
-## How does K-means work?
+## K-means 는 어떻게 작동하나요?
 
-Rather than using equations, this short animation using the [artwork](https://github.com/allisonhorst/stats-illustrations) of Allison Horst explains the clustering process:
+공식을 사용하기보다, Allison Horst 의 [artwork](https://github.com/allisonhorst/stats-illustrations) 를 이용한 이 짧은 애니메이션은 클러스터링 프로세스를 설명합니다:
 
 ```{r illustrations, echo = FALSE, results = 'asis', fig.align="center"}
 knitr::include_graphics("kmeans.gif")
 ```
 
-## Clustering in R
+## R 에서 클러스터링
 
-We'll use the built-in `kmeans()` function, which accepts a data frame with all numeric columns as it's primary argument.
+
+메인 입력인수가 모든 컬럼이 수치형인 데이터프레임인 빌트인 `kmeans()` 함수를 사용할 것입니다.
 
 ```{r}
 points <- 
@@ -80,13 +81,15 @@ kclust
 summary(kclust)
 ```
 
-The output is a list of vectors, where each component has a different length. There's one of length `r nrow(points)`, the same as our original data set. There are two elements of length 3 (`withinss` and `tot.withinss`) and `centers` is a matrix with 3 rows. And then there are the elements of length 1: `totss`, `tot.withinss`, `betweenss`, and `iter`. (The value `ifault` indicates possible algorithm problems.)
+출력은 길이가 다른 요소들의 벡터들로 이루어진 리스트입니다. 
+원 데이터셋과 같은 길이가 `r nrow(points)` 인 것이 하나 있습니다.
+길이가 3 인 두 요소 (`withinss` and `tot.withinss`) 가 있고, `centers` 는 행이 3 인 행렬입니다. 그리고 나서 길이가 1 인 요소들이 있습니다: `totss`, `tot.withinss`, `betweenss`, `iter`. (`ifault` 값은 가능항 알고리즘 문제들을 가리킵니다.)
 
-These differing lengths have important meaning when we want to tidy our data set; they signify that each type of component communicates a *different kind* of information.
+우리 데이터셋을 타이디하게 하고 싶을 때 이 다른 길이들은 중요한 의미를 갖습니다; 그들은 각 유형의 구성요소들이 *다른 종류* 의 정보를 소통함을 상징합니다.
 
-- `cluster` (`r nrow(points)` values) contains information about each *point*
-- `centers`, `withinss`, and `size` (3 values) contain information about each *cluster*
-- `totss`, `tot.withinss`, `betweenss`, and `iter` (1 value) contain information about the *full clustering*
+- `cluster` (`r nrow(points)` 개의 값들) 는 각 *점* 에 관한 정보가 있습니다
+- `centers`, `withinss`, `size` (3 values) 는 각 *클러스터* 에 관한 정보가 있습니다
+- `totss`, `tot.withinss`, `betweenss`, `iter` (1 값) 에는 *full clustering* 에 관한 정보가 있습니다
 
 Which of these do we want to extract? There is no right answer; each of them may be interesting to an analyst. Because they communicate entirely different information (not to mention there's no straightforward way to combine them), they are extracted by separate functions. `augment` adds the point classifications to the original data set:
 
@@ -94,7 +97,7 @@ Which of these do we want to extract? There is no right answer; each of them may
 augment(kclust, points)
 ```
 
-The `tidy()` function summarizes on a per-cluster level:
+`tidy()` 함수는 클러스터별 수준기반으로 요약합니다:
 
 ```{r}
 tidy(kclust)
