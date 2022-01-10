@@ -50,9 +50,9 @@ set.seed(1697)
 folds <- vfold_cv(cell_train, v = 10)
 ```
 
-## The tuning scheme
+## 튜닝 스킴
 
-Since the predictors are highly correlated, we can used a recipe to convert the original predictors to principal component scores. There is also slight class imbalance in these data; about 64% of the data are poorly segmented. To mitigate this, the data will be down-sampled at the end of the pre-processing so that the number of poorly and well segmented cells occur with equal frequency. We can use a recipe for all this pre-processing, but the number of principal components will need to be _tuned_ so that we have enough (but not too many) representations of the data. 
+설명변수들이 상당히 상관되어있기 때문에, 레시피를 사용하여 원 설명변수를 주성분 점수로 변환할 수 있습니다. 이 데이터에는 클래스 불균형이 약간 있습니다; 약 64% 의 데이터가 잘못 세그멘트되었습니다. 이를 개선시키기 위해, 데이터는 전처리의 마지막에 다운샘플해서 잘못/잘 세그멘트된 세포가 같은 빈도로 일어나도록 할 것입니다. 레시피를 사용하여 이 모든 전처리를 할 수 있지만, 주성분 개수는 _튜닝_되어서 충분한 (하지만 너무 많지 않은) 데이터 representation 을 가지도록 할 필요가 있을 것입니다.
 
 
 ```r
@@ -66,7 +66,7 @@ cell_pre_proc <-
   step_downsample(class)
 ```
 
-In this analysis, we will use a support vector machine to model the data. Let's use a radial basis function (RBF) kernel and tune its main parameter ($\sigma$). Additionally, the main SVM parameter, the cost value, also needs optimization. 
+이 분석에서, 서포트벡터머신을 사용하여 데이터 모델링을 할 것입니다. radial basis function (RBF) 커널을 사용하고 메인 파라미터 ($\sigma$) 를 튜닝해 봅시다. 또한 메인 SVM 파라미터인, 비용값(cost value)도 최적화 될 필요가 있습니다. 
 
 
 ```r
@@ -75,7 +75,8 @@ svm_mod <-
   set_engine("kernlab")
 ```
 
-These two objects (the recipe and model) will be combined into a single object via the `workflow()` function from the [workflows](https://tidymodels.github.io/workflows/) package; this object will be used in the optimization process. 
+
+이 레시피와 모델, 두 객체는 [workflows](https://tidymodels.github.io/workflows/) 패키지의 `workflow()` 함수를 이용하여 하나의 객체로 결합될 것입니다; 이 객체는 최적화 과정에서 사용될 것입니다. 
 
 
 ```r
@@ -85,7 +86,7 @@ svm_wflow <-
   add_recipe(cell_pre_proc)
 ```
 
-From this object, we can derive information about what parameters are slated to be tuned. A parameter set is derived by: 
+이 객체로 부터, 어떤 파라미터가 스레이트에 올라와 있어서 튜닝될 것인지에 관한 정보를 추출할 수 있습니다. 파라미터셋은 다음으로 추출됩니다:
 
 
 ```r
@@ -99,7 +100,7 @@ svm_set
 #>    num_comp  num_comp nparam[+]
 ```
 
-The default range for the number of PCA components is rather small for this data set. A member of the parameter set can be modified using the `update()` function. Let's constrain the search to one to twenty components by updating the `num_comp` parameter. Additionally, the lower bound of this parameter is set to zero which specifies that the original predictor set should also be evaluated (i.e., with no PCA step at all): 
+PCA 성분의 개수의 기본값 범위는 이 데이터셋에 좁은 편입니다. 파라미터셋의 구성요소는 `update()` 함수를 사용하여 수정할 수 있습니다. `num_comp` 파라미터를 업데이트해서 1 에서 20 개 성분으로 탐색을 제약해 봅시다. 추가적으로, 이 파라미터의 lower bound 를 0으로 설정하여 원 설명변수 셋도 evaluate 될 수 있게 합니다. (즉, PCA 단계를 전혀 하지 않음):
 
 
 ```r
@@ -108,19 +109,19 @@ svm_set <-
   update(num_comp = num_comp(c(0L, 20L)))
 ```
 
-## Sequential tuning 
+## 순차 튜닝
 
-Bayesian optimization is a sequential method that uses a model to predict new candidate parameters for assessment. When scoring potential parameter value, the mean and variance of performance are predicted. The strategy used to define how these two statistical quantities are used is defined by an _acquisition function_. 
+베이지언 최적화는 새로운 후보 파라미터를 예측하는 모델을 사용하는 순차 방법론입니다. 잠재 파라미터 값을 스코어링할 때, 성능 평균과 분산이 예측됩니다. 이러한 두 통계량을 어떻게 사용할지를 정의하는데 사용되는 전략은 _acquisition function_ 이 정의합니다.
 
-For example, one approach for scoring new candidates is to use a confidence bound. Suppose accuracy is being optimized. For a metric that we want to maximize, a lower confidence bound can be used. The multiplier on the standard error (denoted as `\(\kappa\)`) is a value that can be used to make trade-offs between **exploration** and **exploitation**. 
+예를들어, 새로운 후보를 스코어링하는 전략 중 하나는 신뢰 범위(bound)를 사용하는 것입니다. 정확도가 최적화되고 있다고 합시다. 우리가 최적화하고 싶은 지표에 관해, lower confidence bound 가 사용됩니다. 표준오차 ($\kappa$ 로 표시) 의 multiplier 는 **exploration** 과 **exploitation** 사이의 트레이드오프를 만드는 데 사용될 수 있는 값입니다.
 
- * **Exploration** means that the search will consider candidates in untested space.
+ * **Exploration** 은 탐색이 테스트되지 않은 공간의 후보들을 고려할 것이라는 것을 의미합니다.
 
- * **Exploitation** focuses in areas where the previous best results occurred. 
+ * **Exploitation** 은 과거 가장 좋은 결과를 얻은 영역에 집중합니다.
 
-The variance predicted by the Bayesian model is mostly spatial variation; the value will be large for candidate values that are not close to values that have already been evaluated. If the standard error multiplier is high, the search process will be more likely to avoid areas without candidate values in the vicinity. 
+베이지언 모델이 예측한 분산은 대부분 공간 분산입니다; 이미 평가된 값과 가깝지 않은 후보에 대해서는 분산이 클 것입니다. 표준오차 multiplier 가 높다면, 탐색 프로세스는 가까운 후보 값들 없는 영역은 피할 가능성이 큽니다.
 
-We'll use another acquisition function, _expected improvement_, that determines which candidates are likely to be helpful relative to the current best results. This is the default acquisition function. More information on these functions can be found in the [package vignette for acquisition functions](https://tidymodels.github.io/tune/articles/acquisition_functions.html). 
+다른 acquisition function 인, _expected improvement_ 를 사용할 것인데, 이는 현재 가장 좋은 결과에 상대적으로 어떤 후보가 도움을 줄 가능성이 큰지를 결정합니다. 이 함수가 기본값입니다. 이 함수들에 관한 정보는 [acquisition functions 패키지 vignette](https://tidymodels.github.io/tune/articles/acquisition_functions.html) 에 있습니다. 
 
 
 ```r
@@ -745,7 +746,7 @@ search_res <-
 #> ⓧ Newest results:	roc_auc=0.7965 (+/-0.0104)
 ```
 
-The resulting tibble is a stacked set of rows of the rsample object with an additional column for the iteration number:
+출력되는 티블은 반복수를 위한 열이 추가된 rsample 객체가 열로 있는 스택된 집합입니다:
 
 
 ```r
@@ -768,7 +769,7 @@ search_res
 #> # … with 500 more rows
 ```
 
-As with grid search, we can summarize the results over resamples:
+그리드 탐색에서와 같이, 리샘플 결과들을 요약할 수 있습니다:
 
 
 ```r
@@ -793,8 +794,7 @@ estimates
 #> # … with 45 more rows, and 1 more variable: .iter <int>
 ```
 
-
-The best performance of the initial set of candidate values was `AUC = 0.876 `. The best results were achieved at iteration 24 with a corresponding AUC value of 0.902. The five best results are:
+초기 후보값셋의 가장좋은 성능은 `AUC = 0.876 ` 였습니다. 가장 좋은 결과는 반복 24 에서 얻어졌고, 이 때 AUC 값은 0.902 이었습니다. 가장 결과가 좋은 다섯 개는:
 
 
 ```r
@@ -838,8 +838,8 @@ autoplot(search_res, type = "parameters") +
 
 
 ```
-#> ─ Session info  🇲🇰  ☠️  👄   ────────────────────────────────────────
-#>  hash: flag: North Macedonia, skull and crossbones, mouth
+#> ─ Session info  ㊗️  👎🏾  💷   ───────────────────────────────────────
+#>  hash: Japanese “congratulations” button, thumbs down: medium-dark skin tone, pound banknote
 #> 
 #>  setting  value
 #>  version  R version 4.1.1 (2021-08-10)
@@ -850,7 +850,7 @@ autoplot(search_res, type = "parameters") +
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-09
+#>  date     2022-01-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
