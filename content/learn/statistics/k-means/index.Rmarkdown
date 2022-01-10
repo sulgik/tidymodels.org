@@ -1,5 +1,5 @@
 ---
-title: "K-means clustering with tidy data principles"
+title: "타이디 데이터 원칙과 함께 K-means 클러스터링"
 tags: [broom]
 categories: [statistical analysis]
 type: learn-subsection
@@ -19,17 +19,17 @@ pkgs <- c("tidymodels")
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package.
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-K-means clustering serves as a useful example of applying tidy data principles to statistical analysis, and especially the distinction between the three tidying functions: 
+K-means 클러스터링 통계 분석에 타이디 데이터 원칙들을 적용하는 유용한 예제로 볼 수 있습니다. 특별히 다음의 타이디하게 하는 함수들 사이에 차이점을 볼 수 있습니다: 
 
 - `tidy()`
 - `augment()` 
 - `glance()`
 
-Let's start by generating some random two-dimensional data with three clusters. Data in each cluster will come from a multivariate gaussian distribution, with different means for each cluster:
+세 클러스터를 이루는 랜덤 2차원 데이터를 생성하는 것부터 시작해봅시다. 각 클러스터의 데이터는 다른 평균을 가지는 다변량 가우시안 분포로부터 생성될 것입니다:
 
 ```{r}
 library(tidymodels)

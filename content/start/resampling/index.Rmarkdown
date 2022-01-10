@@ -161,7 +161,7 @@ rf_fit
 
 모델링 프로젝트 동안, 우리는 다양한 모델을 생성할 수 있습니다. 이들 중 선택하기 위해 이러한 모델들이 얼마나 잘 되는지, 성능 통계량들을 측정하여 고려해야 합니다. 이 장의 예에서, 사용할 수 있는 선택지들은 다음과 같습니다:
 
- * the area under the Receiver Operating Characteristic (ROC) curve
+ * Receiver Operating Characteristic (ROC) curve 의 아래 면적
  
  * 종합 분류 정확도 (accuracy).
  
