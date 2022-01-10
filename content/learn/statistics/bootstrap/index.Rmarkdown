@@ -1,11 +1,11 @@
 ---
-title: "Bootstrap resampling and tidy regression models"
+title: "부트스트랩 리샘플링과 타이디한 회귀 모델"
 tags: [rsample, broom]
 categories: [statistical analysis, resampling]
 type: learn-subsection
 weight: 3
 description: | 
-  Apply bootstrap resampling to estimate uncertainty in model parameters.
+  부트스트랩 리샘플링을 적용하여 모델 파라미터에서 불확실성을 추정하기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -20,15 +20,15 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package.
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-Combining fitted models in a tidy way is useful for performing bootstrapping or permutation tests. These approaches have been explored before, for instance by [Andrew MacDonald here](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html), and [Hadley has explored efficient support for bootstrapping](https://github.com/hadley/dplyr/issues/269) as a potential enhancement to dplyr. The tidymodels package [broom](https://broom.tidyverse.org/) fits naturally with [dplyr](https://dplyr.tidyverse.org/) in performing these analyses.
+적합된 모델들을 타이디한 방법으로 결합하면 부트스트래핑이나 퍼뮤테이션 테스트를 하기 편리합니다. 이러한 방법들은 예를 들면 [Andrew MacDonald here](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html)에 의해 살펴본 적이 있고, [해들리는 dplyr 에 잠재적인 확장으로써 부트스트래핑에 효율적인 서포트를 탐색한 적이 있습니다](https://github.com/hadley/dplyr/issues/269). tidymodels 패키지 [broom](https://broom.tidyverse.org/) 은 이러한 분석을 수행함에 있어 [dplyr](https://dplyr.tidyverse.org/) 에 자연스럽게 녹아듭니다.
 
-Bootstrapping consists of randomly sampling a data set with replacement, then performing the analysis individually on each bootstrapped replicate. The variation in the resulting estimate is then a reasonable approximation of the variance in our estimate.
+부트스트래핑은 데이터셋을 대치하면서 랜덤하게 샘플링한 뒤 각 부트스태랩된 데이터(bootstraped replicate)에 개별적으로 분석을 수행하는 것으로 이루어져 있습니다. 결과 추정치에서의 분산은 그 후 우리 추정값에서의 분산의 좋은 근사값이 됩니다.
 
-Let's say we want to fit a nonlinear model to the weight/mileage relationship in the `mtcars` data set.
+`mtcars` 데이터셋에서 무게/마일리지 관계에 비선형 모델을 적합하고 싶다고 해봅시다.
 
 ```{r}
 library(tidymodels)
@@ -37,7 +37,7 @@ ggplot(mtcars, aes(mpg, wt)) +
     geom_point()
 ```
 
-We might use the method of nonlinear least squares (via the `nls()` function) to fit a model.
+(`nls()` 함수를 통해) nonlinear least squares 방법을 사용하여 모델을 적합할 수 있습니다.
 
 ```{r}
 nlsfit <- nls(mpg ~ k / wt + b, mtcars, start = list(k = 1, b = 0))
@@ -47,10 +47,9 @@ ggplot(mtcars, aes(wt, mpg)) +
     geom_point() +
     geom_line(aes(y = predict(nlsfit)))
 ```
+이렇게 하면 파라미터의 p-value 와 신뢰구간을 얻을 수 있지만, 이들은 실제 데이터에서는 만족하지 않는 모델 가정에 기반한 것입니다. 부트스트래핑은 데이터 성질에 더 로버스트한 신뢰구간과 예측값을 제공하는 널리사용되는 방법입니다.
 
-While this does provide a p-value and confidence intervals for the parameters, these are based on model assumptions that may not hold in real data. Bootstrapping is a popular method for providing confidence intervals and predictions that are more robust to the nature of the data.
-
-## Bootstrapping models
+## 부트스트래핑 모델
 
 We can use the `bootstraps()` function in the rsample package to sample bootstrap replications. First, we construct 2000 bootstrap replicates of the data, each of which has been randomly sampled with replacement. The resulting object is an `rset`, which is a data frame with a column of `rsplit` objects.
 

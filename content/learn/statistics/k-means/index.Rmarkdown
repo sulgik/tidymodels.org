@@ -1,11 +1,11 @@
 ---
-title: "타이디 데이터 원칙과 함께 K-means 클러스터링"
+title: "K-means 클러스터링에 관한 타이디한 데이터 원칙"
 tags: [broom]
 categories: [statistical analysis]
 type: learn-subsection
 weight: 2
 description: | 
-  Summarize clustering characteristics and estimate the best number of clusters for a data set.
+  클러스터링 특징을 요약하고 데이터셋에 가장 적당한 클러스터 개수를 추정합니다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}

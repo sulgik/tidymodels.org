@@ -1,11 +1,11 @@
 ---
-title: "타이디 데이터 원칙과 함께 K-means 클러스터링"
+title: "K-means 클러스터링에 관한 타이디한 데이터 원칙"
 tags: [broom]
 categories: [statistical analysis]
 type: learn-subsection
 weight: 2
 description: | 
-  Summarize clustering characteristics and estimate the best number of clusters for a data set.
+  클러스터링 특징을 요약하고 데이터셋에 가장 적당한 클러스터 개수를 추정합니다.
 ---
 
 
@@ -170,7 +170,7 @@ glance(kclust)
 
 ## 탐색적 클러스터링
 
-While these summaries are useful, they would not have been too difficult to extract out from the data set yourself. The real power comes from combining these analyses with other tools like [dplyr](https://dplyr.tidyverse.org/).
+이러한 요약값들이 유용하지만, 이들은 데이터셋에서 직접 추출하기 어렵지 않습니다. While these summaries are useful, they would not have been too difficult to extract out from the data set yourself. The real power comes from combining these analyses with other tools like [dplyr](https://dplyr.tidyverse.org/).
 
 Let's say we want to explore the effect of different choices of `k`, from 1 to 9, on this clustering. First cluster the data 9 times, each using a different value of `k`, then create columns containing the tidied, glanced and augmented data:
 
@@ -257,7 +257,6 @@ ggplot(clusterings, aes(k, tot.withinss)) +
 
 
 ```
-<<<<<<< HEAD
 #> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
 #>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
 #> 
@@ -292,37 +291,6 @@ ggplot(clusterings, aes(k, tot.withinss)) +
 #>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
 #> 
 #>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-=======
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2022-01-10                  
-#> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
->>>>>>> 3e4670b1034c53493e55a78b23a09627e32f3890
 #> 
 #> ────────────────────────────────────────────────────────────────────
 ```

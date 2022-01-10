@@ -1,11 +1,11 @@
 ---
-title: "Bootstrap resampling and tidy regression models"
+title: "부트스트랩 리샘플링과 타이디한 회귀 모델"
 tags: [rsample, broom]
 categories: [statistical analysis, resampling]
 type: learn-subsection
 weight: 3
 description: | 
-  Apply bootstrap resampling to estimate uncertainty in model parameters.
+  부트스트랩 리샘플링을 적용하여 모델 파라미터에서 불확실성을 추정하기.
 ---
 
 
@@ -13,15 +13,15 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package.
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-Combining fitted models in a tidy way is useful for performing bootstrapping or permutation tests. These approaches have been explored before, for instance by [Andrew MacDonald here](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html), and [Hadley has explored efficient support for bootstrapping](https://github.com/hadley/dplyr/issues/269) as a potential enhancement to dplyr. The tidymodels package [broom](https://broom.tidyverse.org/) fits naturally with [dplyr](https://dplyr.tidyverse.org/) in performing these analyses.
+적합된 모델들을 타이디한 방법으로 결합하면 부트스트래핑이나 퍼뮤테이션 테스트를 하기 편리합니다. 이러한 방법들은 예를 들면 [Andrew MacDonald here](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html)에 의해 살펴본 적이 있고, [해들리는 dplyr 에 잠재적인 확장으로써 부트스트래핑에 효율적인 서포트를 탐색한 적이 있습니다](https://github.com/hadley/dplyr/issues/269). tidymodels 패키지 [broom](https://broom.tidyverse.org/) 은 이러한 분석을 수행함에 있어 [dplyr](https://dplyr.tidyverse.org/) 에 자연스럽게 녹아듭니다.
 
-Bootstrapping consists of randomly sampling a data set with replacement, then performing the analysis individually on each bootstrapped replicate. The variation in the resulting estimate is then a reasonable approximation of the variance in our estimate.
+부트스트래핑은 데이터셋을 대치하면서 랜덤하게 샘플링한 뒤 각 부트스태랩된 데이터(bootstraped replicate)에 개별적으로 분석을 수행하는 것으로 이루어져 있습니다. 결과 추정치에서의 분산은 그 후 우리 추정값에서의 분산의 좋은 근사값이 됩니다.
 
-Let's say we want to fit a nonlinear model to the weight/mileage relationship in the `mtcars` data set.
+`mtcars` 데이터셋에서 무게/마일리지 관계에 비선형 모델을 적합하고 싶다고 해봅시다.
 
 
 ```r
@@ -33,7 +33,7 @@ ggplot(mtcars, aes(mpg, wt)) +
 
 <img src="figs/unnamed-chunk-1-1.svg" width="672" />
 
-We might use the method of nonlinear least squares (via the `nls()` function) to fit a model.
+(`nls()` 함수를 통해) nonlinear least squares 방법을 사용하여 모델을 적합할 수 있습니다.
 
 
 ```r
@@ -60,10 +60,9 @@ ggplot(mtcars, aes(wt, mpg)) +
 ```
 
 <img src="figs/unnamed-chunk-2-1.svg" width="672" />
+이렇게 하면 파라미터의 p-value 와 신뢰구간을 얻을 수 있지만, 이들은 실제 데이터에서는 만족하지 않는 모델 가정에 기반한 것입니다. 부트스트래핑은 데이터 성질에 더 로버스트한 신뢰구간과 예측값을 제공하는 널리사용되는 방법입니다.
 
-While this does provide a p-value and confidence intervals for the parameters, these are based on model assumptions that may not hold in real data. Bootstrapping is a popular method for providing confidence intervals and predictions that are more robust to the nature of the data.
-
-## Bootstrapping models
+## 부트스트래핑 모델
 
 We can use the `bootstraps()` function in the rsample package to sample bootstrap replications. First, we construct 2000 bootstrap replicates of the data, each of which has been randomly sampled with replacement. The resulting object is an `rset`, which is a data frame with a column of `rsplit` objects.
 
@@ -75,7 +74,7 @@ set.seed(27)
 boots <- bootstraps(mtcars, times = 2000, apparent = TRUE)
 boots
 #> # Bootstrap sampling with apparent sample 
-#> # A tibble: 2,001 x 2
+#> # A tibble: 2,001 × 2
 #>    splits          id           
 #>    <list>          <chr>        
 #>  1 <split [32/13]> Bootstrap0001
@@ -114,19 +113,19 @@ The unnested coefficient information contains a summary of each replication comb
 
 ```r
 boot_coefs
-#> # A tibble: 4,002 x 8
-#>    splits         id           model term  estimate std.error statistic  p.value
-#>    <list>         <chr>        <lis> <chr>    <dbl>     <dbl>     <dbl>    <dbl>
-#>  1 <split [32/13… Bootstrap00… <nls> k        42.1       4.05     10.4  1.91e-11
-#>  2 <split [32/13… Bootstrap00… <nls> b         5.39      1.43      3.78 6.93e- 4
-#>  3 <split [32/10… Bootstrap00… <nls> k        49.9       5.66      8.82 7.82e-10
-#>  4 <split [32/10… Bootstrap00… <nls> b         3.73      1.92      1.94 6.13e- 2
-#>  5 <split [32/13… Bootstrap00… <nls> k        37.8       2.68     14.1  9.01e-15
-#>  6 <split [32/13… Bootstrap00… <nls> b         6.73      1.17      5.75 2.78e- 6
-#>  7 <split [32/11… Bootstrap00… <nls> k        45.6       4.45     10.2  2.70e-11
-#>  8 <split [32/11… Bootstrap00… <nls> b         4.75      1.62      2.93 6.38e- 3
-#>  9 <split [32/9]> Bootstrap00… <nls> k        43.6       4.63      9.41 1.85e-10
-#> 10 <split [32/9]> Bootstrap00… <nls> b         5.89      1.68      3.51 1.44e- 3
+#> # A tibble: 4,002 × 8
+#>    splits          id          model term  estimate std.error statistic  p.value
+#>    <list>          <chr>       <lis> <chr>    <dbl>     <dbl>     <dbl>    <dbl>
+#>  1 <split [32/13]> Bootstrap0… <nls> k        42.1       4.05     10.4  1.91e-11
+#>  2 <split [32/13]> Bootstrap0… <nls> b         5.39      1.43      3.78 6.93e- 4
+#>  3 <split [32/10]> Bootstrap0… <nls> k        49.9       5.66      8.82 7.82e-10
+#>  4 <split [32/10]> Bootstrap0… <nls> b         3.73      1.92      1.94 6.13e- 2
+#>  5 <split [32/13]> Bootstrap0… <nls> k        37.8       2.68     14.1  9.01e-15
+#>  6 <split [32/13]> Bootstrap0… <nls> b         6.73      1.17      5.75 2.78e- 6
+#>  7 <split [32/11]> Bootstrap0… <nls> k        45.6       4.45     10.2  2.70e-11
+#>  8 <split [32/11]> Bootstrap0… <nls> b         4.75      1.62      2.93 6.38e- 3
+#>  9 <split [32/9]>  Bootstrap0… <nls> k        43.6       4.63      9.41 1.85e-10
+#> 10 <split [32/9]>  Bootstrap0… <nls> b         5.89      1.68      3.51 1.44e- 3
 #> # … with 3,992 more rows
 ```
 
@@ -138,7 +137,7 @@ We can then calculate confidence intervals (using what is called the [percentile
 ```r
 percentile_intervals <- int_pctl(boot_models, coef_info)
 percentile_intervals
-#> # A tibble: 2 x 6
+#> # A tibble: 2 × 6
 #>   term   .lower .estimate .upper .alpha .method   
 #>   <chr>   <dbl>     <dbl>  <dbl>  <dbl> <chr>     
 #> 1 b      0.0475      4.12   7.31   0.05 percentile
@@ -173,19 +172,19 @@ boot_aug <-
   unnest(augmented)
 
 boot_aug
-#> # A tibble: 6,400 x 8
-#>    splits         id            model coef_info         mpg    wt .fitted .resid
-#>    <list>         <chr>         <lis> <list>          <dbl> <dbl>   <dbl>  <dbl>
-#>  1 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  16.4  4.07    15.6  0.829
-#>  2 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  19.7  2.77    21.9 -2.21 
-#>  3 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  19.2  3.84    16.4  2.84 
-#>  4 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  21.4  2.78    21.8 -0.437
-#>  5 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  26    2.14    27.8 -1.75 
-#>  6 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  33.9  1.84    32.0  1.88 
-#>  7 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  32.4  2.2     27.0  5.35 
-#>  8 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  30.4  1.62    36.1 -5.70 
-#>  9 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  21.5  2.46    24.4 -2.86 
-#> 10 <split [32/11… Bootstrap1644 <nls> <tibble [2 × 5…  26    2.14    27.8 -1.75 
+#> # A tibble: 6,400 × 8
+#>    splits          id            model  coef_info       mpg    wt .fitted .resid
+#>    <list>          <chr>         <list> <list>        <dbl> <dbl>   <dbl>  <dbl>
+#>  1 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  16.4  4.07    15.6  0.829
+#>  2 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  19.7  2.77    21.9 -2.21 
+#>  3 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  19.2  3.84    16.4  2.84 
+#>  4 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  21.4  2.78    21.8 -0.437
+#>  5 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  26    2.14    27.8 -1.75 
+#>  6 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  33.9  1.84    32.0  1.88 
+#>  7 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  32.4  2.2     27.0  5.35 
+#>  8 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  30.4  1.62    36.1 -5.70 
+#>  9 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  21.5  2.46    24.4 -2.86 
+#> 10 <split [32/11]> Bootstrap1644 <nls>  <tibble [2 ×…  26    2.14    27.8 -1.75 
 #> # … with 6,390 more rows
 ```
 
@@ -230,37 +229,42 @@ ggplot(splines_aug, aes(x, y)) +
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
+#>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-11
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  
  
