@@ -51,9 +51,10 @@ ggplot(mtcars, aes(wt, mpg)) +
 
 ## 부트스트래핑 모델
 
-We can use the `bootstraps()` function in the rsample package to sample bootstrap replications. First, we construct 2000 bootstrap replicates of the data, each of which has been randomly sampled with replacement. The resulting object is an `rset`, which is a data frame with a column of `rsplit` objects.
+rsample 패키지의 `bootstraps()` 함수를 사용하여 부트스트랩 데이터를 샘플할 수 있습니다
+우선, 데이터의 각 데이터가 복원 랜덤 샘플링된, 2000 부트스트랩 데이터들을 만듭니다. 결과 객체는 `rset` 인데, `rsplit` 객체들을 하나의 열로 가지고 있는 데이터프레임이 됩니다.
 
-An `rsplit` object has two main components: an analysis data set and an assessment data set, accessible via `analysis(rsplit)` and `assessment(rsplit)` respectively. For bootstrap samples, the analysis data set is the bootstrap sample itself, and the assessment data set consists of all the out-of-bag samples.
+`rsplit` 객체에는 두 개의 메인 구성요소가 있습니다: 분석 데이터셋과 평가 데이터셋이며 각각 `analysis(rsplit)` 과 `assessment(rsplit)` 으로 접근할 수 있습니다. 부트스트랩 샘플에 대해 분석 데이터셋은 부트스트램 샘플 자체이고, 평가 데이터셋은 out-of-bag 샘플들로 구성됩니다.
 
 ```{r}
 set.seed(27)
@@ -61,7 +62,7 @@ boots <- bootstraps(mtcars, times = 2000, apparent = TRUE)
 boots
 ```
 
-Let's create a helper function to fit an `nls()` model on each bootstrap sample, and then use `purrr::map()` to apply this function to all the bootstrap samples at once. Similarly, we create a column of tidy coefficient information by unnesting.
+각 부트스트랩 샘플에 `nls()` 모델을 적합하기 위해 도우미 함수를 생성해보고 `purr::map()` 을 이용하여 이 함수를 모든 부트스트랩 샘플들에 한번에 적용해 봅시다. 유사하게, 중첩을 풀어서 타이디한 계수 정보를 가진 열 하나를 생성합니다.
 
 ```{r}
 fit_nls_on_bootstrap <- function(split) {
@@ -84,7 +85,7 @@ The unnested coefficient information contains a summary of each replication comb
 boot_coefs
 ```
 
-## Confidence intervals
+## 신뢰구간
 
 We can then calculate confidence intervals (using what is called the [percentile method](https://www.uvm.edu/~dhowell/StatPages/Randomization%20Tests/ResamplingWithR/BootstMeans/bootstrapping_means.html)):
 
