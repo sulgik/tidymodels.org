@@ -643,9 +643,9 @@ last_rf_fit %>%
 
 + [도움](/help/) 요청할 방법 찾기와 [tidymodels 에 기여](/contribute) 하여 다른사람 돕기.
 
-### <center>Happy modeling!</center>
+### <center>신나게 모델링하세요!</center>
 
-## Session information
+## 세션정보
 
 
 ```
@@ -661,7 +661,7 @@ last_rf_fit %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-28
+#>  date     2022-01-11
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

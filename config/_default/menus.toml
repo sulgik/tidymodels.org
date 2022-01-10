@@ -28,6 +28,6 @@
     weight = 6
 [[main]]
     pre = "<i class=\"fab fa-github fa-lg\"></i>"
-    url = "https://dreamy-raman-cece2e.netlify.app/"
+    url = "https:github.com/sulgik/tidymodels.org"
     weight = 7
 

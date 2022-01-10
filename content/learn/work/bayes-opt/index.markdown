@@ -834,7 +834,7 @@ autoplot(search_res, type = "parameters") +
 
 
 
-## Session information
+## 세션정보
 
 
 ```
@@ -850,7 +850,7 @@ autoplot(search_res, type = "parameters") +
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-10
+#>  date     2022-01-11
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

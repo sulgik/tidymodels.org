@@ -80,7 +80,7 @@ urchins
 #> # … with 62 more rows
 ```
 
-성게 데이터는 [tibble](https://tibble.tidyverse.org/index.html) 입니다. tibble 이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 72 개 성게 각각에 대해 다음의 정보가 있습니다:
+성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 72 개 성게 각각에 대해 다음의 정보가 있습니다:
 
 + 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
 + 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
@@ -158,7 +158,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  2ms 
+#> Fit time:  3ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -298,7 +298,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.3s 
+#> Fit time:  16.2s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -403,7 +403,7 @@ ggplot(urchins,
 ```
 
 
-## Session information {#session-info}
+## 세션정보 {#session-info}
 
 
 ```

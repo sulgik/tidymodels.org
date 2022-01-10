@@ -43,7 +43,7 @@ library(modeldata)  # for the cells data
 
 ## 세포 이미지 데이터 {#data}
 
-[modeldata 패키지](https://cran.r-project.org/web/packages/modeldata/index.html) 에 있는 [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340) 데이터를 사용하여, resampling 으로 세포 이미지 세그멘테이션 품질을 예측해 봅시다. 이 데이터를 R 에 로드합니다:
+[modeldata 패키지](https://cran.r-project.org/web/packages/modeldata/index.html) 에 있는 [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340) 데이터를 사용하여, 리샘플링으로 세포 이미지 세그멘테이션 품질을 예측해 봅시다. 이 데이터를 R 에 로드합니다:
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
@@ -217,9 +217,9 @@ rf_testing_pred %>%                   # test set predictions
 
 
 
-## Resampling 를 이용한 문제해결 {#resampling}
+## 리샘플링을 이용한 문제해결 {#resampling}
 
-cross-validation 과 bootstrap 과 같은 resampling 방법은 실험적 시뮬레이션 시스템입니다. 이들은 이전에 논의한 training/testing 분할과 유사하게 데이터셋 일련을 생성합니다. 이 데이터셋의 서브셋은 모델을 생성하는데 사용되고 다른 서브셋은 성능을 측정하는데 사용됩니다. 리샘플링은 항상 _트레이닝셋_ 과 사용됩니다. [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) 의 스케매틱에서 리샘플링 메소드의 데이터 사용을 보여줍니다:
+cross-validation 과 bootstrap 과 같은 리샘플링방법은 실험적 시뮬레이션 시스템입니다. 이들은 이전에 논의한 training/testing 분할과 유사하게 데이터셋 일련을 생성합니다. 이 데이터셋의 서브셋은 모델을 생성하는데 사용되고 다른 서브셋은 성능을 측정하는데 사용됩니다. 리샘플링은 항상 _트레이닝셋_ 과 사용됩니다. [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) 의 스케매틱에서 리샘플링 메소드의 데이터 사용을 보여줍니다:
 
 ```{r resampling-fig, echo = FALSE, fig.align='center', out.width="85%"}
 knitr::include_graphics("img/resampling.svg")
@@ -334,7 +334,7 @@ rf_testing_pred %>%                   # test set predictions
 테스트셋에서 성능 지표는 처음 ("나쁜 생각") 시도보다 리샘플링을 사용하여 계산한 성능지표에 훨씬 더 가깝습니다. 리샘플링을 하면 우리 모델이 새로운 데이터에 성능이 얼마나 될 것인지를 시뮬레이트할 수 있고 테스트셋은 우리 모델 성능에 최종, 불편 체크로 작용합니다.
 
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

@@ -376,7 +376,7 @@ mda_fit <- mda_spec %>%
 mda_fit
 #> parsnip model object
 #> 
-#> Fit time:  31ms 
+#> Fit time:  26ms 
 #> Call:
 #> mda::mda(formula = Class ~ ., data = data, subclasses = ~2)
 #> 
@@ -479,7 +479,7 @@ linear_reg() %>%
   fit(mpg ~ ., data = mtcars)
 #> parsnip model object
 #> 
-#> Fit time:  6ms 
+#> Fit time:  5ms 
 #> Call:
 #> rlm(formula = mpg ~ ., data = data)
 #> Converged in 8 iterations
@@ -749,7 +749,7 @@ Not yet but there will be. For example, it might make sense to have a different 
 If you have a suggestion, please add a [GitHub issue](https://github.com/tidymodels/parsnip/issues) to discuss it. 
 
  
-## Session information
+## 세션정보
 
 
 ```
@@ -765,7 +765,7 @@ If you have a suggestion, please add a [GitHub issue](https://github.com/tidymod
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-02
+#>  date     2022-01-11
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

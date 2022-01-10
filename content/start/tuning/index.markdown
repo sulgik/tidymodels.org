@@ -408,7 +408,7 @@ args(decision_tree)
 
 
 
-## Session information
+## 세션정보
 
 
 ```

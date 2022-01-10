@@ -359,7 +359,7 @@ regressions %>%
 
 이들 케이스 각각에서, `terms` 열에 기반하여 쉽게 필터링, facet, 비교할 수 있습니다. 요약하면, 이전에는 타이디한 데이터 분석 도구들이 입력데이터에서만 사용할 수 있었는데, 데이터분석과 모델의 *결과*에도 사용할 수 있게 됩니다.
 
-## Session information
+## 세션정보
 
 
 ```
@@ -375,7 +375,7 @@ regressions %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-09
+#>  date     2022-01-11
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

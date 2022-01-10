@@ -79,7 +79,7 @@ boot_coefs <-
   unnest(coef_info)
 ```
 
-The unnested coefficient information contains a summary of each replication combined in a single data frame:
+중첩이 풀린 계수 정보에는 하나의 데이터프레임로 결합된 각 데이터의 요약이 들어있습니다:
 
 ```{r}
 boot_coefs
@@ -87,14 +87,14 @@ boot_coefs
 
 ## 신뢰구간
 
-We can then calculate confidence intervals (using what is called the [percentile method](https://www.uvm.edu/~dhowell/StatPages/Randomization%20Tests/ResamplingWithR/BootstMeans/bootstrapping_means.html)):
+이제 ([백분율 방법](https://www.uvm.edu/~dhowell/StatPages/Randomization%20Tests/ResamplingWithR/BootstMeans/bootstrapping_means.html)이라 불리는 것을 사용하여) 신뢰구간을 계산할 수 있습니다:
 
 ```{r percentiles}
 percentile_intervals <- int_pctl(boot_models, coef_info)
 percentile_intervals
 ```
 
-Or we can use histograms to get a more detailed idea of the uncertainty in each estimate:
+히스토그램을 사용하여 각 추정값의 불확실성에 대해 세부사항들을 얻을 수 있습니다:
 
 ```{r}
 ggplot(boot_coefs, aes(estimate)) +
@@ -104,11 +104,11 @@ ggplot(boot_coefs, aes(estimate)) +
   geom_vline(aes(xintercept = .upper), data = percentile_intervals, col = "blue")
 ```
 
-The rsample package also has functions for [other types of confidence intervals](https://tidymodels.github.io/rsample/reference/int_pctl.html). 
+rsample 패키지에는 [다른 유형의 신뢰구간](https://tidymodels.github.io/rsample/reference/int_pctl.html) 을 위한 함수들도 있습니다.. 
 
-## Possible model fits
+## 가능한 모델 적합
 
-We can use `augment()` to visualize the uncertainty in the fitted curve. Since there are so many bootstrap samples, we'll only show a sample of the model fits in our visualization:
+`augment()` 을 사용하여 적합된 곡선에서 불확실성을 시각화할 수 있습니다. 부트스트랩 샘플이 아주 많기 때문에, 여기 시각화에서는 모델 적합 샘플만 보여줄 것입니다:
 
 ```{r}
 boot_aug <- 
@@ -126,7 +126,7 @@ ggplot(boot_aug, aes(wt, mpg)) +
   geom_point()
 ```
 
-With only a few small changes, we could easily perform bootstrapping with other kinds of predictive or hypothesis testing models, since the `tidy()` and `augment()` functions works for many statistical outputs. As another example, we could use `smooth.spline()`, which fits a cubic smoothing spline to data:
+조금만 바꿔서, 다른 종류의 예측모델이나 가설 검정 모델로 부트스트래핑을 쉽게 수행할 수 있는데, `tidy()` 와 `augment()` 함수가 다양한 통계결과에 사용할 수 있기 때문입니다. 다른 예로, `smooth.spline()` 을 사용할 수 있는데 이는 데이터에 이차 스무딩 spline 을 적합합니다:
 
 ```{r}
 fit_spline_on_bootstrap <- function(split) {
@@ -151,7 +151,7 @@ ggplot(splines_aug, aes(x, y)) +
 
 
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

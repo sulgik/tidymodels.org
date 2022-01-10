@@ -88,7 +88,7 @@ summary(kclust)
 우리 데이터셋을 타이디하게 하고 싶을 때 이 다른 길이들은 중요한 의미를 갖습니다; 그들은 각 유형의 구성요소들이 *다른 종류* 의 정보를 소통함을 상징합니다.
 
 - `cluster` (`r nrow(points)` 개의 값들) 는 각 *점* 에 관한 정보가 있습니다
-- `centers`, `withinss`, `size` (3 values) 는 각 *클러스터* 에 관한 정보가 있습니다
+- `centers`, `withinss`, `size` (3 값) 는 각 *클러스터* 에 관한 정보가 있습니다
 - `totss`, `tot.withinss`, `betweenss`, `iter` (1 값) 에는 *full clustering* 에 관한 정보가 있습니다
 
 이 것들 중 어떤 것을 추출하고 싶을까요? 정답은 없습니다; 분석가는 각각에 관심이 있을 수 있습니다. 이것들은 완전히 다른 정보 (이것들을 결합하는 직관적인 방법이 없다는 것은 말할 필요도 없음) 를 제공하기 때문에, 추출하기 위해서 구분된 함수들이 사용됩니다. `augment` 는 point 분류를 원 데이터셋에 추가합니다:
@@ -171,7 +171,7 @@ ggplot(clusterings, aes(k, tot.withinss)) +
 
 이는 클러스터 내 분산을 나타냅니다. `k` 가 증가할 수록 감소하지만, `k = 3` 주위에서 꺾임 (혹은 "팔꿈치(elbow)") 이 보입니다. 이 꺽임은 3차 이후의 추가 클러스터들이 거의 소용이 없음을 가리킵니다. (수학적으로 엄밀한 해석과 이 방법의 구현에 관해서는 [여기](https://web.stanford.edu/~hastie/Papers/gap.pdf) 를 살펴보세요). 따라서, broom 이 제공하는 타이디하게 하는 세가지 방법 모두 클러스터링 결과를 요약하는데 유용합니다.
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

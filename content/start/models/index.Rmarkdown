@@ -67,7 +67,7 @@ urchins <-
 urchins
 ```
 
-성게 데이터는 [tibble](https://tibble.tidyverse.org/index.html) 입니다. tibble 이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. `r nrow(urchins)` 개 성게 각각에 대해 다음의 정보가 있습니다:
+성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. `r nrow(urchins)` 개 성게 각각에 대해 다음의 정보가 있습니다:
 
 + 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
 + 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
@@ -280,7 +280,7 @@ ggplot(urchins,
 ```
 
 
-## Session information {#session-info}
+## 세션정보 {#session-info}
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

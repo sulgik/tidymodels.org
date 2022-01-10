@@ -1,5 +1,5 @@
 ---
-title: "Working with model coefficients"
+title: "모델 계수 작업하기"
 tags: [parsnip,tune,broom,workflows]
 categories: [model fitting]
 type: learn-subsection
@@ -348,7 +348,7 @@ Notice a couple of things:
 
 * The Harlem predictor is either quickly selected out of the model or goes from negative to positive. 
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)
