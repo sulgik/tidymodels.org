@@ -56,7 +56,7 @@ ggplot(labelled_points, aes(x1, x2, color = cluster)) +
   geom_point(alpha = 0.3)
 ```
 
-k-means 크러스터링을 하기 이상적인 케이스입니다.
+k-means 클러스터링을 하기 이상적인 케이스입니다.
 
 ## K-means 는 어떻게 작동하나요?
 

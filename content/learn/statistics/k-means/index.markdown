@@ -52,7 +52,7 @@ ggplot(labelled_points, aes(x1, x2, color = cluster)) +
 
 <img src="figs/unnamed-chunk-1-1.svg" width="672" />
 
-k-means 크러스터링을 하기 이상적인 케이스입니다.
+k-means 클러스터링을 하기 이상적인 케이스입니다.
 
 ## K-means 는 어떻게 작동하나요?
 
