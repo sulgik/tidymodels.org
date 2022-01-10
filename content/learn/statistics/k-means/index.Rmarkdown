@@ -151,14 +151,14 @@ p1 <-
 p1
 ```
 
-Already we get a good sense of the proper number of clusters (3), and how the k-means algorithm functions when `k` is too high or too low. We can then add the centers of the cluster using the data from `tidy()`:
+적절한 클러스터 개수 (3)와 `k` 가 너무 놓거나 낮을 때 k-means 알고리듬이 어떻게 작동하는지에 대해 좋은 감을 잠았습니다. `tidy()` 의 데이터를 이용하여 클러스터 중심들을 추가할 수 있습니다:
 
 ```{r}
 p2 <- p1 + geom_point(data = clusters, size = 10, shape = "x")
 p2
 ```
 
-The data from `glance()` fills a different but equally important purpose; it lets us view trends of some summary statistics across values of `k`. Of particular interest is the total within sum of squares, saved in the `tot.withinss` column.
+`glance()` 의 데이터는 다르지만 동등하게 중요한 목적을 만족시킵니다; `k` 값에 따른 요약 통계량 트렌드를 보여줍니다. `tot.withiness` 열에 저장된 within sum of squares 이 특별히 중요합니다.
 
 ```{r}
 ggplot(clusterings, aes(k, tot.withinss)) +
@@ -166,7 +166,7 @@ ggplot(clusterings, aes(k, tot.withinss)) +
   geom_point()
 ```
 
-This represents the variance within the clusters. It decreases as `k` increases, but notice a bend (or "elbow") around `k = 3`. This bend indicates that additional clusters beyond the third have little value. (See [here](https://web.stanford.edu/~hastie/Papers/gap.pdf) for a more mathematically rigorous interpretation and implementation of this method). Thus, all three methods of tidying data provided by broom are useful for summarizing clustering output.
+이는 클러스터 내 분산을 나타냅니다. `k` 가 증가할 수록 감소하지만, `k = 3` 주위에서 꺾임 (혹은 "팔꿈치(elbow)") 이 보입니다. 이 꺽임은 3차 이후의 추가 클러스터들이 거의 소용이 없음을 가리킵니다. (수학적으로 엄밀한 해석과 이 방법의 구현에 관해서는 [여기](https://web.stanford.edu/~hastie/Papers/gap.pdf) 를 살펴보세요). 따라서, broom 이 제공하는 타이디하게 하는 세가지 방법 모두 클러스터링 결과를 요약하는데 유용합니다.
 
 ## Session information
 

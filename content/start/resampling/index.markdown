@@ -1,5 +1,5 @@
 ---
-title: "resampling 으로 모델 평가하기"
+title: "리샘플링으로 모델 평가하기"
 weight: 3
 tags: [rsample, parsnip, tune, workflows, yardstick]
 categories: [resampling]
@@ -188,7 +188,7 @@ rf_fit <-
 rf_fit
 #> parsnip model object
 #> 
-#> Fit time:  2.3s 
+#> Fit time:  3.8s 
 #> Ranger result
 #> 
 #> Call:
@@ -212,7 +212,7 @@ rf_fit
 
 모델링 프로젝트 동안, 우리는 다양한 모델을 생성할 수 있습니다. 이들 중 선택하기 위해 이러한 모델들이 얼마나 잘 되는지, 성능 통계량들을 측정하여 고려해야 합니다. 이 장의 예에서, 사용할 수 있는 선택지들은 다음과 같습니다:
 
- * the area under the Receiver Operating Characteristic (ROC) curve
+ * Receiver Operating Characteristic (ROC) curve 의 아래 면적
  
  * 종합 분류 정확도 (accuracy).
  
@@ -488,42 +488,37 @@ rf_testing_pred %>%                   # test set predictions
 
 
 ```
-#> ─ Session info  🌒  💑  🇳🇱   ───────────────────────────────────────
-#>  hash: waxing crescent moon, couple with heart, flag: Netherlands
+#> ─ Session info ───────────────────────────────────────────────────────────────
+#>  setting  value                       
+#>  version  R version 4.0.3 (2020-10-10)
+#>  os       macOS Catalina 10.15.7      
+#>  system   x86_64, darwin17.0          
+#>  ui       X11                         
+#>  language (EN)                        
+#>  collate  en_US.UTF-8                 
+#>  ctype    en_US.UTF-8                 
+#>  tz       Asia/Seoul                  
+#>  date     2022-01-10                  
 #> 
-#>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
-#>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
-#>  tz       Asia/Seoul
-#>  date     2021-12-28
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package    * version date       lib source        
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  ranger     * 0.13.1  2021-07-14 [1] CRAN (R 4.0.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
-#>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  ranger     * 0.13.1  2021-07-14 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
-#> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-#> 
-#> ────────────────────────────────────────────────────────────────────
+#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
