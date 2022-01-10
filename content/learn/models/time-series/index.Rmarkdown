@@ -1,11 +1,11 @@
 ---
-title: "Modeling time series with tidy resampling"
+title: "타이디한 리샘플링으로 시계열 모델링하기"
 tags: [rsample]
 categories: [model fitting, resampling]
 type: learn-subsection
 weight: 4
 description: | 
-  Calculate performance estimates for time series forecasts using resampling.
+  리샘플링을 사용하여 시계열 예측 성능 추정치를 계산합니다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -24,15 +24,15 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
-"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" is an excellent article that uses tidy methods with time series. This article uses their analysis with rsample to find performance estimates for future observations using [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/). 
+"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" 는 시계열에 타이디한 방법을 사용하는 훌륭한 기사입니다. 이 기사는 rsample 을 분석에 사용하는데, [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/) 을 사용하여 미래 관측값에 관한 성능 추정값을 구합니다. 
 
-## Example data
+## 예제 데이터
 
-The data for this article are sales of alcoholic beverages originally from [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN).
+이 기사의 데이터는 [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN) 에서 가져온 주류 음료 매출에 관한 것입니다.
 
 ```{r read-data}
 library(tidymodels)
@@ -41,11 +41,11 @@ data("drinks")
 glimpse(drinks)
 ```
 
-Each row represents one month of sales (in millions of US dollars). 
+각 행은 월간 매출을 나타냅니다 (백만 미달러 단위). 
 
-## Time series resampling
+## 시계열 리샘플링
 
-Suppose that we need predictions for one year ahead and our model should use the most recent data from the last 20 years. To set up this resampling scheme:
+1 년 후 예측값이 필요하고 우리 모델은 과거 20 년에서 가장 최근 데이터를 사용해야 한다고 가정합시다. 이 리샘플링 스킴을 설정하기 위해:
 
 ```{r rof}
 roll_rs <- rolling_origin(
@@ -60,13 +60,13 @@ nrow(roll_rs)
 roll_rs
 ```
 
-Each `split` element contains the information about that resample:
+각 `split` 요소에는 리샘플에 관한 정보가 있습니다:
 
 ```{r split}
 roll_rs$splits[[1]]
 ```
 
-For plotting, let's index each split by the first day of the assessment set:
+플롯을 그려봅시다. 각 스플릿은 평가셋의 첫번째 날 기준으로 인텍싱합니다:
 
 ```{r labels}
 get_date <- function(x) {
