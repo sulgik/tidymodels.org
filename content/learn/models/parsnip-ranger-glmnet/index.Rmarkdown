@@ -31,13 +31,14 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 `r req_pkgs(pkgs)`
 
-We can create regression models with the tidymodels package [parsnip](https://tidymodels.github.io/parsnip/) to predict continuous or numeric quantities. Here, let's first fit a random forest model, which does _not_ require all numeric input (see discussion [here](https://bookdown.org/max/FES/categorical-trees.html)) and discuss how to use `fit()` and `fit_xy()`, as well as _data descriptors_. 
+우리는 tidymodels 패키지 [parsnip](https://tidymodels.github.io/parsnip/) 로 회귀 모델을 생성하고 연속형이나 수치 값을 예측할 수 있습니다. 
+여기에서, 모든 인풋이 수치형일 _필요가 없는_ 랜덤포레스트 모델 ([여기 ](https://bookdown.org/max/FES/categorical-trees.html)에서 이에 관한 논의를 살펴보라)을 우선 적합하고, _data descripters_ 뿐만 아니라, `fit()` 과 `fit_xy()` 를 사용하는 법을 논의해 봅시다.
 
-Second, let's fit a regularized linear regression model to demonstrate how to move between different types of models using parsnip. 
+두번째로는, regularized 선형 회귀 모형을 적합하여 parsnip 을 이용하여 다른 유형의 모델 사이를 움직여봅시다.
 
-## The Ames housing data
+## Ames 주택 데이터
 
-We'll use the Ames housing data set to demonstrate how to create regression models using parsnip. First, set up the data set and create a simple training/test set split:
+Ames 주택 데이터를 사용하여 parsnip 을 이용하여 회귀모형을 생성해 볼 것입니다. 첫째로, 데이터셋을 준비하고 간단한 트레이닝/테스트셋 분리를 합니다:
 
 ```{r ames-split}
 library(tidymodels)
@@ -51,11 +52,12 @@ ames_train <- training(data_split)
 ames_test  <- testing(data_split)
 ```
 
-The use of the test set here is _only for illustration_; normally in a data analysis these data would be saved to the very end after many models have been evaluated. 
+여기서 테스트셋을 사용하는 것은 _설명목적_ 입니다; 일반적으로 데이터 분석에서 이러한 테스트데이터는 저장된 후 다양한 모델을 평가한 후 맨 마지막에 사용됩니다.
 
-## Random forest
+## 랜덤 포레스트
 
-We'll start by fitting a random forest model to a small set of parameters. Let's create a model with the predictors `r knitr::combine_words(pred_names)`. A simple random forest model can be specified via:
+랜덤포레스트를 파라미터 셋으로 적합하는 것부터 시작할 것입니다 
+We'll start by fitting a random forest model to a small set of parameters. Let's create a model with the predictors `r knitr::combine_words(pred_names)` 개의 . A simple random forest model can be specified via:
 
 ```{r rf-basic}
 rf_defaults <- rand_forest(mode = "regression")
