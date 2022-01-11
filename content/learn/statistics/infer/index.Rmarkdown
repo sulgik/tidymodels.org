@@ -44,7 +44,6 @@ tidymodels 패키지 [infer](https://tidymodels.github.io/infer/)는 `tidyverse`
 + `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 귀무 분포(null distribution)를 만듭니다.
 
 이 vignette 에서, infer 에 있는 `gss` 데이터셋을 이용할 것인데, 이는 *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함합니다.
-Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함한 . 
 
 ```{r load-gss, warning = FALSE, message = FALSE}
 library(tidymodels) # Includes the infer package
@@ -56,9 +55,9 @@ data(gss)
 dplyr::glimpse(gss)
 ```
 
-Each row is an individual survey response, containing some basic demographic information on the respondent as well as some additional variables. See `?gss` for more information on the variables included and their source. Note that this data (and our examples on it) are for demonstration purposes only, and will not necessarily provide accurate estimates unless weighted properly. For these examples, let's suppose that this data set is a representative sample of a population we want to learn about: American adults.
+각 행은 개인 조사답변인데, 설무자에 관한 기초 인구통계학정 정보와 추가적인 변수들이 있습니다. 포함된 변수들과 소스에 관한 정보는 `?gss` 로 알아볼 수 있습니다. 이 데이터 (와 이에 관한 우리의 예제) 는 보여주기 위한 목적이고 적절한 가중치가 없다면 정확한 추정값을 꼭 제공한다고 할 수 없습니다. 이 예에서, 이 데이터셋은 우리가 탐구하고자하는 모집단인 미국성인집단을 대표할 수 있는 샘플이라고 가정합시다.
 
-## Specify variables
+## 변수 설정
 
 The `specify()` function can be used to specify which of the variables in the data set you're interested in. If you're only interested in, say, the `age` of the respondents, you might write:
 

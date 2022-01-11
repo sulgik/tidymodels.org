@@ -1,11 +1,11 @@
 ---
-title: "Regression models two ways"
+title: "회귀 모델링의 두가지 방법"
 tags: [rsample, parsnip]
 categories: [model fitting]
 type: learn-subsection
 weight: 1
 description: | 
-  Create and train different kinds of regression models with different computational engines.
+  다른 연산 엔전을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -27,7 +27,7 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
