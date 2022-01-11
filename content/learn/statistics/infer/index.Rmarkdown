@@ -1,11 +1,11 @@
 ---
-title: "Hypothesis testing using resampling and tidy data"
+title: "리샘플링과 타이디한 데이터를 이용한 가설검정"
 tags: [infer]
 categories: [statistical analysis]
 type: learn-subsection
 weight: 4
 description: | 
-  Perform common hypothesis tests for statistical inference using flexible functions.
+  유연한 함수를 이용하여 통계추론을 위한 가설검정을 수행합니다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -19,31 +19,32 @@ pkgs <- c("tidymodels")
 theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package. 
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-The tidymodels package [infer](https://tidymodels.github.io/infer/) implements an expressive grammar to perform statistical inference that coheres with the `tidyverse` design framework. Rather than providing methods for specific statistical tests, this package consolidates the principles that are shared among common hypothesis tests into a set of 4 main verbs (functions), supplemented with many utilities to visualize and extract information from their outputs.
+tidymodels 패키지 [infer](https://tidymodels.github.io/infer/)는 `tidyverse` 디자인 프레임워크와 일관성을 보이는 통계추론을 수행하는 표현력 좋은 문법을 구현하는 데에 사용할 수 있습니다. 이 패키지는 특정 통계 검정을 제공하지 않고, 일반적은 가설 검정이 공유하는 원칙을 4 개의 메인 동사 (함수) 세트로 종합합니다 출력물로 부터 정보를 시각화하고 추출하는 도구들을 장착하였습니다.
 
-Regardless of which hypothesis test we're using, we're still asking the same kind of question: 
+우리가 어떤 가설 검정을 하던지와 상관 없이, 같은 종류의 질문을 할 것입니다.
 
->Is the effect or difference in our observed data real, or due to chance? 
+>우리가 관측한 데이터에서의 효과나 차이가 실제인가, 아니면 단순히 우연인가? 
 
-To answer this question, we start by assuming that the observed data came from some world where "nothing is going on" (i.e. the observed effect was simply due to random chance), and call this assumption our **null hypothesis**. (In reality, we might not believe in the null hypothesis at all; the null hypothesis is in opposition to the **alternate hypothesis**, which supposes that the effect present in the observed data is actually due to the fact that "something is going on.") We then calculate a **test statistic** from our data that describes the observed effect. We can use this test statistic to calculate a **p-value**, giving the probability that our observed data could come about if the null hypothesis was true. If this probability is below some pre-defined **significance level** $\alpha$, then we can reject our null hypothesis.
+이 질문에 답하기 위해, 관측된 데이터는 "아무것도 일어나지 않는" 세계 (즉, 관측된 효과는 단순히 우연에 의한 것) ㅇ서 왔다고 가정하는 것으로 시작하고, 이 가정을 우리 **귀무가설(null hypothesis)** 라고 부릅니다. (실제로 귀무가설을 믿는 것은 전혀 아닙니다; 귀무가설과 반대인 **대립가설(alternative hypothesis)**은 관측데이터에 있는 효과가 "뭔가가 있는" 사실에 비롯되었다는 것입니다.) 우리는 데이터에서 관측된 효과를 기술하는 **검정통계량** 을 계산합니다. 이 검정 통계량을 이용하여 **p-값** 을 계산할 수 있는데, 이는 귀무가설이 사실일 때 우리 관측데이터가 일어날 확률입니다. 미리 정한 **유의수준** $\alpha$ 이하이면 귀무가설을 기각할 수 있습니다.
 
-If you are new to hypothesis testing, take a look at 
+가설 검정이 처음이라면 다음을 살펴봐야합니다.
 
 * [Section 9.2 of _Statistical Inference via Data Science_](https://moderndive.com/9-hypothesis-testing.html#understanding-ht)
 * The American Statistical Association's recent [statement on p-values](https://doi.org/10.1080/00031305.2016.1154108) 
 
-The workflow of this package is designed around these ideas. Starting from some data set,
+이 패키지의 워크플로는 이러한 생각으로 설계됩니다. 데이터셋이 주어지면,
 
-+ `specify()` allows you to specify the variable, or relationship between variables, that you're interested in,
-+ `hypothesize()` allows you to declare the null hypothesis,
-+ `generate()` allows you to generate data reflecting the null hypothesis, and
-+ `calculate()` allows you to calculate a distribution of statistics from the generated data to form the null distribution.
++ `specify()` 는 관심있는 변수나 변수 사이의 관계를 설정합니다.
++ `hypothesize()` 는 귀무 가설을 선언합니다.
++ `generate()` 는 귀무가설을 반영하는 데이터를 생성합니다.
++ `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 귀무 분포(null distribution)를 만듭니다.
 
-Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey*. 
+이 vignette 에서, infer 에 있는 `gss` 데이터셋을 이용할 것인데, 이는 *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함합니다.
+Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함한 . 
 
 ```{r load-gss, warning = FALSE, message = FALSE}
 library(tidymodels) # Includes the infer package

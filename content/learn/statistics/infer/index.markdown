@@ -1,42 +1,43 @@
 ---
-title: "Hypothesis testing using resampling and tidy data"
+title: "리샘플링과 타이디한 데이터를 이용한 가설검정"
 tags: [infer]
 categories: [statistical analysis]
 type: learn-subsection
 weight: 4
 description: | 
-  Perform common hypothesis tests for statistical inference using flexible functions.
+  유연한 함수를 이용하여 통계추론을 위한 가설검정을 수행합니다.
 ---
 
 
 
 
 
-## Introduction
+## 들어가기
 
-This article only requires the tidymodels package. 
+이 장은 tidymodels 패키지만 필요로 합니다.
 
-The tidymodels package [infer](https://tidymodels.github.io/infer/) implements an expressive grammar to perform statistical inference that coheres with the `tidyverse` design framework. Rather than providing methods for specific statistical tests, this package consolidates the principles that are shared among common hypothesis tests into a set of 4 main verbs (functions), supplemented with many utilities to visualize and extract information from their outputs.
+tidymodels 패키지 [infer](https://tidymodels.github.io/infer/)는 `tidyverse` 디자인 프레임워크와 일관성을 보이는 통계추론을 수행하는 표현력 좋은 문법을 구현하는 데에 사용할 수 있습니다. 이 패키지는 특정 통계 검정을 제공하지 않고, 일반적은 가설 검정이 공유하는 원칙을 4 개의 메인 동사 (함수) 세트로 종합합니다 출력물로 부터 정보를 시각화하고 추출하는 도구들을 장착하였습니다.
 
-Regardless of which hypothesis test we're using, we're still asking the same kind of question: 
+우리가 어떤 가설 검정을 하던지와 상관 없이, 같은 종류의 질문을 할 것입니다.
 
->Is the effect or difference in our observed data real, or due to chance? 
+>우리가 관측한 데이터에서의 효과나 차이가 실제인가, 아니면 단순히 우연인가? 
 
-To answer this question, we start by assuming that the observed data came from some world where "nothing is going on" (i.e. the observed effect was simply due to random chance), and call this assumption our **null hypothesis**. (In reality, we might not believe in the null hypothesis at all; the null hypothesis is in opposition to the **alternate hypothesis**, which supposes that the effect present in the observed data is actually due to the fact that "something is going on.") We then calculate a **test statistic** from our data that describes the observed effect. We can use this test statistic to calculate a **p-value**, giving the probability that our observed data could come about if the null hypothesis was true. If this probability is below some pre-defined **significance level** `\(\alpha\)`, then we can reject our null hypothesis.
+이 질문에 답하기 위해, 관측된 데이터는 "아무것도 일어나지 않는" 세계 (즉, 관측된 효과는 단순히 우연에 의한 것) ㅇ서 왔다고 가정하는 것으로 시작하고, 이 가정을 우리 **귀무가설(null hypothesis)** 라고 부릅니다. (실제로 귀무가설을 믿는 것은 전혀 아닙니다; 귀무가설과 반대인 **대립가설(alternative hypothesis)**은 관측데이터에 있는 효과가 "뭔가가 있는" 사실에 비롯되었다는 것입니다.) 우리는 데이터에서 관측된 효과를 기술하는 **검정통계량** 을 계산합니다. 이 검정 통계량을 이용하여 **p-값** 을 계산할 수 있는데, 이는 귀무가설이 사실일 때 우리 관측데이터가 일어날 확률입니다. 미리 정한 **유의수준** `\(\alpha\)` 이하이면 귀무가설을 기각할 수 있습니다.
 
-If you are new to hypothesis testing, take a look at 
+가설 검정이 처음이라면 다음을 살펴봐야합니다.
 
 * [Section 9.2 of _Statistical Inference via Data Science_](https://moderndive.com/9-hypothesis-testing.html#understanding-ht)
 * The American Statistical Association's recent [statement on p-values](https://doi.org/10.1080/00031305.2016.1154108) 
 
-The workflow of this package is designed around these ideas. Starting from some data set,
+이 패키지의 워크플로는 이러한 생각으로 설계됩니다. 데이터셋이 주어지면,
 
-+ `specify()` allows you to specify the variable, or relationship between variables, that you're interested in,
-+ `hypothesize()` allows you to declare the null hypothesis,
-+ `generate()` allows you to generate data reflecting the null hypothesis, and
-+ `calculate()` allows you to calculate a distribution of statistics from the generated data to form the null distribution.
++ `specify()` 는 관심있는 변수나 변수 사이의 관계를 설정합니다.
++ `hypothesize()` 는 귀무 가설을 선언합니다.
++ `generate()` 는 귀무가설을 반영하는 데이터를 생성합니다.
++ `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 귀무 분포(null distribution)를 만듭니다.
 
-Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey*. 
+이 vignette 에서, infer 에 있는 `gss` 데이터셋을 이용할 것인데, 이는 *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함합니다.
+Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함한 . 
 
 
 ```r
@@ -49,17 +50,17 @@ data(gss)
 dplyr::glimpse(gss)
 #> Rows: 500
 #> Columns: 11
-#> $ year    <dbl> 2014, 1994, 1998, 1996, 1994, 1996, 1990, 2016, 2000, 1998, 2…
-#> $ age     <dbl> 36, 34, 24, 42, 31, 32, 48, 36, 30, 33, 21, 30, 38, 49, 25, 5…
-#> $ sex     <fct> male, female, male, male, male, female, female, female, femal…
-#> $ college <fct> degree, no degree, degree, no degree, degree, no degree, no d…
-#> $ partyid <fct> ind, rep, ind, ind, rep, rep, dem, ind, rep, dem, dem, ind, d…
-#> $ hompop  <dbl> 3, 4, 1, 4, 2, 4, 2, 1, 5, 2, 4, 3, 4, 4, 2, 2, 3, 2, 1, 2, 5…
-#> $ hours   <dbl> 50, 31, 40, 40, 40, 53, 32, 20, 40, 40, 23, 52, 38, 72, 48, 4…
-#> $ income  <ord> $25000 or more, $20000 - 24999, $25000 or more, $25000 or mor…
-#> $ class   <fct> middle class, working class, working class, working class, mi…
-#> $ finrela <fct> below average, below average, below average, above average, a…
-#> $ weight  <dbl> 0.896, 1.083, 0.550, 1.086, 1.083, 1.086, 1.063, 0.478, 1.099…
+#> $ year    <dbl> 2014, 1994, 1998, 1996, 1994, 1996, 1990, 2016, 2000, 1998, 20…
+#> $ age     <dbl> 36, 34, 24, 42, 31, 32, 48, 36, 30, 33, 21, 30, 38, 49, 25, 56…
+#> $ sex     <fct> male, female, male, male, male, female, female, female, female…
+#> $ college <fct> degree, no degree, degree, no degree, degree, no degree, no de…
+#> $ partyid <fct> ind, rep, ind, ind, rep, rep, dem, ind, rep, dem, dem, ind, de…
+#> $ hompop  <dbl> 3, 4, 1, 4, 2, 4, 2, 1, 5, 2, 4, 3, 4, 4, 2, 2, 3, 2, 1, 2, 5,…
+#> $ hours   <dbl> 50, 31, 40, 40, 40, 53, 32, 20, 40, 40, 23, 52, 38, 72, 48, 40…
+#> $ income  <ord> $25000 or more, $20000 - 24999, $25000 or more, $25000 or more…
+#> $ class   <fct> middle class, working class, working class, working class, mid…
+#> $ finrela <fct> below average, below average, below average, above average, ab…
+#> $ weight  <dbl> 0.896, 1.083, 0.550, 1.086, 1.083, 1.086, 1.063, 0.478, 1.099,…
 ```
 
 Each row is an individual survey response, containing some basic demographic information on the respondent as well as some additional variables. See `?gss` for more information on the variables included and their source. Note that this data (and our examples on it) are for demonstration purposes only, and will not necessarily provide accurate estimates unless weighted properly. For these examples, let's suppose that this data set is a representative sample of a population we want to learn about: American adults.
@@ -73,7 +74,7 @@ The `specify()` function can be used to specify which of the variables in the da
 gss %>%
   specify(response = age)
 #> Response: age (numeric)
-#> # A tibble: 500 x 1
+#> # A tibble: 500 × 1
 #>      age
 #>    <dbl>
 #>  1    36
@@ -110,7 +111,7 @@ gss %>%
   specify(age ~ partyid)
 #> Response: age (numeric)
 #> Explanatory: partyid (factor)
-#> # A tibble: 500 x 2
+#> # A tibble: 500 × 2
 #>      age partyid
 #>    <dbl> <fct>  
 #>  1    36 ind    
@@ -130,7 +131,7 @@ gss %>%
   specify(response = age, explanatory = partyid)
 #> Response: age (numeric)
 #> Explanatory: partyid (factor)
-#> # A tibble: 500 x 2
+#> # A tibble: 500 × 2
 #>      age partyid
 #>    <dbl> <fct>  
 #>  1    36 ind    
@@ -154,7 +155,7 @@ If you're doing inference on one proportion or a difference in proportions, you 
 gss %>%
   specify(response = college, success = "degree")
 #> Response: college (factor)
-#> # A tibble: 500 x 1
+#> # A tibble: 500 × 1
 #>    college  
 #>    <fct>    
 #>  1 degree   
@@ -182,7 +183,7 @@ gss %>%
 #> Response: college (factor)
 #> Explanatory: partyid (factor)
 #> Null Hypothesis: independence
-#> # A tibble: 500 x 2
+#> # A tibble: 500 × 2
 #>    college   partyid
 #>    <fct>     <fct>  
 #>  1 degree    ind    
@@ -207,7 +208,7 @@ gss %>%
   hypothesize(null = "point", mu = 40)
 #> Response: hours (numeric)
 #> Null Hypothesis: point
-#> # A tibble: 500 x 1
+#> # A tibble: 500 × 1
 #>    hours
 #>    <dbl>
 #>  1    50
@@ -243,20 +244,20 @@ gss %>%
   generate(reps = 5000, type = "bootstrap")
 #> Response: hours (numeric)
 #> Null Hypothesis: point
-#> # A tibble: 2,500,000 x 2
+#> # A tibble: 2,500,000 × 2
 #> # Groups:   replicate [5,000]
 #>    replicate hours
 #>        <int> <dbl>
-#>  1         1  43.6
-#>  2         1  18.6
-#>  3         1  11.6
-#>  4         1  63.6
-#>  5         1  58.6
+#>  1         1  45.6
+#>  2         1  38.6
+#>  3         1  46.6
+#>  4         1  58.6
+#>  5         1  38.6
 #>  6         1  38.6
-#>  7         1  48.6
+#>  7         1  38.6
 #>  8         1  38.6
-#>  9         1  46.6
-#> 10         1  58.6
+#>  9         1  23.6
+#> 10         1  38.6
 #> # … with 2,499,990 more rows
 ```
 
@@ -273,19 +274,19 @@ gss %>%
 #> Response: partyid (factor)
 #> Explanatory: age (numeric)
 #> Null Hypothesis: independence
-#> # A tibble: 2,500,000 x 3
+#> # A tibble: 2,500,000 × 3
 #> # Groups:   replicate [5,000]
 #>    partyid   age replicate
 #>    <fct>   <dbl>     <int>
-#>  1 rep        36         1
-#>  2 dem        34         1
-#>  3 ind        24         1
+#>  1 ind        36         1
+#>  2 ind        34         1
+#>  3 rep        24         1
 #>  4 ind        42         1
 #>  5 rep        31         1
 #>  6 ind        32         1
 #>  7 rep        48         1
-#>  8 ind        36         1
-#>  9 ind        30         1
+#>  8 rep        36         1
+#>  9 dem        30         1
 #> 10 ind        33         1
 #> # … with 2,499,990 more rows
 ```
@@ -301,19 +302,21 @@ gss %>%
   hypothesize(null = "point", mu = 40) %>%
   generate(reps = 5000, type = "bootstrap") %>%
   calculate(stat = "mean")
-#> # A tibble: 5,000 x 2
+#> Response: hours (numeric)
+#> Null Hypothesis: point
+#> # A tibble: 5,000 × 2
 #>    replicate  stat
 #>        <int> <dbl>
-#>  1         1  40.4
-#>  2         2  40.2
-#>  3         3  39.6
-#>  4         4  38.9
-#>  5         5  40.1
-#>  6         6  40.2
-#>  7         7  39.1
-#>  8         8  39.6
-#>  9         9  39.7
-#> 10        10  39.5
+#>  1         1  39.8
+#>  2         2  40.9
+#>  3         3  40.6
+#>  4         4  40.1
+#>  5         5  39.3
+#>  6         6  39.8
+#>  7         7  40.8
+#>  8         8  40.3
+#>  9         9  40.1
+#> 10        10  41.3
 #> # … with 4,990 more rows
 ```
 
@@ -326,19 +329,22 @@ gss %>%
   hypothesize(null = "independence") %>%
   generate(reps = 5000, type = "permute") %>%
   calculate("diff in means", order = c("degree", "no degree"))
-#> # A tibble: 5,000 x 2
-#>    replicate    stat
-#>        <int>   <dbl>
-#>  1         1 -1.33  
-#>  2         2 -0.408 
-#>  3         3 -0.655 
-#>  4         4  0.941 
-#>  5         5  0.235 
-#>  6         6 -0.214 
-#>  7         7 -0.0730
-#>  8         8  1.36  
-#>  9         9  0.359 
-#> 10        10 -0.152 
+#> Response: age (numeric)
+#> Explanatory: college (factor)
+#> Null Hypothesis: independence
+#> # A tibble: 5,000 × 2
+#>    replicate   stat
+#>        <int>  <dbl>
+#>  1         1 -1.81 
+#>  2         2 -0.655
+#>  3         3 -0.540
+#>  4         4 -2.18 
+#>  5         5 -0.664
+#>  6         6  2.54 
+#>  7         7  0.535
+#>  8         8  0.447
+#>  9         9 -1.53 
+#> 10        10  3.60 
 #> # … with 4,990 more rows
 ```
 
@@ -397,13 +403,13 @@ p_value <- null_dist %>%
   get_p_value(obs_stat = point_estimate, direction = "two_sided")
 
 p_value
-#> # A tibble: 1 x 1
+#> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0388
+#> 1  0.0372
 ```
 
-It looks like the p-value is 0.039, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.039. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
+It looks like the p-value is 0.037, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.037. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
 
 To get a confidence interval around our estimate, we can write:
 
@@ -417,7 +423,7 @@ null_dist %>%
                           level = .95,
                           # using the standard error
                           type = "se")
-#> # A tibble: 1 x 2
+#> # A tibble: 1 × 2
 #>   lower_ci upper_ci
 #>      <dbl>    <dbl>
 #> 1     40.1     42.7
@@ -489,32 +495,32 @@ That's it! This vignette covers most all of the key functionality of infer. See 
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
 #>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
+#>  os       macOS Catalina 10.15.7      
 #>  system   x86_64, darwin17.0          
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#>  tz       Asia/Seoul                  
+#>  date     2022-01-11                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
+#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
+#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
+#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
+#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
 #> 
 #> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
