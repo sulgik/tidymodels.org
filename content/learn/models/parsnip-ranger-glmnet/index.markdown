@@ -1,11 +1,11 @@
 ---
-title: "Regression models two ways"
+title: "회귀 모델링의 두가지 방법"
 tags: [rsample, parsnip]
 categories: [model fitting]
 type: learn-subsection
 weight: 1
 description: | 
-  Create and train different kinds of regression models with different computational engines.
+  다른 연산 엔전을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
 ---
 
 
@@ -13,17 +13,18 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
-To use the code in this article, you will need to install the following packages: glmnet, randomForest, ranger, and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: glmnet, randomForest, ranger, and tidymodels.
 
-We can create regression models with the tidymodels package [parsnip](https://tidymodels.github.io/parsnip/) to predict continuous or numeric quantities. Here, let's first fit a random forest model, which does _not_ require all numeric input (see discussion [here](https://bookdown.org/max/FES/categorical-trees.html)) and discuss how to use `fit()` and `fit_xy()`, as well as _data descriptors_. 
+우리는 tidymodels 패키지 [parsnip](https://tidymodels.github.io/parsnip/) 로 회귀 모델을 생성하고 연속형이나 수치 값을 예측할 수 있습니다. 
+여기에서, 모든 인풋이 수치형일 _필요가 없는_ 랜덤포레스트 모델 ([여기 ](https://bookdown.org/max/FES/categorical-trees.html)에서 이에 관한 논의를 살펴보라)을 우선 적합하고, _data descripters_ 뿐만 아니라, `fit()` 과 `fit_xy()` 를 사용하는 법을 논의해 봅시다.
 
-Second, let's fit a regularized linear regression model to demonstrate how to move between different types of models using parsnip. 
+두번째로는, regularized 선형 회귀 모형을 적합하여 parsnip 을 이용하여 다른 유형의 모델 사이를 움직여봅시다.
 
-## The Ames housing data
+## Ames 주택 데이터
 
-We'll use the Ames housing data set to demonstrate how to create regression models using parsnip. First, set up the data set and create a simple training/test set split:
+Ames 주택 데이터를 사용하여 parsnip 을 이용하여 회귀모형을 생성해 볼 것입니다. 첫째로, 데이터셋을 준비하고 간단한 트레이닝/테스트셋 분리를 합니다:
 
 
 ```r
@@ -38,27 +39,30 @@ ames_train <- training(data_split)
 ames_test  <- testing(data_split)
 ```
 
-The use of the test set here is _only for illustration_; normally in a data analysis these data would be saved to the very end after many models have been evaluated. 
+여기서 테스트셋을 사용하는 것은 _설명목적_ 입니다; 일반적으로 데이터 분석에서 이러한 테스트데이터는 저장된 후 다양한 모델을 평가한 후 맨 마지막에 사용됩니다.
 
-## Random forest
+## 랜덤 포레스트
 
-We'll start by fitting a random forest model to a small set of parameters. Let's create a model with the predictors `Longitude`, `Latitude`, `Lot_Area`, `Neighborhood`, and `Year_Sold`. A simple random forest model can be specified via:
+랜덤포레스트를 파라미터 셋으로 적합하는 것부터 시작할 것입니다. 
+`Longitude`, `Latitude`, `Lot_Area`, `Neighborhood`, and `Year_Sold` 개의 설명변수가 있는 모델을 생성합시다. 간단한 랜덤 포레스트 모델은 다음과 같이 설정할 수 있습니다:
 
 
 ```r
 rf_defaults <- rand_forest(mode = "regression")
 rf_defaults
 #> Random Forest Model Specification (regression)
+#> 
+#> Computational engine: ranger
 ```
 
-The model will be fit with the ranger package by default. Since we didn't add any extra arguments to `fit`, _many_ of the arguments will be set to their defaults from the function  `ranger::ranger()`. The help pages for the model function describe the default parameters and you can also use the `translate()` function to check out such details. 
+이 모델은 레인저 패키지 기본값으로 적합될 것입니다. `fit` 에 추가 인수를 넣지 않았기 때문에, _많은_ 인수들이 `ranger::ranger()` 함수로 부터 기본값으로 설정될 것입니다. 모델 함수의 도움말 페이지에서는 기본값 파라미터들을 기술하고 `translate()` 함수를 사용하여 이에 관한 세부사항을 확인할 수 있습니다. 
 
-The parsnip package provides two different interfaces to fit a model: 
+parsnip 패키지에는 모델을 적합하는 두가지 다른 인터페이스가 있습니다: 
 
-- the formula interface (`fit()`), and
-- the non-formula interface (`fit_xy()`).
+- 공식(formula) 인터페이스 (`fit()`)
+- 비공식 (non-formula) 인터페이스 (`fit_xy()`).
 
-Let's start with the non-formula interface:
+비공식 인터페이스부터 시작해봅니다:
 
 
 
@@ -76,7 +80,7 @@ rf_xy_fit <-
 rf_xy_fit
 #> parsnip model object
 #> 
-#> Fit time:  944ms 
+#> Fit time:  1s 
 #> Ranger result
 #> 
 #> Call:
@@ -84,19 +88,19 @@ rf_xy_fit
 #> 
 #> Type:                             Regression 
 #> Number of trees:                  500 
-#> Sample size:                      2199 
+#> Sample size:                      2197 
 #> Number of independent variables:  5 
 #> Mtry:                             2 
 #> Target node size:                 5 
 #> Variable importance mode:         none 
 #> Splitrule:                        variance 
-#> OOB prediction error (MSE):       0.00844 
-#> R squared (OOB):                  0.736
+#> OOB prediction error (MSE):       0.0085 
+#> R squared (OOB):                  0.724
 ```
 
-The non-formula interface doesn't do anything to the predictors before passing them to the underlying model function. This particular model does _not_ require indicator variables (sometimes called "dummy variables") to be created prior to fitting the model. Note that the output shows "Number of independent variables:  5".
+비공식 인터페이스는 설명변수를 모델 함수에 전달하기 전에 설명변수에는 아무 것도 하지 않습니다. 이 특별한 모델은 indicator 변수 (때로 "더미변수" 로 불림) 를 모델 적합 전에 생성할 필요가 _없습니다._ 출력에서 "Number of independent variables: 5" 를 나타냈습니다.
 
-For regression models, we can use the basic `predict()` method, which returns a tibble with a column named `.pred`:
+회귀 모델에서 우리는 기본 `predict()` 방법을 사용할 수 있는데, 이는 `.pred` 라고 명명된 하나의 열이 있는 티블을 반환합니다.
 
 
 ```r
@@ -108,31 +112,31 @@ test_results <-
     predict(rf_xy_fit, new_data = ames_test[, preds])
   )
 test_results %>% slice(1:5)
-#> # A tibble: 5 x 2
+#> # A tibble: 5 × 2
 #>   Sale_Price .pred
 #>        <dbl> <dbl>
-#> 1       5.33  5.22
-#> 2       5.02  5.21
-#> 3       5.27  5.25
-#> 4       5.60  5.51
-#> 5       5.28  5.24
+#> 1       5.39  5.25
+#> 2       5.28  5.29
+#> 3       5.23  5.26
+#> 4       5.21  5.30
+#> 5       5.60  5.51
 
 # summarize performance
 test_results %>% metrics(truth = Sale_Price, estimate = .pred) 
-#> # A tibble: 3 x 3
+#> # A tibble: 3 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
-#> 1 rmse    standard      0.0914
-#> 2 rsq     standard      0.717 
-#> 3 mae     standard      0.0662
+#> 1 rmse    standard      0.0945
+#> 2 rsq     standard      0.733 
+#> 3 mae     standard      0.0629
 ```
 
-Note that: 
+주의할 사항은: 
 
- * If the model required indicator variables, we would have to create them manually prior to using `fit()` (perhaps using the recipes package).
- * We had to manually log the outcome prior to modeling. 
+ * 모델이 indicator 변수들을 필요로 했다면, 이들을 `fit()` 을 사용하기 전에 수동으로 생성해야할 것입니다. (recipes 패키지를 사용하던지 해서)
+ * 모델링 전에 출력을 수동으로 로그했어야 합니다.
 
-Now, for illustration, let's use the formula method using some new parameter values:
+이제 새로운 파라미터 값들을 사용하여 공식 방법을 사용하는 것을 배워봅시다:
 
 
 ```r
@@ -152,17 +156,19 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
 #> 
 #> Type:                             Regression 
 #> Number of trees:                  1000 
-#> Sample size:                      2199 
+#> Sample size:                      2197 
 #> Number of independent variables:  5 
 #> Mtry:                             3 
 #> Target node size:                 5 
 #> Variable importance mode:         none 
 #> Splitrule:                        variance 
-#> OOB prediction error (MSE):       0.00848 
-#> R squared (OOB):                  0.735
+#> OOB prediction error (MSE):       0.0084 
+#> R squared (OOB):                  0.727
 ```
  
-Suppose that we would like to use the randomForest package instead of ranger. To do so, the only part of the syntax that needs to change is the `set_engine()` argument:
+
+ranger 대신 randomForest 패키지를 사용하고 싶다고 가정해 봅시다. 
+공식에서 바뀌어야 하는 유일한 부분은 `set_engine()` 인수입니다:
 
 
 
@@ -175,7 +181,7 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
   )
 #> parsnip model object
 #> 
-#> Fit time:  7.6s 
+#> Fit time:  7.7s 
 #> 
 #> Call:
 #>  randomForest(x = maybe_data_frame(x), y = y, ntree = ~1000, mtry = min_cols(~3,      x)) 
@@ -184,23 +190,24 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
 #> No. of variables tried at each split: 3
 #> 
 #>           Mean of squared residuals: 0.00847
-#>                     % Var explained: 73.5
+#>                     % Var explained: 72.5
 ```
 
-Look at the formula code that was printed out; one function uses the argument name `ntree` and the other uses `num.trees`. The parsnip models don't require you to know the specific names of the main arguments. 
+프린트된 공식 코드 를 살펴봅시다; 첫번째 함수는 인수 이름 `ntree` 를 사용하고, 다른 함수는 `num.trees` 를 사용합니다. parsnip 모델들은 주 인수의 구체적인 이름들을 몰라도 됩니다. 
 
-Now suppose that we want to modify the value of `mtry` based on the number of predictors in the data. Usually, a good default value is `floor(sqrt(num_predictors))` but a pure bagging model requires an `mtry` value equal to the total number of parameters. There may be cases where you may not know how many predictors are going to be present when the model will be fit (perhaps due to the generation of indicator variables or a variable filter) so this might be difficult to know exactly ahead of time when you write your code. 
+`mtry` 값을 데이터의 설명변수의 개수에 기반하여 수정하고 싶다고 가정합니다. 일반적으로, 좋은 기본값은 `floor(sqrt(num_predictors))` 이지만, 순수한 배깅 모델은 `mtry` 값이 파라미터 전체 숫자와 같기를 요구합니다. 모델이 적합될 때 얼마나 많은 설명변수가 있을 것인지 알 수 없는 경우가 있어서, 코드를 작성하기 전에 정확히 아는 것은 여러울 수 있습니다.
 
-When the model it being fit by parsnip, [_data descriptors_](https://tidymodels.github.io/parsnip/reference/descriptors.html) are made available. These attempt to let you know what you will have available when the model is fit. When a model object is created (say using `rand_forest()`), the values of the arguments that you give it are _immediately evaluated_ unless you delay them. To delay the evaluation of any argument, you can used `rlang::expr()` to make an expression. 
 
-Two relevant data descriptors for our example model are:
+parsnip 이 모델을 적합할 때, [_data descriptors_](https://tidymodels.github.io/parsnip/reference/descriptors.html) 를 사용할 수 있게 됩니다. 이것들은 모델이 적합될 때 어떤 것을 사용할 수 잇는지 알려주려고 합니다. 모델 객체가 생성될 때 (예를 들어 `rand_forest()` 를 사용해서) 제공하는 인수 값들을 delay 하지 않는다면 _즉시 평가됩니다_. 인수평가를 지연시키기 위해서는, `rlang:expr()` 를 사용하여 표현형(expression)을 만들 수 있습니다.
 
- * `.preds()`: the number of predictor _variables_ in the data set that are associated with the predictors **prior to dummy variable creation**.
- * `.cols()`: the number of predictor _columns_ after dummy variables (or other encodings) are created.
+우리 예제 모델이서 관련된 두 개의 데이터 descriptor 는:
 
-Since ranger won't create indicator values, `.preds()` would be appropriate for `mtry` for a bagging model. 
+ * `.preds()`: **더미변수 생성 이전의** 설명변수와 관련있는 데이터셋 내의 설명 _변수_ 의 개수.
+ * `.cols()`: 더미 변수들 (혹은 기타 인코딩)이 생성된 후 설명변수 _열_의 개수.
 
-For example, let's use an expression with the `.preds()` descriptor to fit a bagging model: 
+ranger 는 indicator 값을 생성하지 않기 때문에, `.preds()` 는 배깅모델의 `mtry` 에 적절할 것입니다.
+
+`.preds()` descriptor 가 있는 표현형을 사용하여 배깅 모델을 적합해 봅시다.
 
 
 ```r
@@ -212,7 +219,7 @@ rand_forest(mode = "regression", mtry = .preds(), trees = 1000) %>%
   )
 #> parsnip model object
 #> 
-#> Fit time:  3.5s 
+#> Fit time:  3.7s 
 #> Ranger result
 #> 
 #> Call:
@@ -220,22 +227,26 @@ rand_forest(mode = "regression", mtry = .preds(), trees = 1000) %>%
 #> 
 #> Type:                             Regression 
 #> Number of trees:                  1000 
-#> Sample size:                      2199 
+#> Sample size:                      2197 
 #> Number of independent variables:  5 
 #> Mtry:                             5 
 #> Target node size:                 5 
 #> Variable importance mode:         none 
 #> Splitrule:                        variance 
-#> OOB prediction error (MSE):       0.00868 
-#> R squared (OOB):                  0.728
+#> OOB prediction error (MSE):       0.00867 
+#> R squared (OOB):                  0.718
 ```
 
 
-## Regularized regression
+## Regularized 회귀
 
-A linear model might work for this data set as well. We can use the `linear_reg()` parsnip model. There are two engines that can perform regularization/penalization, the glmnet and sparklyr packages. Let's use the former here. The glmnet package only implements a non-formula method, but parsnip will allow either one to be used. 
+선형 모델도 이 데이터셋에 잘 맞아 들어갈 것입니다. 
+`linear_reg()` parsnip 모델을 사용할 수 있습니다.
+regularization/penalization 을 수행할 수 있는 두 개의 엔진, glmnet 과 sparklyr 패키지가 있습니다. 
+전자를 사용해 봅시다. 
+glmnet 패키지는 비공식(non-formula) 방법만 구현하지만 parsnip 은 공식, 비공식 방법 모두 사용할 수 있게 합니다. 
 
-When regularization is used, the predictors should first be centered and scaled before being passed to the model. The formula method won't do that automatically so we will need to do this ourselves. We'll use the [recipes](https://tidymodels.github.io/recipes/) package for these steps. 
+regularization 이 사용될 때, 설명변수는 모델에 전달되기 전, 우선 센터링되고 스케일링 되어야 합니다. 공식 방법은 자동으로 이를 수행해주지 않으므로, 직접 해야합니다. 이러한 단계를 위해 [recipes](https://tidymodels.github.io/recipes/) 패키지를 사용할 것입니다.
 
 
 ```r
@@ -261,81 +272,80 @@ glmn_fit <-
 glmn_fit
 #> parsnip model object
 #> 
-#> Fit time:  8ms 
+#> Fit time:  11ms 
 #> 
 #> Call:  glmnet::glmnet(x = maybe_matrix(x), y = y, family = "gaussian",      alpha = ~0.5) 
 #> 
 #>    Df %Dev Lambda
-#> 1   0  0.0 0.1370
-#> 2   1  1.9 0.1250
-#> 3   1  3.5 0.1140
-#> 4   1  5.0 0.1040
-#> 5   2  6.8 0.0946
-#> 6   4  9.3 0.0862
-#> 7   5 12.5 0.0785
-#> 8   5 15.3 0.0716
-#> 9   7 18.4 0.0652
-#> 10  7 21.4 0.0594
-#> 11  7 24.0 0.0541
-#> 12  8 26.2 0.0493
-#> 13  8 28.6 0.0449
-#> 14  8 30.6 0.0409
-#> 15  8 32.3 0.0373
-#> 16  8 33.8 0.0340
-#> 17  8 35.0 0.0310
-#> 18  8 36.1 0.0282
-#> 19  9 37.0 0.0257
-#> 20  9 37.9 0.0234
-#> 21  9 38.6 0.0213
-#> 22  9 39.2 0.0195
-#> 23  9 39.7 0.0177
-#> 24  9 40.1 0.0161
-#> 25  9 40.5 0.0147
-#> 26  9 40.8 0.0134
-#> 27 10 41.0 0.0122
-#> 28 11 41.3 0.0111
-#> 29 11 41.5 0.0101
-#> 30 11 41.7 0.0092
-#> 31 12 41.8 0.0084
-#> 32 12 42.0 0.0077
-#> 33 12 42.1 0.0070
-#> 34 12 42.2 0.0064
-#> 35 12 42.3 0.0058
-#> 36 12 42.4 0.0053
-#> 37 12 42.4 0.0048
-#> 38 12 42.5 0.0044
-#> 39 12 42.5 0.0040
-#> 40 12 42.5 0.0036
-#> 41 12 42.6 0.0033
-#> 42 12 42.6 0.0030
-#> 43 12 42.6 0.0028
-#> 44 12 42.6 0.0025
-#> 45 12 42.6 0.0023
-#> 46 12 42.6 0.0021
-#> 47 12 42.7 0.0019
-#> 48 12 42.7 0.0017
-#> 49 12 42.7 0.0016
-#> 50 12 42.7 0.0014
-#> 51 12 42.7 0.0013
-#> 52 12 42.7 0.0012
-#> 53 12 42.7 0.0011
-#> 54 12 42.7 0.0010
-#> 55 12 42.7 0.0009
-#> 56 12 42.7 0.0008
-#> 57 12 42.7 0.0008
-#> 58 12 42.7 0.0007
-#> 59 12 42.7 0.0006
-#> 60 12 42.7 0.0006
-#> 61 12 42.7 0.0005
-#> 62 12 42.7 0.0005
-#> 63 12 42.7 0.0004
-#> 64 12 42.7 0.0004
-#> 65 12 42.7 0.0004
+#> 1   0  0.0 0.1380
+#> 2   1  2.0 0.1260
+#> 3   1  3.7 0.1150
+#> 4   1  5.3 0.1050
+#> 5   2  7.1 0.0953
+#> 6   3  9.6 0.0869
+#> 7   4 12.6 0.0791
+#> 8   5 15.4 0.0721
+#> 9   5 17.9 0.0657
+#> 10  7 20.8 0.0599
+#> 11  7 23.5 0.0545
+#> 12  7 25.8 0.0497
+#> 13  8 28.2 0.0453
+#> 14  8 30.3 0.0413
+#> 15  8 32.1 0.0376
+#> 16  8 33.7 0.0343
+#> 17  8 35.0 0.0312
+#> 18  8 36.1 0.0284
+#> 19  8 37.0 0.0259
+#> 20  9 37.9 0.0236
+#> 21  9 38.6 0.0215
+#> 22  9 39.3 0.0196
+#> 23  9 39.8 0.0179
+#> 24  9 40.3 0.0163
+#> 25 10 40.7 0.0148
+#> 26 11 41.1 0.0135
+#> 27 11 41.4 0.0123
+#> 28 11 41.6 0.0112
+#> 29 11 41.9 0.0102
+#> 30 12 42.1 0.0093
+#> 31 12 42.3 0.0085
+#> 32 12 42.4 0.0077
+#> 33 12 42.6 0.0070
+#> 34 12 42.7 0.0064
+#> 35 12 42.8 0.0059
+#> 36 12 42.8 0.0053
+#> 37 12 42.9 0.0049
+#> 38 12 43.0 0.0044
+#> 39 12 43.0 0.0040
+#> 40 12 43.0 0.0037
+#> 41 12 43.1 0.0034
+#> 42 12 43.1 0.0031
+#> 43 12 43.1 0.0028
+#> 44 12 43.1 0.0025
+#> 45 12 43.1 0.0023
+#> 46 12 43.2 0.0021
+#> 47 12 43.2 0.0019
+#> 48 12 43.2 0.0018
+#> 49 12 43.2 0.0016
+#> 50 12 43.2 0.0014
+#> 51 12 43.2 0.0013
+#> 52 12 43.2 0.0012
+#> 53 12 43.2 0.0011
+#> 54 12 43.2 0.0010
+#> 55 12 43.2 0.0009
+#> 56 12 43.2 0.0008
+#> 57 12 43.2 0.0008
+#> 58 12 43.2 0.0007
+#> 59 12 43.2 0.0006
+#> 60 12 43.2 0.0006
+#> 61 12 43.2 0.0005
+#> 62 12 43.2 0.0005
+#> 63 12 43.2 0.0004
+#> 64 12 43.2 0.0004
+#> 65 12 43.2 0.0004
 ```
 
-If `penalty` were not specified, all of the `lambda` values would be computed. 
-
-To get the predictions for this specific value of `lambda` (aka `penalty`):
+`penalty` 가 설정되지 않으면 모든 `lambda` 값이 계산될 것입니다. 
+특정 `lambda` (aka `penalty`) 값에 대한 예측값을 얻으려면:
 
 
 ```r
@@ -350,28 +360,28 @@ test_results <-
       rename(glmnet = .pred)
   )
 test_results
-#> # A tibble: 731 x 3
+#> # A tibble: 733 × 3
 #>    Sale_Price `random forest` glmnet
 #>         <dbl>           <dbl>  <dbl>
-#>  1       5.33            5.22   5.27
-#>  2       5.02            5.21   5.17
-#>  3       5.27            5.25   5.23
-#>  4       5.60            5.51   5.25
-#>  5       5.28            5.24   5.25
-#>  6       5.17            5.19   5.19
-#>  7       5.02            4.97   5.19
-#>  8       5.46            5.50   5.49
-#>  9       5.44            5.46   5.48
-#> 10       5.33            5.50   5.47
-#> # … with 721 more rows
+#>  1       5.39            5.25   5.16
+#>  2       5.28            5.29   5.27
+#>  3       5.23            5.26   5.24
+#>  4       5.21            5.30   5.24
+#>  5       5.60            5.51   5.24
+#>  6       5.32            5.29   5.26
+#>  7       5.17            5.14   5.18
+#>  8       5.06            5.13   5.17
+#>  9       4.98            5.01   5.18
+#> 10       5.11            5.14   5.19
+#> # … with 723 more rows
 
 test_results %>% metrics(truth = Sale_Price, estimate = glmnet) 
-#> # A tibble: 3 x 3
+#> # A tibble: 3 × 3
 #>   .metric .estimator .estimate
 #>   <chr>   <chr>          <dbl>
-#> 1 rmse    standard      0.132 
-#> 2 rsq     standard      0.410 
-#> 3 mae     standard      0.0956
+#> 1 rmse    standard      0.142 
+#> 2 rsq     standard      0.391 
+#> 3 mae     standard      0.0979
 
 test_results %>% 
   gather(model, prediction, -Sale_Price) %>% 
@@ -384,45 +394,50 @@ test_results %>%
 
 <img src="figs/glmn-pred-1.svg" width="672" />
 
-This final plot compares the performance of the random forest and regularized regression models.
+마지막 플롯에서 랜덤포레스트와 regularized 회귀모델의 성능을 비교합니다.
 
-## Session information
+## 세션정보
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-17                  
+#> ─ Session info  🩸  🤝  👨🏽‍🔬   ───────────────────────────────────────
+#>  hash: drop of blood, handshake, man scientist: medium skin tone
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package      * version date       lib source        
-#>  broom        * 0.7.3   2020-12-16 [1] CRAN (R 4.0.3)
-#>  dials        * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr        * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2      * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  glmnet       * 4.0-2   2020-06-16 [1] CRAN (R 4.0.0)
-#>  infer        * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  parsnip      * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  randomForest * 4.6-14  2018-03-25 [1] CRAN (R 4.0.0)
-#>  ranger       * 0.12.1  2020-01-10 [1] CRAN (R 4.0.0)
-#>  recipes      * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang          0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample      * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble       * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels   * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune         * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows    * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick    * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-11
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package      * version date (UTC) lib source
+#>  broom        * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials        * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  glmnet       * 4.1-3   2021-11-02 [1] CRAN (R 4.1.0)
+#>  infer        * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip      * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  randomForest * 4.6-14  2018-03-25 [1] CRAN (R 4.1.0)
+#>  ranger       * 0.13.1  2021-07-14 [1] CRAN (R 4.1.0)
+#>  recipes      * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang          0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample      * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble       * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels   * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune         * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows    * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick    * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  

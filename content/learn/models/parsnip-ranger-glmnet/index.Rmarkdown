@@ -56,22 +56,22 @@ ames_test  <- testing(data_split)
 
 ## 랜덤 포레스트
 
-랜덤포레스트를 파라미터 셋으로 적합하는 것부터 시작할 것입니다 
-We'll start by fitting a random forest model to a small set of parameters. Let's create a model with the predictors `r knitr::combine_words(pred_names)` 개의 . A simple random forest model can be specified via:
+랜덤포레스트를 파라미터 셋으로 적합하는 것부터 시작할 것입니다. 
+`r knitr::combine_words(pred_names)` 개의 설명변수가 있는 모델을 생성합시다. 간단한 랜덤 포레스트 모델은 다음과 같이 설정할 수 있습니다:
 
 ```{r rf-basic}
 rf_defaults <- rand_forest(mode = "regression")
 rf_defaults
 ```
 
-The model will be fit with the ranger package by default. Since we didn't add any extra arguments to `fit`, _many_ of the arguments will be set to their defaults from the function  `ranger::ranger()`. The help pages for the model function describe the default parameters and you can also use the `translate()` function to check out such details. 
+이 모델은 레인저 패키지 기본값으로 적합될 것입니다. `fit` 에 추가 인수를 넣지 않았기 때문에, _많은_ 인수들이 `ranger::ranger()` 함수로 부터 기본값으로 설정될 것입니다. 모델 함수의 도움말 페이지에서는 기본값 파라미터들을 기술하고 `translate()` 함수를 사용하여 이에 관한 세부사항을 확인할 수 있습니다. 
 
-The parsnip package provides two different interfaces to fit a model: 
+parsnip 패키지에는 모델을 적합하는 두가지 다른 인터페이스가 있습니다: 
 
-- the formula interface (`fit()`), and
-- the non-formula interface (`fit_xy()`).
+- 공식(formula) 인터페이스 (`fit()`)
+- 비공식 (non-formula) 인터페이스 (`fit_xy()`).
 
-Let's start with the non-formula interface:
+비공식 인터페이스부터 시작해봅니다:
 
 
 ```{r rf-basic-xy}
@@ -88,9 +88,9 @@ rf_xy_fit <-
 rf_xy_fit
 ```
 
-The non-formula interface doesn't do anything to the predictors before passing them to the underlying model function. This particular model does _not_ require indicator variables (sometimes called "dummy variables") to be created prior to fitting the model. Note that the output shows "Number of independent variables:  5".
+비공식 인터페이스는 설명변수를 모델 함수에 전달하기 전에 설명변수에는 아무 것도 하지 않습니다. 이 특별한 모델은 indicator 변수 (때로 "더미변수" 로 불림) 를 모델 적합 전에 생성할 필요가 _없습니다._ 출력에서 "Number of independent variables: 5" 를 나타냈습니다.
 
-For regression models, we can use the basic `predict()` method, which returns a tibble with a column named `.pred`:
+회귀 모델에서 우리는 기본 `predict()` 방법을 사용할 수 있는데, 이는 `.pred` 라고 명명된 하나의 열이 있는 티블을 반환합니다.
 
 ```{r rf-basic-xy-pred}
 test_results <- 
@@ -106,12 +106,12 @@ test_results %>% slice(1:5)
 test_results %>% metrics(truth = Sale_Price, estimate = .pred) 
 ```
 
-Note that: 
+주의할 사항은: 
 
- * If the model required indicator variables, we would have to create them manually prior to using `fit()` (perhaps using the recipes package).
- * We had to manually log the outcome prior to modeling. 
+ * 모델이 indicator 변수들을 필요로 했다면, 이들을 `fit()` 을 사용하기 전에 수동으로 생성해야할 것입니다. (recipes 패키지를 사용하던지 해서)
+ * 모델링 전에 출력을 수동으로 로그했어야 합니다.
 
-Now, for illustration, let's use the formula method using some new parameter values:
+이제 새로운 파라미터 값들을 사용하여 공식 방법을 사용하는 것을 배워봅시다:
 
 ```{r rf-basic-form}
 rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
@@ -122,7 +122,9 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
   )
 ```
  
-Suppose that we would like to use the randomForest package instead of ranger. To do so, the only part of the syntax that needs to change is the `set_engine()` argument:
+
+ranger 대신 randomForest 패키지를 사용하고 싶다고 가정해 봅시다. 
+공식에서 바뀌어야 하는 유일한 부분은 `set_engine()` 인수입니다:
 
 
 ```{r rf-rf}
@@ -134,20 +136,21 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
   )
 ```
 
-Look at the formula code that was printed out; one function uses the argument name `ntree` and the other uses `num.trees`. The parsnip models don't require you to know the specific names of the main arguments. 
+프린트된 공식 코드 를 살펴봅시다; 첫번째 함수는 인수 이름 `ntree` 를 사용하고, 다른 함수는 `num.trees` 를 사용합니다. parsnip 모델들은 주 인수의 구체적인 이름들을 몰라도 됩니다. 
 
-Now suppose that we want to modify the value of `mtry` based on the number of predictors in the data. Usually, a good default value is `floor(sqrt(num_predictors))` but a pure bagging model requires an `mtry` value equal to the total number of parameters. There may be cases where you may not know how many predictors are going to be present when the model will be fit (perhaps due to the generation of indicator variables or a variable filter) so this might be difficult to know exactly ahead of time when you write your code. 
+`mtry` 값을 데이터의 설명변수의 개수에 기반하여 수정하고 싶다고 가정합니다. 일반적으로, 좋은 기본값은 `floor(sqrt(num_predictors))` 이지만, 순수한 배깅 모델은 `mtry` 값이 파라미터 전체 숫자와 같기를 요구합니다. 모델이 적합될 때 얼마나 많은 설명변수가 있을 것인지 알 수 없는 경우가 있어서, 코드를 작성하기 전에 정확히 아는 것은 여러울 수 있습니다.
 
-When the model it being fit by parsnip, [_data descriptors_](https://tidymodels.github.io/parsnip/reference/descriptors.html) are made available. These attempt to let you know what you will have available when the model is fit. When a model object is created (say using `rand_forest()`), the values of the arguments that you give it are _immediately evaluated_ unless you delay them. To delay the evaluation of any argument, you can used `rlang::expr()` to make an expression. 
 
-Two relevant data descriptors for our example model are:
+parsnip 이 모델을 적합할 때, [_data descriptors_](https://tidymodels.github.io/parsnip/reference/descriptors.html) 를 사용할 수 있게 됩니다. 이것들은 모델이 적합될 때 어떤 것을 사용할 수 잇는지 알려주려고 합니다. 모델 객체가 생성될 때 (예를 들어 `rand_forest()` 를 사용해서) 제공하는 인수 값들을 delay 하지 않는다면 _즉시 평가됩니다_. 인수평가를 지연시키기 위해서는, `rlang:expr()` 를 사용하여 표현형(expression)을 만들 수 있습니다.
 
- * `.preds()`: the number of predictor _variables_ in the data set that are associated with the predictors **prior to dummy variable creation**.
- * `.cols()`: the number of predictor _columns_ after dummy variables (or other encodings) are created.
+우리 예제 모델이서 관련된 두 개의 데이터 descriptor 는:
 
-Since ranger won't create indicator values, `.preds()` would be appropriate for `mtry` for a bagging model. 
+ * `.preds()`: **더미변수 생성 이전의** 설명변수와 관련있는 데이터셋 내의 설명 _변수_ 의 개수.
+ * `.cols()`: 더미 변수들 (혹은 기타 인코딩)이 생성된 후 설명변수 _열_의 개수.
 
-For example, let's use an expression with the `.preds()` descriptor to fit a bagging model: 
+ranger 는 indicator 값을 생성하지 않기 때문에, `.preds()` 는 배깅모델의 `mtry` 에 적절할 것입니다.
+
+`.preds()` descriptor 가 있는 표현형을 사용하여 배깅 모델을 적합해 봅시다.
 
 ```{r bagged}
 rand_forest(mode = "regression", mtry = .preds(), trees = 1000) %>%
@@ -159,11 +162,15 @@ rand_forest(mode = "regression", mtry = .preds(), trees = 1000) %>%
 ```
 
 
-## Regularized regression
+## Regularized 회귀
 
-A linear model might work for this data set as well. We can use the `linear_reg()` parsnip model. There are two engines that can perform regularization/penalization, the glmnet and sparklyr packages. Let's use the former here. The glmnet package only implements a non-formula method, but parsnip will allow either one to be used. 
+선형 모델도 이 데이터셋에 잘 맞아 들어갈 것입니다. 
+`linear_reg()` parsnip 모델을 사용할 수 있습니다.
+regularization/penalization 을 수행할 수 있는 두 개의 엔진, glmnet 과 sparklyr 패키지가 있습니다. 
+전자를 사용해 봅시다. 
+glmnet 패키지는 비공식(non-formula) 방법만 구현하지만 parsnip 은 공식, 비공식 방법 모두 사용할 수 있게 합니다. 
 
-When regularization is used, the predictors should first be centered and scaled before being passed to the model. The formula method won't do that automatically so we will need to do this ourselves. We'll use the [recipes](https://tidymodels.github.io/recipes/) package for these steps. 
+regularization 이 사용될 때, 설명변수는 모델에 전달되기 전, 우선 센터링되고 스케일링 되어야 합니다. 공식 방법은 자동으로 이를 수행해주지 않으므로, 직접 해야합니다. 이러한 단계를 위해 [recipes](https://tidymodels.github.io/recipes/) 패키지를 사용할 것입니다.
 
 ```{r glmn-form}
 norm_recipe <- 
@@ -188,9 +195,8 @@ glmn_fit <-
 glmn_fit
 ```
 
-If `penalty` were not specified, all of the `lambda` values would be computed. 
-
-To get the predictions for this specific value of `lambda` (aka `penalty`):
+`penalty` 가 설정되지 않으면 모든 `lambda` 값이 계산될 것입니다. 
+특정 `lambda` (aka `penalty`) 값에 대한 예측값을 얻으려면:
 
 ```{r glmn-pred}
 # First, get the processed version of the test set predictors:
@@ -216,9 +222,9 @@ test_results %>%
   coord_fixed()
 ```
 
-This final plot compares the performance of the random forest and regularized regression models.
+마지막 플롯에서 랜덤포레스트와 regularized 회귀모델의 성능을 비교합니다.
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

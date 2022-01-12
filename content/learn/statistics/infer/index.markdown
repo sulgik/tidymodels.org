@@ -37,7 +37,6 @@ tidymodels 패키지 [infer](https://tidymodels.github.io/infer/)는 `tidyverse`
 + `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 귀무 분포(null distribution)를 만듭니다.
 
 이 vignette 에서, infer 에 있는 `gss` 데이터셋을 이용할 것인데, 이는 *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함합니다.
-Throughout this vignette, we make use of `gss`, a data set available in infer containing a sample of 500 observations of 11 variables from the *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함한 . 
 
 
 ```r
@@ -63,11 +62,11 @@ dplyr::glimpse(gss)
 #> $ weight  <dbl> 0.896, 1.083, 0.550, 1.086, 1.083, 1.086, 1.063, 0.478, 1.099,…
 ```
 
-Each row is an individual survey response, containing some basic demographic information on the respondent as well as some additional variables. See `?gss` for more information on the variables included and their source. Note that this data (and our examples on it) are for demonstration purposes only, and will not necessarily provide accurate estimates unless weighted properly. For these examples, let's suppose that this data set is a representative sample of a population we want to learn about: American adults.
+각 행은 개인 조사답변인데, 설무자에 관한 기초 인구통계학정 정보와 추가적인 변수들이 있습니다. 포함된 변수들과 소스에 관한 정보는 `?gss` 로 알아볼 수 있습니다. 이 데이터 (와 이에 관한 우리의 예제) 는 보여주기 위한 목적이고 적절한 가중치가 없다면 정확한 추정값을 꼭 제공한다고 할 수 없습니다. 이 예에서, 이 데이터셋은 우리가 탐구하고자하는 모집단인 미국성인집단을 대표할 수 있는 샘플이라고 가정합시다.
 
-## Specify variables
+## 변수 설정
 
-The `specify()` function can be used to specify which of the variables in the data set you're interested in. If you're only interested in, say, the `age` of the respondents, you might write:
+The `specify()` 함수는 데이터셋에서 어떤 변수에 관심이 있는지를 설정하는데 사용할 수 있습니다. 만약 응답자의 `age` 에만 관심이 있다면, 다음과 같이 작성합니다:
 
 
 ```r
@@ -90,7 +89,8 @@ gss %>%
 #> # … with 490 more rows
 ```
 
-On the front end, the output of `specify()` just looks like it selects off the columns in the dataframe that you've specified. What do we see if we check the class of this object, though?
+
+프론트엔드에서 보면, `specify()` 의 출력은 설정한 데이터프레임의 열들을 콕 찝는 것 처럼 보입니다. 이 객체의 클래스를 확인하고 싶으면 어떻게 할까요?
 
 
 ```r
@@ -100,9 +100,9 @@ gss %>%
 #> [1] "infer"      "tbl_df"     "tbl"        "data.frame"
 ```
 
-We can see that the infer class has been appended on top of the dataframe classes; this new class stores some extra metadata.
+infer 클래스는 데이터프레임 클래스를 바탕으로 추가된 것임을 알 수 있습니다; 이 새로운 클래스는 메타데이터를 추가로 저장합니다.
 
-If you're interested in two variables (`age` and `partyid`, for example) you can `specify()` their relationship in one of two (equivalent) ways:
+두 개의 변수 (예를 들어 `age` 와 `partyid`) 에 관심이 있다면 이들의 관계를 두 방법 중 하나의 방법으로 설정(`specify()`)할 수 있습니다:
 
 
 ```r
@@ -147,7 +147,7 @@ gss %>%
 #> # … with 490 more rows
 ```
 
-If you're doing inference on one proportion or a difference in proportions, you will need to use the `success` argument to specify which level of your `response` variable is a success. For instance, if you're interested in the proportion of the population with a college degree, you might use the following code:
+비율이나 비율의 차에 관한 추론을 하고 있다면, `success` 인수를 사용하여 `response` 변수의 어떤 수준이 성공(success) 인지 설정해야 합니다. 예를 들어, 대학 학위가 있는 모집단의 비율에 관심이 있다면, 다음 코드를 이용할 수 있습니다: 
 
 
 ```r
@@ -171,9 +171,9 @@ gss %>%
 #> # … with 490 more rows
 ```
 
-## Declare the hypothesis
+## 가설 선언
 
-The next step in the infer pipeline is often to declare a null hypothesis using `hypothesize()`. The first step is to supply one of "independence" or "point" to the `null` argument. If your null hypothesis assumes independence between two variables, then this is all you need to supply to `hypothesize()`:
+추론 파이프라인에서 다음 과정은 종종 `hypothesize()` 을 이용한 귀무가설 선언입니다. 첫번째 단계는 `null` "independence" 나 "point" 중 하나를 `null` 인수에 제공하는 것입니다. 귀무가설이 두 변수간 독립을 가정한다면, `hypothesize()` 에 제공해야하는 것은 이것으로 족합니다:
 
 
 ```r
@@ -199,7 +199,7 @@ gss %>%
 #> # … with 490 more rows
 ```
 
-If you're doing inference on a point estimate, you will also need to provide one of `p` (the true proportion of successes, between 0 and 1), `mu` (the true mean), `med` (the true median), or `sigma` (the true standard deviation). For instance, if the null hypothesis is that the mean number of hours worked per week in our population is 40, we would write:
+점 추정에 관한 추론을 하고 있다면, `p` (the true proportion of successes, between 0 and 1), `mu` (the true mean), `med` (the true median), `sigma` (the true standard deviation) 중 하나도 제공해야 합니다. 예를 들어, 귀무가설이 모집단에서 주당근무시간이 40 이다 이면 다음과 같이 작성합니다:
 
 
 ```r
@@ -224,9 +224,9 @@ gss %>%
 #> # … with 490 more rows
 ```
 
-Again, from the front-end, the dataframe outputted from `hypothesize()` looks almost exactly the same as it did when it came out of `specify()`, but infer now "knows" your null hypothesis.
+프론트엔드에서 `hypothesize()` 출력 데이터프레임은 `specify()` 에서 나왔을 때와 거의 같은 것 같지만, infer 는 지금 당신의 귀무가설을 "알고있습니다".
 
-## Generate the distribution
+## 분포 생성하기
 
 Once we've asserted our null hypothesis using `hypothesize()`, we can construct a null distribution based on this hypothesis. We can do this using one of several methods, supplied in the `type` argument:
 
@@ -248,20 +248,21 @@ gss %>%
 #> # Groups:   replicate [5,000]
 #>    replicate hours
 #>        <int> <dbl>
-#>  1         1  45.6
-#>  2         1  38.6
-#>  3         1  46.6
-#>  4         1  58.6
-#>  5         1  38.6
-#>  6         1  38.6
-#>  7         1  38.6
-#>  8         1  38.6
-#>  9         1  23.6
-#> 10         1  38.6
+#>  1         1 18.6 
+#>  2         1 18.6 
+#>  3         1 38.6 
+#>  4         1 33.6 
+#>  5         1 28.6 
+#>  6         1 38.6 
+#>  7         1 38.6 
+#>  8         1  8.62
+#>  9         1 54.6 
+#> 10         1 38.6 
 #> # … with 2,499,990 more rows
 ```
 
-In the above example, we take 5000 bootstrap samples to form our null distribution.
+위 예에서, 귀무 가설을 형성하기 위해 5000 개의 부트스트랩 샘플을 취합니다.
+
 
 To generate a null distribution for the independence of two variables, we could also randomly reshuffle the pairings of explanatory and response variables to break any existing association. For instance, to generate 5000 replicates that can be used to create a null distribution under the assumption that political party affiliation is not affected by age:
 
@@ -280,14 +281,14 @@ gss %>%
 #>    <fct>   <dbl>     <int>
 #>  1 ind        36         1
 #>  2 ind        34         1
-#>  3 rep        24         1
+#>  3 ind        24         1
 #>  4 ind        42         1
-#>  5 rep        31         1
+#>  5 ind        31         1
 #>  6 ind        32         1
-#>  7 rep        48         1
-#>  8 rep        36         1
-#>  9 dem        30         1
-#> 10 ind        33         1
+#>  7 dem        48         1
+#>  8 ind        36         1
+#>  9 other      30         1
+#> 10 dem        33         1
 #> # … with 2,499,990 more rows
 ```
 
@@ -308,15 +309,15 @@ gss %>%
 #>    replicate  stat
 #>        <int> <dbl>
 #>  1         1  39.8
-#>  2         2  40.9
-#>  3         3  40.6
-#>  4         4  40.1
-#>  5         5  39.3
-#>  6         6  39.8
-#>  7         7  40.8
-#>  8         8  40.3
-#>  9         9  40.1
-#> 10        10  41.3
+#>  2         2  40.2
+#>  3         3  40.7
+#>  4         4  39.3
+#>  5         5  40.8
+#>  6         6  40.6
+#>  7         7  39.5
+#>  8         8  39.4
+#>  9         9  40.2
+#> 10        10  41.8
 #> # … with 4,990 more rows
 ```
 
@@ -333,18 +334,18 @@ gss %>%
 #> Explanatory: college (factor)
 #> Null Hypothesis: independence
 #> # A tibble: 5,000 × 2
-#>    replicate   stat
-#>        <int>  <dbl>
-#>  1         1 -1.81 
-#>  2         2 -0.655
-#>  3         3 -0.540
-#>  4         4 -2.18 
-#>  5         5 -0.664
-#>  6         6  2.54 
-#>  7         7  0.535
-#>  8         8  0.447
-#>  9         9 -1.53 
-#> 10        10  3.60 
+#>    replicate    stat
+#>        <int>   <dbl>
+#>  1         1  2.51  
+#>  2         2 -2.24  
+#>  3         3  2.26  
+#>  4         4  0.897 
+#>  5         5  2.98  
+#>  6         6 -0.0113
+#>  7         7 -0.144 
+#>  8         8  1.71  
+#>  9         9  2.42  
+#> 10        10  0.0504
 #> # … with 4,990 more rows
 ```
 
@@ -406,7 +407,7 @@ p_value
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0372
+#> 1  0.0368
 ```
 
 It looks like the p-value is 0.037, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.037. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
@@ -492,36 +493,41 @@ That's it! This vignette covers most all of the key functionality of infer. See 
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2022-01-11                  
+#> ─ Session info  👣  👷🏿  👨🏼‍🦳   ───────────────────────────────────────
+#>  hash: footprints, construction worker: dark skin tone, man: medium-light skin tone, white hair
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.1 (2021-08-10)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-01-12
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  

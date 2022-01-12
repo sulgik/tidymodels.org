@@ -59,14 +59,15 @@ dplyr::glimpse(gss)
 
 ## 변수 설정
 
-The `specify()` function can be used to specify which of the variables in the data set you're interested in. If you're only interested in, say, the `age` of the respondents, you might write:
+The `specify()` 함수는 데이터셋에서 어떤 변수에 관심이 있는지를 설정하는데 사용할 수 있습니다. 만약 응답자의 `age` 에만 관심이 있다면, 다음과 같이 작성합니다:
 
 ```{r specify-example, warning = FALSE, message = FALSE}
 gss %>%
   specify(response = age)
 ```
 
-On the front end, the output of `specify()` just looks like it selects off the columns in the dataframe that you've specified. What do we see if we check the class of this object, though?
+
+프론트엔드에서 보면, `specify()` 의 출력은 설정한 데이터프레임의 열들을 콕 찝는 것 처럼 보입니다. 이 객체의 클래스를 확인하고 싶으면 어떻게 할까요?
 
 ```{r specify-one, warning = FALSE, message = FALSE}
 gss %>%
@@ -74,9 +75,9 @@ gss %>%
   class()
 ```
 
-We can see that the infer class has been appended on top of the dataframe classes; this new class stores some extra metadata.
+infer 클래스는 데이터프레임 클래스를 바탕으로 추가된 것임을 알 수 있습니다; 이 새로운 클래스는 메타데이터를 추가로 저장합니다.
 
-If you're interested in two variables (`age` and `partyid`, for example) you can `specify()` their relationship in one of two (equivalent) ways:
+두 개의 변수 (예를 들어 `age` 와 `partyid`) 에 관심이 있다면 이들의 관계를 두 방법 중 하나의 방법으로 설정(`specify()`)할 수 있습니다:
 
 ```{r specify-two, warning = FALSE, message = FALSE}
 # as a formula
@@ -88,7 +89,7 @@ gss %>%
   specify(response = age, explanatory = partyid)
 ```
 
-If you're doing inference on one proportion or a difference in proportions, you will need to use the `success` argument to specify which level of your `response` variable is a success. For instance, if you're interested in the proportion of the population with a college degree, you might use the following code:
+비율이나 비율의 차에 관한 추론을 하고 있다면, `success` 인수를 사용하여 `response` 변수의 어떤 수준이 성공(success) 인지 설정해야 합니다. 예를 들어, 대학 학위가 있는 모집단의 비율에 관심이 있다면, 다음 코드를 이용할 수 있습니다: 
 
 ```{r specify-success, warning = FALSE, message = FALSE}
 # specifying for inference on proportions
@@ -96,9 +97,9 @@ gss %>%
   specify(response = college, success = "degree")
 ```
 
-## Declare the hypothesis
+## 가설 선언
 
-The next step in the infer pipeline is often to declare a null hypothesis using `hypothesize()`. The first step is to supply one of "independence" or "point" to the `null` argument. If your null hypothesis assumes independence between two variables, then this is all you need to supply to `hypothesize()`:
+추론 파이프라인에서 다음 과정은 종종 `hypothesize()` 을 이용한 귀무가설 선언입니다. 첫번째 단계는 `null` "independence" 나 "point" 중 하나를 `null` 인수에 제공하는 것입니다. 귀무가설이 두 변수간 독립을 가정한다면, `hypothesize()` 에 제공해야하는 것은 이것으로 족합니다:
 
 ```{r hypothesize-independence, warning = FALSE, message = FALSE}
 gss %>%
@@ -106,7 +107,7 @@ gss %>%
   hypothesize(null = "independence")
 ```
 
-If you're doing inference on a point estimate, you will also need to provide one of `p` (the true proportion of successes, between 0 and 1), `mu` (the true mean), `med` (the true median), or `sigma` (the true standard deviation). For instance, if the null hypothesis is that the mean number of hours worked per week in our population is 40, we would write:
+점 추정에 관한 추론을 하고 있다면, `p` (the true proportion of successes, between 0 and 1), `mu` (the true mean), `med` (the true median), `sigma` (the true standard deviation) 중 하나도 제공해야 합니다. 예를 들어, 귀무가설이 모집단에서 주당근무시간이 40 이다 이면 다음과 같이 작성합니다:
 
 ```{r hypothesize-40-hr-week, warning = FALSE, message = FALSE}
 gss %>%
@@ -114,9 +115,9 @@ gss %>%
   hypothesize(null = "point", mu = 40)
 ```
 
-Again, from the front-end, the dataframe outputted from `hypothesize()` looks almost exactly the same as it did when it came out of `specify()`, but infer now "knows" your null hypothesis.
+프론트엔드에서 `hypothesize()` 출력 데이터프레임은 `specify()` 에서 나왔을 때와 거의 같은 것 같지만, infer 는 지금 당신의 귀무가설을 "알고있습니다".
 
-## Generate the distribution
+## 분포 생성하기
 
 Once we've asserted our null hypothesis using `hypothesize()`, we can construct a null distribution based on this hypothesis. We can do this using one of several methods, supplied in the `type` argument:
 
@@ -133,7 +134,8 @@ gss %>%
   generate(reps = 5000, type = "bootstrap")
 ```
 
-In the above example, we take 5000 bootstrap samples to form our null distribution.
+위 예에서, 귀무 가설을 형성하기 위해 5000 개의 부트스트랩 샘플을 취합니다.
+
 
 To generate a null distribution for the independence of two variables, we could also randomly reshuffle the pairings of explanatory and response variables to break any existing association. For instance, to generate 5000 replicates that can be used to create a null distribution under the assumption that political party affiliation is not affected by age:
 
