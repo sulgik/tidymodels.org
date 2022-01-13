@@ -5,7 +5,7 @@ categories: [model fitting]
 type: learn-subsection
 weight: 1
 description: | 
-  다른 연산 엔전을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
+  다른 연산엔진을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
 ---
 
 
@@ -80,7 +80,7 @@ rf_xy_fit <-
 rf_xy_fit
 #> parsnip model object
 #> 
-#> Fit time:  1s 
+#> Fit time:  949ms 
 #> Ranger result
 #> 
 #> Call:
@@ -181,7 +181,7 @@ rand_forest(mode = "regression", mtry = 3, trees = 1000) %>%
   )
 #> parsnip model object
 #> 
-#> Fit time:  7.7s 
+#> Fit time:  7.5s 
 #> 
 #> Call:
 #>  randomForest(x = maybe_data_frame(x), y = y, ntree = ~1000, mtry = min_cols(~3,      x)) 
@@ -219,7 +219,7 @@ rand_forest(mode = "regression", mtry = .preds(), trees = 1000) %>%
   )
 #> parsnip model object
 #> 
-#> Fit time:  3.7s 
+#> Fit time:  3.6s 
 #> Ranger result
 #> 
 #> Call:
@@ -272,7 +272,7 @@ glmn_fit <-
 glmn_fit
 #> parsnip model object
 #> 
-#> Fit time:  11ms 
+#> Fit time:  10ms 
 #> 
 #> Call:  glmnet::glmnet(x = maybe_matrix(x), y = y, family = "gaussian",      alpha = ~0.5) 
 #> 
@@ -400,11 +400,11 @@ test_results %>%
 
 
 ```
-#> ─ Session info  🩸  🤝  👨🏽‍🔬   ───────────────────────────────────────
-#>  hash: drop of blood, handshake, man scientist: medium skin tone
+#> ─ Session info  👩🏼‍🦰  🚄  🤙🏻   ───────────────────────────────────────
+#>  hash: woman: medium-light skin tone, red hair, high-speed train, call me hand: light skin tone
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -412,7 +412,7 @@ test_results %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-11
+#>  date     2022-01-13
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ categories: [model fitting]
 type: learn-subsection
 weight: 1
 description: | 
-  다른 연산 엔전을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
+  다른 연산엔진을 가진 다른 종류의 회귀 모형을 생성하고 훈련시키기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}

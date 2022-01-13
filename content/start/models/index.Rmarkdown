@@ -90,30 +90,30 @@ ggplot(urchins,
 
 ## 모델 구축 및 적합 {#build-model}
 
-이러한 데이터셋에 two way 분산분석 ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) 모델을 사용할 수 있는데, 연속형 설명변수와 명목형 설명변수가 있기 때문입니다. 직선의 기울기가 적어도 두 개 이상의 사육법에 대해 달라 보이기 때문에, two-way interaction 을 가진 모델을 만들어 봅시다. 다음과 같이 변수들로 R 공식을 선언합니다.
+이러한 데이터셋에 two way 분산분석 ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) 모델을 사용할 수 있는데, 연속형 설명변수와 명목형 설명변수가 있기 때문입니다. 직선의 기울기가 적어도 두 개 이상의 사육법에 대해 달라 보이기 때문에, two-way interaction 을 가진 모델을 만들어 봅시다. 다음과 같이 R 공식을 선언합니다.
 
 ```{r two-way-int, eval = FALSE}
 width ~ initial_volume * food_regime
 ```
 
-initial volume 에 따라 변하는 위의 회귀 모형은 각 사육법에 대해 다른 기울기와 절편을 갖게 됩니다.
+initial volume 에 따라 width 가 변하는 회귀 모형입니다. 사육법에 따라 다른 기울기와 절편을 갖게 됩니다.
 
-이러한 모델에 대해, 처음으로 시도해보기 좋은 방법은 ordinary least squares 입니다. tidymodels 에서 원하는 모델의 _함수포맷_ 을 [parsnip 패키지](https://tidymodels.github.io/parsnip/)를 사용하여 명시합니다. 수치형 출력값이 있고, 모델이 기울기와 절편에 대해 선형이므로, 이러한 모델타잎은 ["linear regression"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 이를 다음과 같이 선언합니다: 
+이러한 모델에 대해, 첫단계로 ordinary least squares 를 시도해보면 좋습니다. tidymodels 에서 원하는 모델의 _함수포맷_ 을 [parsnip 패키지](https://tidymodels.github.io/parsnip/)를 사용하여 명시합니다. 우리 모델은 출력값이 수치형이고, 모델이 기울기와 절편에 대해 선형입니다. 이러한 모델타잎은 ["linear regression"](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 입니다. 다음과 같이 선언합니다: 
 
 
 ```{r lm-tm}
 linear_reg()
 ```
 
-이는 정작 하는 것이 거의 없기 때문에, 꽤 시시합니다. 하지만, 모델의 유형이 명시되었기 때문에, 이제 **engine** 을 사용하여 _적합_ 이나 훈련을 명시할 수 있습니다. 
-엔진값은 모델을 훈련시키거나 적합하는데 사용되는 소프트웨어와 추정방법의 결합(mash-up)인 경우가 많습니다. 예를 들어, 엔진을 `lm` 으로 두어 ordinary least squares 를 사용합니다:
+이 명령어는 실제로 동작하는 것은 거의 없기 때문에, 좀 시시합니다. 하지만, 모델의 유형이 명시되었기 때문에, 이제 **엔진** 을 사용하여 _적합_ 이나 훈련을 명시할 수 있습니다.
+엔진의 값은 모델을 훈련/적합에 사용되는 소프트웨어와 추정방법의 결합(mash-up)인 경우가 많습니다. 예를 들어, 엔진을 `lm` 으로 두어 ordinary least squares 를 사용합니다:
 
 ```{r lm-spec}
 linear_reg() %>% 
   set_engine("lm")
 ```
 
-[`linear_reg() 문서`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 에는 가능한 엔진들이 나열되어 있습니다. 이 모델 객체를 `lm_mod` 로 저장합니다:
+사용할 수 있는 엔진목록은 [`linear_reg() 문서`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) 에 있습니다. 모델 객체를 `lm_mod` 이름으로 저장합니다:
 
 ```{r}
 lm_mod <- 
@@ -121,7 +121,7 @@ lm_mod <-
   set_engine("lm")
 ```
 
-이제 [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) 함수로 모형을 추정하고 훈련할 수 있습니다:
+이제 [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) 함수로 모형을 추정/훈련합니다:
 
 ```{r lm-fit}
 lm_fit <- 
@@ -130,7 +130,7 @@ lm_fit <-
 lm_fit
 ```
 
-분석 후에 모델 파라미터 추정값과 통계적 특징값들의 정보가 필요하게 됩니다. `lm` 객체에 대한 `summary()` 함수를 사용할 수 있지만, 결과를 복잡한 형태로 제공합니다. 많은 모델에는, 예측한대로 그리고 유용한 형태로 결과를 요약하는 `tidy()` 방법이 있습니다 (예: 표준 열 이름을 가진 데이터프레임):
+모델 파라미터 추정값과 통계적 특징값을 추출해 봅시다. `summary()` 함수를 `lm` 객체에 사용할 수 있지만, 출력되는 형태가 깔끔하지 않습니다. 많은 모델에 사용할 수 있는 `tidy()` 함수는 결과를, 예측한대로 그리고 유용한 형태로 요약하여 제공합니다 (예: 표준 열 이름을 가진 데이터프레임):
 
 ```{r lm-table}
 tidy(lm_fit)
@@ -148,9 +148,9 @@ tidy(lm_fit) %>%
 
 ## 모델을 이용하여 예측하기 {#predict-model}
 
-객체 `lm_fit` 에도 빌트인된 `lm` 모델 출력이 있어, `lm_fit$fit` 으로 접근할 수 있지만, 적합된 parsnip 모델 객체에는 예측에 관련하여 장점 몇 개가 있습니다. 
+객체 `lm_fit` 에도 빌트인된 `lm` 모델 출력이 있어, `lm_fit$fit` 으로 접근할 수 있지만, 적합된 parsnip 모델 객체에는 예측에 있어, 장점이 있습니다. 
 
-예를 들어, 출판을 위해 20ml 의 초기부피로 실험을 시작한 성게들의 평균 성체크기의 플롯을 그리는 것은 특별히 흥미로울 수 있습니다. 이러한 그래프를 그리기 위해, 예측을 할 대상인 새로운 데이터로 시작합니다. 
+예를 들어, 출판을 위해 20ml 의 초기부피로 실험을 시작한 성게들의 평균 성체크기의 플롯을 그리고 싶을 수 있습니다. 이러한 그래프를 그리기 위해, 예측할 대상인 새로운 데이터로 시작합니다. 
 
 ```{r new-points}
 new_points <- expand.grid(initial_volume = 20, 
@@ -158,11 +158,11 @@ new_points <- expand.grid(initial_volume = 20,
 new_points
 ```
 
-예측 결과들을 얻기 위해, `predict()` 함수를 사용하여 20ml 에서 평균값을 구할 수 있습니다.
+`predict()` 함수를 사용하여 20ml 에서 평균값을 계산하여, 예측 결과를 얻을 수 있습니다.
 
-변동성에 대해 잘 전달하는 것도 중요하기 때문에, 예측 신뢰구간을 구할 필요가 있습니다. `lm()` 를 이용하여 모델을 직접 적합했다면, `predict.lm()` 의 [문서 페이지](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/predict.lm.html) 를 몇 분동안 읽으면 어떻게 하는지 알 수 있을 것입니다. 하지만, 성게 크기를 예측하기 위해 다른 모형을 사용하기를 결정했다면 (_스포일러:_ 예정됨), 완전히 다른 문법이 필요할 가능성이 매우 높습니다.
+변동성에 대해 잘 전달하는 것도 중요하기 때문에, 예측 신뢰구간을 구할 필요가 있습니다. `lm()` 으로 모델을 직접 적합했다면, `predict.lm()` 의 [문서 페이지](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/predict.lm.html)에 몇 분을 투자해서, 신뢰구간을 구할 수 있을 것입니다. 하지만, 성게 크기를 예측하기 위해 다른 모형을 사용하기를 결정했다면 ( _스포일러:_ 예정됨), 완전히 다른 문법이 필요할 것입니다.
 
-tidymodels 에서는 예측값들의 타잎이 표준화되기 때문에 이러한 값을 얻기 위해 같은 문법을 사용할 수 있다.
+tidymodels 에서는 예측값들의 타잎이 표준화되기 때문에 동일한 문법을 사용하여 평균과 신뢰구간을 구할 수 있습니다.
 
 우선, 몸통폭 평균값을 만들어 봅시다:
 
@@ -171,7 +171,7 @@ mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
 ```
 
-tidymodels 컨벤션으로 인해 예측값티블이 항상 표준화된 열이름을 가집니다. 이렇게 하면 원 데이터와 예측값을 다시 사용할 수 있는 포맷으로 조합하기 쉬워집니다:
+tidymodels 컨벤션으로 인해 예측값티블의 열이름은 항상 표준화된 이름을 가지게 됩니다. 그 결과로 원데이터와 예측값을 재사용할 수 있는 포맷으로 조합하기 쉬워집니다:
 
 ```{r lm-all-pred}
 conf_int_pred <- predict(lm_fit, 
@@ -196,9 +196,13 @@ ggplot(plot_data, aes(x = food_regime)) +
 
 ## 다른 엔진을 사용한 모델 {#new-engine}
 
-팀원 대부분이 플롯에 만족 _했지만_ [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 그들은 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 관심이 있습니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 논의 끝에, 이 그룹은 prior 가 종모양이지만, 값의 범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 합니다.
+팀원 대부분이 플롯에 만족 _했지만_ [베이지언 분석](https://bayesian.org/what-is-bayesian-analysis/)에 관한 첫번째 책을 읽은 한사람은 그렇지 않았습니다. 모델이 베이지언 방법으로 추정했다면 결과가 달랐을지에 관해 알고 싶어합니다. 이러한 분석에서 [_prior distribution_](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7)이 각 모델 파라미터에 관해 파라미터로 가능한 값들이 (관측 데이터에 노출되기 전에) 선언되어야 합니다. 
+논의 끝에, 이 그룹은 prior 가 종모양이지만, 값범위가 어떻게 되어야 하는지에 관한 아이디어가 아무도 없었기 때문에, 보수적인 방법을 취해서, 코시 분포 (자유도 1인 t-분포와 동일) 를 사용하여 prior 를 _넓게_ 만들기로 합니다.
 
-rstarnarm 패키지에 관한 이 [문서](https://mc-stan.org/rstanarm/articles/priors.html)에는 `stan_glm()` 함수가 이 모델을 추정하는 데 사용할 수 있고, 함수 인수들은 `prior` 와 `prior_intercept` 라고 부른다고 적혀 있습니다. `linear_reg()` 은 stan 엔진이 있다는 것을 알게 되었습니다. 이러한 사전 분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수형태로 전달됩니다. 이후에는, 완전히 같은 호출, `fit()` 을 사용합니다:
+[rstarnarm 패키지문서](https://mc-stan.org/rstanarm/articles/priors.html)에는 이 모델을 추정하는 데 `stan_glm()` 함수를 사용할 수 있고, 인수이름은 `prior` 와 `prior_intercept` 라고 적혀 있습니다. 
+`linear_reg()` 에는 stan 엔진이 있다는 것을 알게 되었습니다. 
+이러한 사전분포 인수들은 Stan 소프트웨어에 특화되기 때문에, [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html) 의 인수형태로 전달됩니다.
+이후에는, 앞에서와 완전히 같은 `fit()` 호출을 사용합니다:
 
 ```{r go-stan, message = FALSE}
 # set the prior distribution
@@ -221,15 +225,15 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 ```
 
-이와 같은 베이지언 분석은 (다른 모델들과 같이) 적합과정에서 숫자를 랜덤하게 생성하는 것이 포함되어 있습니다. `set.seed()` 를 사용하여 이 코드를 실행할 때마다 같은 (pseudo-)랜덤 숫자가 생성되도록 할 수 있습니다. 숫자 `123` 은 특별한 의미가 있거나 우리 데이터와 관련이 있는 것은 아닙니다; 단지 랜덤 숫자를 선택할 때 사용된 "시드" 입니다.
+베이지언 분석의 적합과정 안에는 랜덤숫자를 생성하는 것이 포함되어 있습니다. `set.seed()` 를 사용하여 이 코드를 실행할 때마다 같은 (pseudo-)랜덤 숫자가 생성되도록 할 수 있습니다. 숫자 `123` 은 특별한 의미가 있거나 우리 데이터와 관련이 있는 것은 아닙니다; 단지 랜덤 숫자를 선택할 때 사용된 "시드" 입니다.
 
-파라미터 표를 새로 얻기 위해, 또 한번 `tidy()` 방법을 사용할 수 있습니다:
+파라미터 표를 새로 얻기 위해, `tidy()` 방법을 다시 한번 사용할 수 있습니다:
 
 ```{r tidy-stan}
 tidy(bayes_fit, conf.int = TRUE)
 ```
 
-tidymodels 패키지의 목표는 **공통 작업 인터페이스를 표준화** (위의 `tidy()` 결과에서 보듯이)하는 것입니다. 예측값을 구할 때도 같습니다; 기저의 패키지들이 전혀 다른 문법을 사용하더라도 같은 코드를 사용할 수 있습니다:
+tidymodels 패키지의 목표는 **공통 작업 인터페이스를 표준화** (위의 `tidy()` 결과에서 보듯이)하는 것입니다. 예측값을 구할 때도 같습니다; 내부의 패키지들이 전혀 다른 문법을 사용하더라도 동일한 코드를 사용할 수 있습니다:
 
 ```{r stan-pred}
 bayes_plot_data <- 
@@ -250,7 +254,7 @@ non-Bayesian 결과와 (해석을 제외하면) 매우 다르지는 않습니다
 
 ## 어떤 작동원리를 가진것일까? {#why}
 
-`linear_reg()` 와 같은 함수를 사용하여 모델을 정의하는 단계를 추가하는 것은 필요 없을 것 같은데 `lm()` 을 호출하는 것이 훨씬 간단해 보이기 때문입니다. 하지만, 표준 모델링 함수들이 가진 문제는, 실행하는 것에서 하고 싶은 것을 분리하지 못한다는 것입니다. 예를 들어, 공식을 실행하는 프로세스는 공식이 바뀌지 않았을 때도 모델 호출들을 따라 반복적으로 일어나야 합니다; 이 계산을 재사용할 수 없습니다.
+`linear_reg()` 와 같은 함수를 사용하여 모델을 정의하는 단계를 추가하는 것은 필요 없을 것 같은데 `lm()` 을 호출하는 것이 훨씬 간단해 보이기 때문입니다. 하지만, 표준 모델링 함수들의 문제는, 실행하는 것에서 하고 싶은 것을 분리하지 못한다는 것입니다. 예를 들어, 공식을 실행하는 프로세스는 공식이 바뀌지 않았을 때도 모델 호출들을 따라 반복적으로 일어나야 합니다; 이 계산을 재사용할 수 없습니다.
 
 또한, tidymodels 프레임워크를 사용하면 모델을 점진적으로 생성하면서 (단일 함수 호출을 사용하는 대신) 재미있는 것들을 할 수 있습니다. tidymodels 와 함께 [모델을 튜닝](/start/tuning/)하는 것은 모델 specification 을 사용하여 모델의 어느 부분을 튜닝해야하는지를 선언합니다. 만약 `linear_reg()` 가 즉각 모델을 적합한다면 이 작업을 하는 것은 매우 어렵습니다.
 

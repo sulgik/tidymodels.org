@@ -34,7 +34,7 @@ tidymodels 패키지 [infer](https://tidymodels.github.io/infer/)는 `tidyverse`
 + `specify()` 는 관심있는 변수나 변수 사이의 관계를 설정합니다.
 + `hypothesize()` 는 귀무 가설을 선언합니다.
 + `generate()` 는 귀무가설을 반영하는 데이터를 생성합니다.
-+ `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 귀무 분포(null distribution)를 만듭니다.
++ `calculate()` 는 생성된 데이터로 부터 통계량의 분포를 계산하여 영분포(null distribution)를 만듭니다.
 
 이 vignette 에서, infer 에 있는 `gss` 데이터셋을 이용할 것인데, 이는 *General Social Survey* 의 11 개 변수를 가진 관측값 500 개의 샘플을 포함합니다.
 
@@ -228,13 +228,13 @@ gss %>%
 
 ## 분포 생성하기
 
-Once we've asserted our null hypothesis using `hypothesize()`, we can construct a null distribution based on this hypothesis. We can do this using one of several methods, supplied in the `type` argument:
+`hypothesize()` 를 이용하여 귀무가설을 주장했다면, 이 가설에 기반하여 영분포를 구축할 수 있습니다. `type` 인수에서 제공된, 방법들 몇개 중 하나를 이용하여 이를 할 수 있습니다:
 
-* `bootstrap`: A bootstrap sample will be drawn for each replicate, where a sample of size equal to the input sample size is drawn (with replacement) from the input sample data.  
-* `permute`: For each replicate, each input value will be randomly reassigned (without replacement) to a new output value in the sample.  
-* `simulate`: A value will be sampled from a theoretical distribution with parameters specified in `hypothesize()` for each replicate. (This option is currently only applicable for testing point estimates.)  
+* `bootstrap`: 부트스트랩 샘플은 각 데이터에서 뽑힐 것인데, 각 데이터는 입력 샘플 사이즈와 같은 크기의 샘플을 (복원)샘플된 것입니다.
+* `permute`: 각 데이터에서, 각 입력 값은 샘플의 새로운 아웃풋값으로 (비복원) 랜덤 할당될 것입니다.
+* `simulate`: 값이 각 레프리킷의 `hypothesize()` 에서 설정된 파라미터를 가진 이론적 분포로부터 샘플될 것입니다. (이 옵션은 현재 점추정을 검정할 때만 적용할 수 있습니다.)
 
-Continuing on with our example above, about the average number of hours worked a week, we might write:
+위의 우리 예제로 돌아가서, 주당 평균 근무시간에 관해 다음과 같이 작성할 수 있습니다:
 
 
 ```r
@@ -248,23 +248,22 @@ gss %>%
 #> # Groups:   replicate [5,000]
 #>    replicate hours
 #>        <int> <dbl>
-#>  1         1 18.6 
-#>  2         1 18.6 
-#>  3         1 38.6 
-#>  4         1 33.6 
-#>  5         1 28.6 
-#>  6         1 38.6 
-#>  7         1 38.6 
-#>  8         1  8.62
-#>  9         1 54.6 
-#> 10         1 38.6 
+#>  1         1  38.6
+#>  2         1  33.6
+#>  3         1  38.6
+#>  4         1  35.6
+#>  5         1  53.6
+#>  6         1  38.6
+#>  7         1  38.6
+#>  8         1  28.6
+#>  9         1  38.6
+#> 10         1  48.6
 #> # … with 2,499,990 more rows
 ```
 
 위 예에서, 귀무 가설을 형성하기 위해 5000 개의 부트스트랩 샘플을 취합니다.
 
-
-To generate a null distribution for the independence of two variables, we could also randomly reshuffle the pairings of explanatory and response variables to break any existing association. For instance, to generate 5000 replicates that can be used to create a null distribution under the assumption that political party affiliation is not affected by age:
+두 변수의 독립성에 관한 영분포를 생성하기 위해, 랜덤하게 설명변수와 반응변수의 쌍을 재셔플하여 기존 연관성을 끊어낼 수 있습니다.예를 들어, 소속정당은 나이에 영향을 받지 않는다는 가설 하에서 영분포를 생성 하기 위해 5000 레프리킷을 생성하는 법은:
 
 
 ```r
@@ -280,21 +279,21 @@ gss %>%
 #>    partyid   age replicate
 #>    <fct>   <dbl>     <int>
 #>  1 ind        36         1
-#>  2 ind        34         1
-#>  3 ind        24         1
-#>  4 ind        42         1
-#>  5 ind        31         1
+#>  2 dem        34         1
+#>  3 dem        24         1
+#>  4 rep        42         1
+#>  5 rep        31         1
 #>  6 ind        32         1
-#>  7 dem        48         1
-#>  8 ind        36         1
-#>  9 other      30         1
-#> 10 dem        33         1
+#>  7 ind        48         1
+#>  8 dem        36         1
+#>  9 dem        30         1
+#> 10 ind        33         1
 #> # … with 2,499,990 more rows
 ```
 
-## Calculate statistics
+## 통계량 계산
 
-Depending on whether you're carrying out computation-based inference or theory-based inference, you will either supply `calculate()` with the output of `generate()` or `hypothesize()`, respectively. The function, for one, takes in a `stat` argument, which is currently one of `"mean"`, `"median"`, `"sum"`, `"sd"`, `"prop"`, `"count"`, `"diff in means"`, `"diff in medians"`, `"diff in props"`, `"Chisq"`, `"F"`, `"t"`, `"z"`, `"slope"`, or `"correlation"`. For example, continuing our example above to calculate the null distribution of mean hours worked per week:
+수행하는 추론이 계산기반인지 이론기반인지에 따라 `calculate()` 에게 각각 `generate()` 이거나 `hypothesis()` 를 제공해야할 것입니다. 이 함수들은, `stat` 인수를 입력으로 하는데, 현재 다음 중 하나가 되어야 합니다: `"mean"`, `"median"`, `"sum"`, `"sd"`, `"prop"`, `"count"`, `"diff in means"`, `"diff in medians"`, `"diff in props"`, `"Chisq"`, `"F"`, `"t"`, `"z"`, `"slope"`, `"correlation"`. 예를 들어, 위 예에서, 평균 주간근무시간의 영분포를 계산하는 것은:
 
 
 ```r
@@ -309,19 +308,20 @@ gss %>%
 #>    replicate  stat
 #>        <int> <dbl>
 #>  1         1  39.8
-#>  2         2  40.2
-#>  3         3  40.7
-#>  4         4  39.3
-#>  5         5  40.8
-#>  6         6  40.6
-#>  7         7  39.5
+#>  2         2  40.5
+#>  3         3  39.4
+#>  4         4  40.5
+#>  5         5  39.5
+#>  6         6  40.0
+#>  7         7  38.8
 #>  8         8  39.4
-#>  9         9  40.2
-#> 10        10  41.8
+#>  9         9  38.9
+#> 10        10  39.5
 #> # … with 4,990 more rows
 ```
 
-The output of `calculate()` here shows us the sample statistic (in this case, the mean) for each of our 1000 replicates. If you're carrying out inference on differences in means, medians, or proportions, or `\(t\)` and `\(z\)` statistics, you will need to supply an `order` argument, giving the order in which the explanatory variables should be subtracted. For instance, to find the difference in mean age of those that have a college degree and those that don't, we might write:
+여기에서 `calculate()` 의 출력은 1000 reaplicates 각각에 대해 샘플통계량 (이 경우 평균)을 보여줍니다. 평균, 중앙값, 비율, `\(t\)`, `\(z\)` 통계량에서 차이에 관한 추론을 수행한다면, 어떤 설명변수에서 차이를 봐야하는지에 관한 순서를 나타내는 `order` 인수를 제공해야 합니다. 
+예를들어, 대학학위자와 그렇지 않은 그룹의 평균나이 차이를 알아보기 위해, 다음과 같이 작성합니다:
 
 
 ```r
@@ -334,26 +334,26 @@ gss %>%
 #> Explanatory: college (factor)
 #> Null Hypothesis: independence
 #> # A tibble: 5,000 × 2
-#>    replicate    stat
-#>        <int>   <dbl>
-#>  1         1  2.51  
-#>  2         2 -2.24  
-#>  3         3  2.26  
-#>  4         4  0.897 
-#>  5         5  2.98  
-#>  6         6 -0.0113
-#>  7         7 -0.144 
-#>  8         8  1.71  
-#>  9         9  2.42  
-#> 10        10  0.0504
+#>    replicate   stat
+#>        <int>  <dbl>
+#>  1         1 -0.223
+#>  2         2 -1.30 
+#>  3         3 -0.531
+#>  4         4 -1.09 
+#>  5         5  0.130
+#>  6         6 -0.611
+#>  7         7  1.35 
+#>  8         8  0.288
+#>  9         9  1.22 
+#> 10        10  3.37 
 #> # … with 4,990 more rows
 ```
 
-## Other utilities
+## 기타 도구들
 
-The infer package also offers several utilities to extract meaning out of summary statistics and null distributions; the package provides functions to visualize where a statistic is relative to a distribution (with `visualize()`), calculate p-values (with `get_p_value()`), and calculate confidence intervals (with `get_confidence_interval()`).
+infer 패키지는 요약 통계량과 영 분포 에서 의미를 추출하는 도구들 몇몇을 제공합니다; 이 패키지는 다양한 함수를 제공합니다: 통계량이 분포 중 어디에 있는지를 시각화 (`visualize()`), p-값을 계산 (`get_p_value()`), 신뢰구간을 계산 (`get_confidence_interval()`).
 
-To illustrate, we'll go back to the example of determining whether the mean number of hours worked per week is 40 hours.
+설명을 위해, 주간 평균 근무시간이 40 시간인지 아닌지를 결정하는 예시로 돌아갈 것입니다. 
 
 
 ```r
@@ -370,11 +370,11 @@ null_dist <- gss %>%
   calculate(stat = "mean")
 ```
 
-(Notice the warning: `Removed 1244 rows containing missing values.` This would be worth noting if you were actually carrying out this hypothesis test.)
+(다음의 경고를 주목하세요: `Removed 1244 rows containing missing values.`. 이 가설 검정을 수행하고 있다면 이 경고에 주목할 필요가 있습니다.)
 
-Our point estimate 41.382 seems *pretty* close to 40, but a little bit different. We might wonder if this difference is just due to random chance, or if the mean number of hours worked per week in the population really isn't 40.
+우리 점추정값 41.382 은 *꽤* 40 에 가까워 보이지만, 조금 다릅니다. 이 차이가 우연인지 모집단의 평균 주간 근무시간이 실제는 40 이 아닌지 알고 싶습니다.
 
-We could initially just visualize the null distribution.
+영분포를 한번 시각화해볼 수 있습니다.
 
 
 ```r
@@ -384,7 +384,7 @@ null_dist %>%
 
 <img src="figs/visualize-1.svg" width="672" />
 
-Where does our sample's observed statistic lie on this distribution? We can use the `obs_stat` argument to specify this.
+우리 샘플의 관측통계량이 이 분포 어디에 위치할까요? `obs_stat` 인수를 사용하여 이를 설정할 수 있습니다.
 
 
 ```r
@@ -395,7 +395,7 @@ null_dist %>%
 
 <img src="figs/visualize2-1.svg" width="672" />
 
-Notice that infer has also shaded the regions of the null distribution that are as (or more) extreme than our observed statistic. (Also, note that we now use the `+` operator to apply the `shade_p_value()` function. This is because `visualize()` outputs a plot object from ggplot2 instead of a dataframe, and the `+` operator is needed to add the p-value layer to the plot object.) The red bar looks like it's slightly far out on the right tail of the null distribution, so observing a sample mean of 41.382 hours would be somewhat unlikely if the mean was actually 40 hours. How unlikely, though?
+infer 에서는 우리 관측통계량만큼 (혹은 그 보다 더 극단적인) 영분포의 영역을 색칠했습니다. (또한, `shade_p_value()` 함수를 적용하기 위해 `+` 연산자를 사용합니다.) `visualize()` 는 ggplot2 의 플롯 객체를 데이터프레임 대신 출력하고, p-값 레이어 객체를 플롯객체에 추가하기 위해 `+` 연산자가 필요합니다. 빨간 막대는 영분포의 오른쪽 꼬리에서 약간 떨어져 있는 것 처럼보이기 때문에, 샘플평균값 41.382 시간은 평균이 실제로 40 시간일 가능성이 좀 낮습니다. 그런데 얼마나 낮은걸까요?
 
 
 ```r
@@ -407,10 +407,10 @@ p_value
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0368
+#> 1  0.0364
 ```
 
-It looks like the p-value is 0.037, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.037. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
+It looks like the p-value is 0.036, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.036. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
 
 To get a confidence interval around our estimate, we can write:
 
@@ -427,7 +427,7 @@ null_dist %>%
 #> # A tibble: 1 × 2
 #>   lower_ci upper_ci
 #>      <dbl>    <dbl>
-#> 1     40.1     42.7
+#> 1     40.1     42.6
 ```
 
 As you can see, 40 hours per week is not contained in this interval, which aligns with our previous conclusion that this finding is significant at the confidence level `\(\alpha = .05\)`.
@@ -493,11 +493,11 @@ That's it! This vignette covers most all of the key functionality of infer. See 
 
 
 ```
-#> ─ Session info  👣  👷🏿  👨🏼‍🦳   ───────────────────────────────────────
-#>  hash: footprints, construction worker: dark skin tone, man: medium-light skin tone, white hair
+#> ─ Session info  👌  👨🏻‍✈️  🎠   ───────────────────────────────────────
+#>  hash: OK hand, man pilot: light skin tone, carousel horse
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -505,7 +505,7 @@ That's it! This vignette covers most all of the key functionality of infer. See 
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-12
+#>  date     2022-01-13
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
