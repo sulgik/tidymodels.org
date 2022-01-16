@@ -52,8 +52,6 @@ library(skimr)           # for variable summaries
 
 ## 뉴욕시 항공기 데이터 {#data}
 
-[nycflights13 데이터](https://github.com/hadley/nycflights13)에서 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발한 항공편 `r scales::comma(nrow(flight_data))` 편에 대한 정보가 있습니다. 
-우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 ```{r flight-start, echo=FALSE}
 set.seed(123)
@@ -78,6 +76,9 @@ flight_data <-
   # encoded as factors (instead of character strings)
   mutate_if(is.character, as.factor)
 ```
+
+[nycflights13 데이터](https://github.com/hadley/nycflights13)에서 여객기가 30 분 이상 연착될지를 예측해봅시다. 이 데이터에는 뉴욕시 인근에서 출발한 항공편 `r scales::comma(nrow(flight_data))` 편에 대한 정보가 있습니다. 
+우선 데이터를 로드하고 변수에 수정을 몇 개 합시다.
 
 이 데이터셋의 `r percent(mean(flight_data$arr_delay == "late"))` 에 해당하는 항공편이 30 분보다 더 늦게 도착했다는 것을 볼 수 있습니다.
 
@@ -398,7 +399,8 @@ flights_aug %>%
   roc_auc(truth = arr_delay, .pred_late)
 ```
 
-그리 나쁘지 않네요! 이 레시피를 [*사용하지 않은*](https://workflows.tidymodels.org/reference/add_formula.html) 다음의 워크 플로도 한 번 시도해보길 바랍니다. `workflows::add_formula(arr_delay ~ .)` 를 `add_recipe()` 대신 사용하고 (식별 변수를 먼저 제거하는 걸 잊지 말 것!), 우리의 레시피가 모델의 연착 예측력을 개선했는지 보면 됩니다.
+그리 나쁘지 않네요! 
+이 레시피를 [*사용하지 않은*](https://workflows.tidymodels.org/reference/add_formula.html) 다음의 워크플로도 한 번 시도해보길 바랍니다. `workflows::add_formula(arr_delay ~ .)` 를 `add_recipe()` 대신 사용하고 (식별 변수를 먼저 제거하는 걸 잊지 말 것!), 우리의 레시피가 모델의 연착 예측력을 개선했는지 보면 됩니다.
 
 ```{r}
 set.seed(555)
