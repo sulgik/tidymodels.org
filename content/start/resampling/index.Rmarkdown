@@ -28,7 +28,10 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 ## 들어가기 {#intro}
 
-지금까지 [모델을 만들고](/start/models/) [recipe 로 데이터 전처리](/start/recipes/) 를 하였습니다. 또한 [parsnip 모델](https://tidymodels.github.io/parsnip/) 과 [recipe](https://tidymodels.github.io/recipes/) 을 묶는 방법으로 [ 워크플로](/start/recipes/#fit-workflow) 를 살펴보았습니다. 트레인된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다. 이 튜토리얼에서는 **resampling** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
+지금까지 [모델을 만들고](/start/models/) [레시피로 데이터 전처리](/start/recipes/)를 하였습니다. 
+또한 [parsnip 모델](https://tidymodels.github.io/parsnip/)과 [레시피](https://tidymodels.github.io/recipes/)를 묶는 방법으로 [워크플로](/start/recipes/#fit-workflow)를 살펴보았습니다. 
+훈련된 모델이 있다면, 이 모델이 새로운 데이터에 예측을 얼마나 잘 하는지를 측정할 방법이 필요합니다.
+이 튜토리얼에서는 **리샘플링** 통계량에 기반하여 모델 성능을 정의하는 법을 설명합니다.
 
 `r req_pkgs(pkgs)`
 
@@ -43,14 +46,18 @@ library(modeldata)  # for the cells data
 
 ## 세포 이미지 데이터 {#data}
 
-[modeldata 패키지](https://cran.r-project.org/web/packages/modeldata/index.html) 에 있는 [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340) 데이터를 사용하여, 리샘플링으로 세포 이미지 세그멘테이션 품질을 예측해 봅시다. 이 데이터를 R 에 로드합니다:
+[modeldata 패키지](https://cran.r-project.org/web/packages/modeldata/index.html) 에 있는 [Hill, LaPan, Li, and Haney (2007)](http://www.biomedcentral.com/1471-2105/8/340) 데이터를 사용하여, 리샘플링으로 세포 이미지 세그멘테이션 품질을 예측해 봅시다. 
+이 데이터를 R 에 로드합니다:
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
 cells
 ```
 
-`r nrow(cells)` 개의 세포와 `r ncol(cells)` 개의 변수가 있는 데이터가 있습니다. 여기에서 우리가 관심있는 주 반응변수는 `class` 인데, 팩터형임을 알 수 있습니다. 하지만 `class` 변수 예측을 시작하기에 앞서 이 변수에 대해 더 이해할 필요가 있습니다. 아래는 세포 이미지 세그멘테이션에 대한 간략한 서문입니다.
+`r nrow(cells)` 개의 세포와 `r ncol(cells)` 개의 변수가 있는 데이터가 있습니다. 
+여기에서 우리가 관심있는 주 반응변수는 `class` 인데, 팩터형입니다. 
+하지만 `class` 변수 예측을 시작하기에 앞서 이 변수에 대해 더 이해할 필요가 있습니다. 
+아래는 세포 이미지 세그멘테이션에 대한 간략한 서문입니다.
 
 ### 이미지 세그멘테이션 품질 예측하기
 
@@ -62,9 +69,14 @@ cells
 knitr::include_graphics("img/cells.png")
 ```
 
-이러한 색깔을 이용해서 이미지 안의 세포는 _경계를 잡아 (segmented)_ 서 어떤 픽셀이 어떤 세포에 속하는지 알아낼 수 있습니다. 이 과정이 잘 된다면, 세포가 다양한 방법으로 측정이 되어 생물학 연구에 있어 중요할 수 있습니다. 세포 모양이 중요한 경우가 있어 크기나 "장방형" 같은 특징들을 요약하는데 다양한 수학적 도구가 사용됩니다. 
+이러한 색깔을 이용해서 이미지 안의 세포는 _세그멘트하여 (segmented, 경계를 잡아)_ 어떤 픽셀이 어떤 세포에 속하는지 알아낼 수 있습니다. 
+이 과정이 잘 된다면, 세포가 다양한 방법으로 측정이 되어 생물학 연구에 있어 중요할 수 있습니다. 
+세포 모양이 중요한 경우가 있어 크기나 "장방형" 같은 특징들을 요약하는데 다양한 수학적 도구가 사용됩니다. 
 
-아래 패널은 세그멘테이션 결과를 보여줍니다. 1번과 5번 세포는 꽤 잘 세그멘트되었습니다. 하지만, 3번 4번 세포는 세그멘테이션이 잘 되지 않았기 때문에 뭉쳐져 있습니다. 세그멘테이션이 잘 되지 않으면, 데이터 오염이 됩니다; 생물학자는 이러한 세포의 모양이나 크기를 분석할 때, 데이터가 정확하지 않고 잘못된 결론을 도출하게 됩니다.  
+아래 패널은 세그멘테이션 결과를 보여줍니다. 
+1번과 5번 세포는 꽤 잘 세그멘트되었습니다. 
+하지만, 3번 4번 세포는 세그멘테이션이 잘 되지 않았기 때문에 뭉쳐져 있습니다. 
+세그멘테이션이 잘 되지 않으면, 데이터 오염이 됩니다; 생물학자는 이러한 세포의 모양이나 크기를 분석할 때, 데이터가 정확하지 않고 잘못된 결론을 도출하게 됩니다.
 
 세포 기반 실험은 수백만 세포를 다루므로 이들을 모두 시각적으로 살펴보는 것은 불가능합니다. 대신, 서브샘플을 생성하여 전문가가 잘못 세그멘트됨 (`PS`), 잘 세그멘트됨 (`WS`) 중 하나로 수동으로 라벨할 수 있습니다. 이러한 라벨을 정확하게 예측할 수 있으면, 잘못 세그멘트된 것 같은 세포들을 필터링하여 대량의 데이터가 개선될 수 있습니다. 
 
