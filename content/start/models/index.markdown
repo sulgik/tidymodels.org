@@ -15,7 +15,8 @@ description: |
 
 ## 들어가기 {#intro}
 
-tidymodels 를 사용해서 통계모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아볼 것입니다. 데이터부터 시작해서, [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고, 이러한 함수들을 설계하는 이유를 배울 것입니다. 
+tidymodels 를 사용해서 통계모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아봅시다. 
+데이터부터 시작해서, [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고, 이러한 함수들을 설계하는 이유를 배울 것입니다. 
 
 이 장에 있는 코드를 사용하려면,  다음 패키지들을 인스톨해야 합니다: broom.mixed, dotwhisker, readr, rstanarm, and tidymodels.
 
@@ -80,13 +81,15 @@ urchins
 #> # … with 62 more rows
 ```
 
-성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 72 개 성게 각각에 대해 다음의 정보가 있습니다:
+성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 
+티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 
+72 개 성게 각각에 대해 다음의 정보가 있습니다:
 
 + 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
 + 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
 + 실험 마지막의 크기 (`width`).
 
-모델링의 첫단계로 데이터를 시각화해 보는 것은 좋은 방법입니다:
+모델링의 첫단계로 데이터를 시각화해 보는 것이 좋습니다:
 
 
 ```r
@@ -123,8 +126,6 @@ initial volume 에 따라 width 가 변하는 회귀 모형입니다. 사육법�
 ```r
 linear_reg()
 #> Linear Regression Model Specification (regression)
-#> 
-#> Computational engine: lm
 ```
 
 이 명령어는 실제로 동작하는 것은 거의 없기 때문에, 좀 시시합니다. 하지만, 모델의 유형이 명시되었기 때문에, 이제 **엔진** 을 사용하여 _적합_ 이나 훈련을 명시할 수 있습니다.
@@ -158,7 +159,7 @@ lm_fit <-
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  3ms 
+#> Fit time:  4ms 
 #> 
 #> Call:
 #> stats::lm(formula = width ~ initial_volume * food_regime, data = data)
@@ -302,7 +303,7 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 #> parsnip model object
 #> 
-#> Fit time:  16.1s 
+#> Fit time:  11.7s 
 #> stan_glm
 #>  family:       gaussian [identity]
 #>  formula:      width ~ initial_volume * food_regime
@@ -310,16 +311,16 @@ print(bayes_fit, digits = 5)
 #>  predictors:   6
 #> ------
 #>                                Median   MAD_SD  
-#> (Intercept)                     0.03281  0.00992
-#> initial_volume                  0.00157  0.00041
-#> food_regimeLow                  0.01990  0.01286
-#> food_regimeHigh                 0.02136  0.01519
-#> initial_volume:food_regimeLow  -0.00126  0.00052
+#> (Intercept)                     0.03262  0.01029
+#> initial_volume                  0.00157  0.00042
+#> food_regimeLow                  0.02026  0.01313
+#> food_regimeHigh                 0.02202  0.01505
+#> initial_volume:food_regimeLow  -0.00127  0.00052
 #> initial_volume:food_regimeHigh  0.00052  0.00073
 #> 
 #> Auxiliary parameter(s):
 #>       Median  MAD_SD 
-#> sigma 0.02144 0.00192
+#> sigma 0.02132 0.00183
 #> 
 #> ------
 #> * For help interpreting the printed output see ?print.stanreg
@@ -336,12 +337,12 @@ tidy(bayes_fit, conf.int = TRUE)
 #> # A tibble: 6 × 5
 #>   term                            estimate std.error  conf.low conf.high
 #>   <chr>                              <dbl>     <dbl>     <dbl>     <dbl>
-#> 1 (Intercept)                     0.0328    0.00992   0.0168    0.0488  
-#> 2 initial_volume                  0.00157   0.000405  0.000893  0.00224 
-#> 3 food_regimeLow                  0.0199    0.0129   -0.00140   0.0420  
-#> 4 food_regimeHigh                 0.0214    0.0152   -0.00356   0.0464  
-#> 5 initial_volume:food_regimeLow  -0.00126   0.000516 -0.00210  -0.000407
-#> 6 initial_volume:food_regimeHigh  0.000517  0.000732 -0.000691  0.00171
+#> 1 (Intercept)                     0.0326    0.0103    0.0160    0.0492  
+#> 2 initial_volume                  0.00157   0.000415  0.000903  0.00224 
+#> 3 food_regimeLow                  0.0203    0.0131   -0.00162   0.0421  
+#> 4 food_regimeHigh                 0.0220    0.0150   -0.00303   0.0463  
+#> 5 initial_volume:food_regimeLow  -0.00127   0.000519 -0.00212  -0.000410
+#> 6 initial_volume:food_regimeHigh  0.000518  0.000728 -0.000683  0.00172
 ```
 
 tidymodels 패키지의 목표는 **공통 작업 인터페이스를 표준화** (위의 `tidy()` 결과에서 보듯이)하는 것입니다. 예측값을 구할 때도 같습니다; 내부의 패키지들이 전혀 다른 문법을 사용하더라도 동일한 코드를 사용할 수 있습니다:
@@ -411,44 +412,42 @@ ggplot(urchins,
 
 
 ```
-#> ─ Session info  😌  🙏  👃🏼   ───────────────────────────────────────
-#>  hash: relieved face, folded hands, nose: medium-light skin tone
+#> ─ Session info ───────────────────────────────────────────────────────────────
+#>  setting  value                       
+#>  version  R version 4.0.5 (2021-03-31)
+#>  os       Ubuntu 18.04.5 LTS          
+#>  system   x86_64, linux-gnu           
+#>  ui       X11                         
+#>  language (EN)                        
+#>  collate  C.UTF-8                     
+#>  ctype    C.UTF-8                     
+#>  tz       Etc/UTC                     
+#>  date     2022-01-14                  
 #> 
-#>  setting  value
-#>  version  R version 4.1.2 (2021-11-01)
-#>  os       macOS Big Sur 10.16
-#>  system   x86_64, darwin17.0
-#>  ui       X11
-#>  language (EN)
-#>  collate  en_US.UTF-8
-#>  ctype    en_US.UTF-8
-#>  tz       Asia/Seoul
-#>  date     2022-01-13
-#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package     * version date       lib source        
+#>  broom       * 0.7.7   2021-06-13 [1] CRAN (R 4.0.5)
+#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.0.5)
+#>  dials       * 0.0.9   2020-09-16 [1] CRAN (R 4.0.5)
+#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.0.5)
+#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.0.5)
+#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.0.5)
+#>  infer       * 0.5.4   2021-01-13 [1] CRAN (R 4.0.5)
+#>  parsnip     * 0.1.6   2021-05-27 [1] CRAN (R 4.0.5)
+#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.5)
+#>  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.0.5)
+#>  recipes     * 0.1.16  2021-04-16 [1] CRAN (R 4.0.5)
+#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.0.5)
+#>  rsample     * 0.1.0   2021-05-08 [1] CRAN (R 4.0.5)
+#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.0.5)
+#>  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.0.5)
+#>  tidymodels  * 0.1.3   2021-04-19 [1] CRAN (R 4.0.5)
+#>  tune        * 0.1.5   2021-04-23 [1] CRAN (R 4.0.5)
+#>  workflows   * 0.2.2   2021-03-10 [1] CRAN (R 4.0.5)
+#>  yardstick   * 0.0.8   2021-03-28 [1] CRAN (R 4.0.5)
 #> 
-#> ─ Packages ─────────────────────────────────────────────────────────
-#>  package     * version date (UTC) lib source
-#>  broom       * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
-#>  broom.mixed * 0.2.7   2021-07-07 [1] CRAN (R 4.1.0)
-#>  dials       * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
-#>  dotwhisker  * 0.7.4   2021-09-02 [1] CRAN (R 4.1.0)
-#>  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-#>  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer       * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
-#>  parsnip     * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.1.0)
-#>  recipes     * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang         0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-#>  rsample     * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
-#>  rstanarm    * 2.21.1  2020-07-20 [1] CRAN (R 4.1.0)
-#>  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-#>  tidymodels  * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
-#>  tune        * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows   * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
-#>  yardstick   * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
-#> 
-#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
-#> 
-#> ────────────────────────────────────────────────────────────────────
+#> [1] /home/sgkim/R/x86_64-pc-linux-gnu-library/4.0
+#> [2] /usr/local/lib/R/site-library
+#> [3] /usr/lib/R/site-library
+#> [4] /usr/lib/R/library
 ```

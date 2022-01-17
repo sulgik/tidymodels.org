@@ -27,7 +27,8 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 ## 들어가기 {#intro}
 
-tidymodels 를 사용해서 통계모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아볼 것입니다. 데이터부터 시작해서, [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고, 이러한 함수들을 설계하는 이유를 배울 것입니다. 
+tidymodels 를 사용해서 통계모형을 어떻게 만들까요? 이 문서에서 함께 단계적으로 알아봅시다. 
+데이터부터 시작해서, [parsnip 패키지](https://tidymodels.github.io/parsnip/) 를 사용하여 각종 엔진들로 모델을 만들고 훈련시키는 법을 배우고, 이러한 함수들을 설계하는 이유를 배울 것입니다. 
 
 `r req_pkgs(pkgs)`
 
@@ -67,13 +68,15 @@ urchins <-
 urchins
 ```
 
-성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. `r nrow(urchins)` 개 성게 각각에 대해 다음의 정보가 있습니다:
+성게 데이터는 [티블(tibble)](https://tibble.tidyverse.org/index.html) 입니다. 
+티블이 처음이라면, *R for Data Science* 의 [tibbles 챕터(한국어)](https://bookdown.org/sulgi/r4ds/tibbles.html) 가 가장 쉽게 입문할 수 있는 곳입니다. 
+`r nrow(urchins)` 개 성게 각각에 대해 다음의 정보가 있습니다:
 
 + 실험 사육법 그룹 (`food_regime`: `Initial` 혹은 `Low` 혹은 `High`),
 + 실험 시작시점에서의 밀리미터 단위의 크기 (`initial_volume`)
 + 실험 마지막의 크기 (`width`).
 
-모델링의 첫단계로 데이터를 시각화해 보는 것은 좋은 방법입니다:
+모델링의 첫단계로 데이터를 시각화해 보는 것이 좋습니다:
 
 ```{r urchin-plot}
 ggplot(urchins,
