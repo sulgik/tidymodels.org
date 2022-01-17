@@ -25,7 +25,11 @@ pkgs <- c("tidymodels", "rpart", "rpart.plot", "vip")
 
 ## 들어가기 {#intro}
 
-어떤 모델 파라미터는 모델 트레이닝 중 데이터셋으로부터 직접 학습이 되지 않습니다. 이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 개수 (tidymodels 에서 `mtry` 로 부름) 혹은 부스티드 트리 모델에서 학습속도(`learn_rate` 로 부름) 가 하이퍼파라미터에 포함됩니다. 모델 트레이닝 중 하이퍼파라미터를 학습하는것 대신, 리샘플한 데이터셋에 여러 모형을 훈련하고 이 모델들의 성능을 탐색해서 가장 좋은 값을 _추정_ 할 수 있습니다. 이와 같은 프로세스를 **튜닝** 이라고 부릅니다.
+어떤 모델 파라미터는 모델 트레이닝 중 데이터셋으로부터 직접 학습이 되지 않습니다. 
+이러한 파라미터를 **하이퍼파라미터** 라고 부릅니다. 
+트리 기반 모델에서 나누어지는 곳에서 샘플되는 설명변수의 개수 (tidymodels 에서 `mtry` 로 부름) 혹은 boosted tree 모델에서 학습속도(`learn_rate` 로 부름)가 하이퍼파라미터에 포함됩니다. 
+모델 트레이닝 중 하이퍼파라미터를 학습하는것 대신, 리샘플한 데이터셋에 여러 모형을 훈련하고 이 모델들의 성능을 탐색해서 가장 좋은 값을 _추정_ 할 수 있습니다. 
+이와 같은 과정을 **튜닝** 이라고 부릅니다.
 
 
 `r req_pkgs(pkgs)`
@@ -42,7 +46,7 @@ library(vip)         # for variable importance plots
 
 ## 세포 이미지 데이터, 계속 {#data}
 
-이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [랜덤포레스트모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling) 을 사용했었습니다.
+이전의 [*리샘플링으로 모델 평가하기*](/start/resampling/) 장에서, 전문가들이 잘세그멘트됨(`WS`)과 잘못세그멘트됨(`PS`)으로 라벨한 세포 이미지 데이터셋을 소개했었습니다. 잘/잘못 세그멘트된 이미지인지를 예측하기 위해 [random forest 모델](/start/resampling/#modeling)을 훈련해서 생물학자가 잘못 세그멘트된 세포이미지들을 분석에서 필터링하도록 했습니다. 이 데이터셋에 우리 모델의 성능을 추정하기 위해 [리샘플링](/start/resampling/#resampling) 을 사용했었습니다.
 
 ```{r cell-import, R.options = list(tibble.print_min = 5, tibble.max_extra_cols = 5)}
 data(cells, package = "modeldata")
@@ -123,7 +127,7 @@ Tuning in tidymodels 에서 튜닝하려면 [rsample](https://rsample.tidymodels
 
 ## 그리드 모델튜닝 {#tune-grid}
 
-튜닝할 준비가 되었습니다! Let's use [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) 를 사용하여 각 튜닝된 하이퍼파라미터로 선택한 모든 다른 값들에 모형을 적합합니다. 튜닝을 위한 객체를 만드는 옵션 몇 가지가 있습니다:
+튜닝할 준비가 되었습니다! [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) 를 사용하여 각 튜닝된 하이퍼파라미터로 선택한 모든 다른 값들에 모형을 적합합니다. 튜닝을 위한 객체를 만드는 옵션 몇 가지가 있습니다:
 
 + 레시피나 모델을 따라 모델 스펙을 튜닝하기
 

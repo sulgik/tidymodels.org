@@ -217,9 +217,9 @@ p_value <- null_dist %>%
 p_value
 ```
 
-It looks like the p-value is `r p_value`, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (`r abs(point_estimate-40)` hours) from 40 would be `r p_value`. This may or may not be statistically significantly different, depending on the significance level $\alpha$ you decided on *before* you ran this analysis. If you had set $\alpha = .05$, then this difference would be statistically significant, but if you had set $\alpha = .01$, then it would not be.
+p-값이 `r p_value` 으로 꽤 작은 것 같습니다 -- 실제 주당 평균 근무시간이 40 이라면, 우리 샘플 평균이 40 에서 이 만큼(`r abs(point_estimate-40)` 시간) 떨어져 있을 확률이 `r p_value` 입니다. 이는 여러분이 분석 *전*에 결정한 유의수준 $\alpha$ 에 따라 통계적으로 유의하게 다를 수도 있도 아닐 수도 있습니다. $\alpha = .05$ 로 설정했다면, 관측한 차이는 통계적으로 유의하겠지만, $\alpha = .01$ 로 설정했다면, 그렇지 않을 것입니다.
 
-To get a confidence interval around our estimate, we can write:
+우리 추정값을 둘러싼 신뢰 구간을 얻으려면, 다음과 같이 작성합니다:
 
 ```{r get_conf, message = FALSE, warning = FALSE}
 # start with the null distribution
@@ -234,7 +234,7 @@ null_dist %>%
 
 As you can see, 40 hours per week is not contained in this interval, which aligns with our previous conclusion that this finding is significant at the confidence level $\alpha = .05$.
 
-## Theoretical methods
+## 이론적 방법
 
 The infer package also provides functionality to use theoretical methods for `"Chisq"`, `"F"` and `"t"` test statistics. 
 

@@ -248,16 +248,16 @@ gss %>%
 #> # Groups:   replicate [5,000]
 #>    replicate hours
 #>        <int> <dbl>
-#>  1         1  38.6
-#>  2         1  33.6
+#>  1         1  48.6
+#>  2         1  38.6
 #>  3         1  38.6
-#>  4         1  35.6
-#>  5         1  53.6
+#>  4         1  18.6
+#>  5         1  38.6
 #>  6         1  38.6
-#>  7         1  38.6
-#>  8         1  28.6
-#>  9         1  38.6
-#> 10         1  48.6
+#>  7         1  48.6
+#>  8         1  87.6
+#>  9         1  35.6
+#> 10         1  40.6
 #> # … with 2,499,990 more rows
 ```
 
@@ -281,13 +281,13 @@ gss %>%
 #>  1 ind        36         1
 #>  2 dem        34         1
 #>  3 dem        24         1
-#>  4 rep        42         1
-#>  5 rep        31         1
-#>  6 ind        32         1
+#>  4 dem        42         1
+#>  5 dem        31         1
+#>  6 dem        32         1
 #>  7 ind        48         1
-#>  8 dem        36         1
+#>  8 rep        36         1
 #>  9 dem        30         1
-#> 10 ind        33         1
+#> 10 dem        33         1
 #> # … with 2,499,990 more rows
 ```
 
@@ -307,16 +307,16 @@ gss %>%
 #> # A tibble: 5,000 × 2
 #>    replicate  stat
 #>        <int> <dbl>
-#>  1         1  39.8
-#>  2         2  40.5
-#>  3         3  39.4
+#>  1         1  40.1
+#>  2         2  41.3
+#>  3         3  40.4
 #>  4         4  40.5
-#>  5         5  39.5
-#>  6         6  40.0
-#>  7         7  38.8
-#>  8         8  39.4
-#>  9         9  38.9
-#> 10        10  39.5
+#>  5         5  40.3
+#>  6         6  40.8
+#>  7         7  40.0
+#>  8         8  40.4
+#>  9         9  39.8
+#> 10        10  39.8
 #> # … with 4,990 more rows
 ```
 
@@ -336,16 +336,16 @@ gss %>%
 #> # A tibble: 5,000 × 2
 #>    replicate   stat
 #>        <int>  <dbl>
-#>  1         1 -0.223
-#>  2         2 -1.30 
-#>  3         3 -0.531
-#>  4         4 -1.09 
-#>  5         5  0.130
-#>  6         6 -0.611
-#>  7         7  1.35 
-#>  8         8  0.288
-#>  9         9  1.22 
-#> 10        10  3.37 
+#>  1         1  0.694
+#>  2         2 -1.67 
+#>  3         3 -0.646
+#>  4         4  2.13 
+#>  5         5  0.174
+#>  6         6  0.324
+#>  7         7  1.16 
+#>  8         8  0.103
+#>  9         9  0.103
+#> 10        10 -0.329
 #> # … with 4,990 more rows
 ```
 
@@ -407,12 +407,12 @@ p_value
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0364
+#> 1  0.0376
 ```
 
-It looks like the p-value is 0.036, which is pretty small---if the true mean number of hours worked per week was actually 40, the probability of our sample mean being this far (1.382 hours) from 40 would be 0.036. This may or may not be statistically significantly different, depending on the significance level `\(\alpha\)` you decided on *before* you ran this analysis. If you had set `\(\alpha = .05\)`, then this difference would be statistically significant, but if you had set `\(\alpha = .01\)`, then it would not be.
+p-값이 0.038 으로 꽤 작은 것 같습니다 -- 실제 주당 평균 근무시간이 40 이라면, 우리 샘플 평균이 40 에서 이 만큼(1.382 시간) 떨어져 있을 확률이 0.038 입니다. 이는 여러분이 분석 *전*에 결정한 유의수준 `\(\alpha\)` 에 따라 통계적으로 유의하게 다를 수도 있도 아닐 수도 있습니다. `\(\alpha = .05\)` 로 설정했다면, 관측한 차이는 통계적으로 유의하겠지만, `\(\alpha = .01\)` 로 설정했다면, 그렇지 않을 것입니다.
 
-To get a confidence interval around our estimate, we can write:
+우리 추정값을 둘러싼 신뢰 구간을 얻으려면, 다음과 같이 작성합니다:
 
 
 ```r
@@ -427,12 +427,12 @@ null_dist %>%
 #> # A tibble: 1 × 2
 #>   lower_ci upper_ci
 #>      <dbl>    <dbl>
-#> 1     40.1     42.6
+#> 1     40.1     42.7
 ```
 
 As you can see, 40 hours per week is not contained in this interval, which aligns with our previous conclusion that this finding is significant at the confidence level `\(\alpha = .05\)`.
 
-## Theoretical methods
+## 이론적 방법
 
 The infer package also provides functionality to use theoretical methods for `"Chisq"`, `"F"` and `"t"` test statistics. 
 
@@ -505,7 +505,7 @@ That's it! This vignette covers most all of the key functionality of infer. See 
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-13
+#>  date     2022-01-17
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
