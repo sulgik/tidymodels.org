@@ -1,5 +1,5 @@
 ---
-title: "Statistical analysis of contingency tables"
+title: "분할표 통계분석"
 tags: [infer]
 categories: [statistical analysis]
 type: learn-subsection
@@ -20,11 +20,13 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction
+## 들어가기
 
-This article only requires that you have the tidymodels package installed.
+이장은 tidymodels 패키지 설치만 필요합니다.
 
-In this vignette, we'll walk through conducting a $\chi^2$ (chi-squared) test of independence and a chi-squared goodness of fit test using infer. We'll start out with a chi-squared test of independence, which can be used to test the association between two categorical variables. Then, we'll move on to a chi-squared goodness of fit test, which tests how well the distribution of one categorical variable can be approximated by some theoretical distribution.
+이 vignette 에서, infer 를 이용한 $\chi^2$(카이제곱) 독립성 검정과 카이제곱 적합도(goodness of fit) 검정 수행을 따라해 볼 것입니다.
+두 개의 범주형 변수들 사이의 연관성을 검정하는데 사용할 수 있는 검정 독립성검정부터 시작할 것입니다.
+그 다음, 하나의 범주형 변수의 분포가 어떤 이론적 분포로 얼마나 잘 근사시킬 수 있는지를 검정하는 카이제곱 적합도 검정으로 넘어 갈 것입니다.
 
 Throughout this vignette, we'll make use of the `ad_data` data set (available in the modeldata package, which is part of tidymodels). This data set is related to cognitive impairment in 333 patients from [Craig-Schapiro _et al_ (2011)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079734/). See `?ad_data` for more information on the variables included and their source. One of the main research questions in these data were how a person's genetics related to the Apolipoprotein E gene affect their cognitive skills. The data shows: 
 

@@ -249,15 +249,15 @@ gss %>%
 #>    replicate hours
 #>        <int> <dbl>
 #>  1         1  38.6
-#>  2         1  30.6
+#>  2         1  38.6
 #>  3         1  38.6
-#>  4         1  38.6
-#>  5         1  33.6
-#>  6         1  40.6
-#>  7         1  58.6
-#>  8         1  38.6
-#>  9         1  30.6
-#> 10         1  50.6
+#>  4         1  46.6
+#>  5         1  28.6
+#>  6         1  35.6
+#>  7         1  28.6
+#>  8         1  28.6
+#>  9         1  39.6
+#> 10         1  48.6
 #> # … with 2,499,990 more rows
 ```
 
@@ -278,16 +278,16 @@ gss %>%
 #> # Groups:   replicate [5,000]
 #>    partyid   age replicate
 #>    <fct>   <dbl>     <int>
-#>  1 ind        36         1
-#>  2 rep        34         1
-#>  3 dem        24         1
+#>  1 dem        36         1
+#>  2 dem        34         1
+#>  3 rep        24         1
 #>  4 dem        42         1
-#>  5 rep        31         1
-#>  6 dem        32         1
+#>  5 dem        31         1
+#>  6 ind        32         1
 #>  7 dem        48         1
-#>  8 dem        36         1
-#>  9 dem        30         1
-#> 10 rep        33         1
+#>  8 rep        36         1
+#>  9 ind        30         1
+#> 10 ind        33         1
 #> # … with 2,499,990 more rows
 ```
 
@@ -307,16 +307,16 @@ gss %>%
 #> # A tibble: 5,000 × 2
 #>    replicate  stat
 #>        <int> <dbl>
-#>  1         1  41.6
-#>  2         2  40.4
-#>  3         3  40.0
+#>  1         1  39.4
+#>  2         2  41.0
+#>  3         3  39.0
 #>  4         4  40.2
-#>  5         5  39.8
-#>  6         6  40.3
-#>  7         7  40.7
-#>  8         8  41  
+#>  5         5  39.6
+#>  6         6  40.4
+#>  7         7  40.0
+#>  8         8  40.3
 #>  9         9  40.2
-#> 10        10  38.9
+#> 10        10  39.9
 #> # … with 4,990 more rows
 ```
 
@@ -334,18 +334,18 @@ gss %>%
 #> Explanatory: college (factor)
 #> Null Hypothesis: independence
 #> # A tibble: 5,000 × 2
-#>    replicate    stat
-#>        <int>   <dbl>
-#>  1         1 -0.919 
-#>  2         2 -1.22  
-#>  3         3 -0.655 
-#>  4         4  0.0856
-#>  5         5 -0.267 
-#>  6         6 -0.214 
-#>  7         7 -0.584 
-#>  8         8  0.244 
-#>  9         9 -0.999 
-#> 10        10  2.11  
+#>    replicate   stat
+#>        <int>  <dbl>
+#>  1         1  0.888
+#>  2         2  0.429
+#>  3         3  0.297
+#>  4         4 -1.13 
+#>  5         5  1.74 
+#>  6         6  0.782
+#>  7         7 -1.07 
+#>  8         8  0.191
+#>  9         9 -0.637
+#> 10        10  1.29 
 #> # … with 4,990 more rows
 ```
 
@@ -407,10 +407,10 @@ p_value
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0428
+#> 1  0.0372
 ```
 
-p-값이 0.043 으로 꽤 작은 것 같습니다 -- 실제 주당 평균 근무시간이 40 이라면, 우리 샘플 평균이 40 에서 이 만큼(1.382 시간) 떨어져 있을 확률이 0.043 입니다. 이는 여러분이 분석 *전*에 결정한 유의수준 `\(\alpha\)` 에 따라 통계적으로 유의하게 다를 수도 있도 아닐 수도 있습니다. `\(\alpha = .05\)` 로 설정했다면, 관측한 차이는 통계적으로 유의하겠지만, `\(\alpha = .01\)` 로 설정했다면, 그렇지 않을 것입니다.
+p-값이 0.037 으로 꽤 작은 것 같습니다 -- 실제 주당 평균 근무시간이 40 이라면, 우리 샘플 평균이 40 에서 이 만큼(1.382 시간) 떨어져 있을 확률이 0.037 입니다. 이는 여러분이 분석 *전*에 결정한 유의수준 `\(\alpha\)` 에 따라 통계적으로 유의하게 다를 수도 있도 아닐 수도 있습니다. `\(\alpha = .05\)` 로 설정했다면, 관측한 차이는 통계적으로 유의하겠지만, `\(\alpha = .01\)` 로 설정했다면, 그렇지 않을 것입니다.
 
 우리 추정값을 둘러싼 신뢰 구간을 얻으려면, 다음과 같이 작성합니다:
 
@@ -434,9 +434,10 @@ null_dist %>%
 
 ## 이론적 방법
 
-The infer package also provides functionality to use theoretical methods for `"Chisq"`, `"F"` and `"t"` test statistics. 
+infer 패키지에는 `"Chisq"`, `"F"`, `"t"` 검정통계량의 이론적 방법을 사용하는 기능이 있다.
 
-Generally, to find a null distribution using theory-based methods, use the same code that you would use to find the null distribution using randomization-based methods, but skip the `generate()` step. For example, if we wanted to find a null distribution for the relationship between age (`age`) and party identification (`partyid`) using randomization, we could write:
+일반적으로 이론기반 방법들을 사용하여 영분포를 찾기 위해, 랜더마이제이션기반 방법을 사용한 영분포를 찾을 때 사용한 코드에서 `generate()` 을 제외하고 같은 코드를 사용하면 된다.
+예를 들어, 랜더마이제이션을 사용하여 나이 (`age`)와 소속정당 (`partyid`) 사이의 관계에 대한 영분포를 찾고 싶다면, 다음과 같이 작성합니다:
 
 
 ```r
@@ -447,7 +448,7 @@ null_f_distn <- gss %>%
    calculate(stat = "F")
 ```
 
-To find the null distribution using theory-based methods, instead, skip the `generate()` step entirely:
+이론기반 방법을 사용한 영분포를 찾기위해, 대신 `generate()` 단계를 모두 건너뛴다:
 
 
 ```r
@@ -457,7 +458,7 @@ null_f_distn_theoretical <- gss %>%
    calculate(stat = "F")
 ```
 
-We'll calculate the observed statistic to make use of in the following visualizations; this procedure is the same, regardless of the methods used to find the null distribution.
+다음의 시각화에서 사용할 관측 통계량을 계산해 봅시다; 영분포를 찾기위해 사용한 방법에 상관없이 이 과정은 같습니다.
 
 
 ```r
@@ -466,7 +467,7 @@ F_hat <- gss %>%
   calculate(stat = "F")
 ```
 
-Now, instead of just piping the null distribution into `visualize()`, as we would do if we wanted to visualize the randomization-based null distribution, we also need to provide `method = "theoretical"` to `visualize()`.
+영분포를 `visualize()` 에 파이핑 하는 대신, 랜더마이제이션기반 영분포를 시각화할 때 하는 것 처럼, `method = "theoretical"` 를 `visualize()` 에 제공해야 합니다.
 
 
 ```r
@@ -476,7 +477,7 @@ visualize(null_f_distn_theoretical, method = "theoretical") +
 
 <img src="figs/unnamed-chunk-4-1.svg" width="672" />
 
-To get a sense of how the theory-based and randomization-based null distributions relate, we can pipe the randomization-based null distribution into `visualize()` and also specify `method = "both"`
+이론기반과 랜더마이제이션기반 영분포가 어떻게 관련되는지를 알기 위해, 랜더마이제이션기반 영분포를 `visualize()` 에 파이프하고 `method = "both"` 를 설정합니다:
 
 
 ```r
@@ -486,7 +487,9 @@ visualize(null_f_distn, method = "both") +
 
 <img src="figs/unnamed-chunk-5-1.svg" width="672" />
 
-That's it! This vignette covers most all of the key functionality of infer. See `help(package = "infer")` for a full list of functions and vignettes.
+이제 끝났습니다! 이 vignette 은 infer 의 핵심 기능 대부분을 살펴보았습니다.
+`help(package = "infer")` 에서 함수와 vignettes 전체목록을 볼 수 있습니다.
+See `help(package = "infer")` for a full list of functions and vignettes.
 
 
 ## Session information
