@@ -232,7 +232,7 @@ null_dist %>%
                           type = "se")
 ```
 
-As you can see, 40 hours per week is not contained in this interval, which aligns with our previous conclusion that this finding is significant at the confidence level $\alpha = .05$.
+위에서 보듯이 주간 40시간은 이 구간에 포함되지 않는데, 신뢰수준 $\alpha = .05$ 에서 유의하다는 이전 결론과 일관된다.
 
 ## 이론적 방법
 
