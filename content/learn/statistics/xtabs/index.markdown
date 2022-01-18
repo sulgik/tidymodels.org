@@ -5,7 +5,7 @@ categories: [statistical analysis]
 type: learn-subsection
 weight: 5
 description: | 
-  Use tests of independence and goodness of fit to analyze tables of counts.
+  독립성 검정과 적합성 검정으로 카운트 테이블을 분석한다.
 ---
 
 
@@ -21,7 +21,7 @@ description: |
 두 개의 범주형 변수들 사이의 연관성을 검정하는데 사용할 수 있는 검정 독립성검정부터 시작할 것입니다.
 그 다음, 하나의 범주형 변수의 분포가 어떤 이론적 분포로 얼마나 잘 근사시킬 수 있는지를 검정하는 카이제곱 적합도 검정으로 넘어 갈 것입니다.
 
-Throughout this vignette, we'll make use of the `ad_data` data set (available in the modeldata package, which is part of tidymodels). This data set is related to cognitive impairment in 333 patients from [Craig-Schapiro _et al_ (2011)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079734/). See `?ad_data` for more information on the variables included and their source. One of the main research questions in these data were how a person's genetics related to the Apolipoprotein E gene affect their cognitive skills. The data shows: 
+이 vignette 에서, `ad_data` 데이터셋을 사용할 것입니다 (tidymodels 에 포함된 modeldata 패키지에 있음). 이 데이터셋은 인지 장애를 가진 333 명의 환자와 관련이 있습니다 ([Craig-Schapiro _et al_ (2011)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079734/)). `?ad_data` 로 자세한 정보를 살펴보세요. 이 데이터의 주된 연구 주제는 Apolipoprotein E 유전자와 관련된 유전형이 인지능력에 영향을 어떻게 주는가 하는가입니다. 데이터는 다음과 같습니다:
 
 
 ```r
@@ -46,17 +46,17 @@ ad_data %>%
 #> # … with 323 more rows
 ```
 
-The three main genetic variants are called E2, E3, and E4. The values in `Genotype` represent the genetic makeup of patients based on what they inherited from their parents (i.e, a value of "E2E4" means E2 from one parent and E4 from the other). 
+주된 유전형은 E2, E3, E4 입니다. `Genotype` 의 값은 부모로부터 물려받은 것에 기반하여 환자의 유전형을 나타냅니다 (즉, "E2E4" 은 부모중 한명에게 E2, 다른 한명으로 부터 E4 를 받은 것을 의미합니다).
 
-## Test of independence
+## 독립성 검정
 
-To carry out a chi-squared test of independence, we'll examine the association between their cognitive ability (impaired and healthy) and the genetic makeup. This is what the relationship looks like in the sample data:
+카이제곱 독립성 검정을 수행하기 위해, 인지능력 (장애 혹은 정상) 과 유전형 사이의 연관성을 테스트해 볼 것입니다. 샘플데이터에서 이 둘의 관계성은 다음과 같습니다:
 
 <img src="figs/plot-indep-1.svg" width="672" />
 
-If there were no relationship, we would expect to see the purple bars reaching to the same length, regardless of cognitive ability. Are the differences we see here, though, just due to random noise?
+관계성이 없다면, 인지능력에 상관없이 보라색 막대가 같은 길이가 되어야 합니다. 하지만, 우리가 여기서 보는 차이점은 랜덤 노이즈 때문인가요?
 
-First, to calculate the observed statistic, we can use `specify()` and `calculate()`.
+`specify()` 와 `calculate()` 을 사용하여 관측 통계량을 계산할 수 있습니다.
 
 
 ```r
@@ -66,9 +66,9 @@ observed_indep_statistic <- ad_data %>%
   calculate(stat = "Chisq")
 ```
 
-The observed `\(\chi^2\)` statistic is 21.577. Now, we want to compare this statistic to a null distribution, generated under the assumption that these variables are not actually related, to get a sense of how likely it would be for us to see this observed statistic if there were actually no association between cognitive ability and genetics.
+관측된 `\(\chi^2\)` 통계량은 21.577 입니다. 이제, 이 값을, 변수들이 사실 관련되지 않았다는 가정 하에서 생성한 영 분포와 비교해 봐야 합니다. 그래야만, 인지능력과 유전형 사이의 연관성이 실제로 없을 때 이 관측된 통계량을 볼 가능성이 얼마나 되는지 알 수 있습니다.
 
-We can `generate()` the null distribution in one of two ways: using randomization or theory-based methods. The randomization approach permutes the response and explanatory variables, so that each person's genetics is matched up with a random cognitive rating from the sample in order to break up any association between the two.
+영 분포를 생성(`generate()`)하는 방법은 두 가지 입니다: 랜더마이제이션이나 이론기반 방법을 사용할 수 있습니다. 랜더마이제이션 방법은 반응변수와 설명변수를 섞어서 각 사람의 유전형이 샘플의 랜덤한 인지점수와 짝을 이루도록 합니다. 이렇게 하면, 둘 사이의 연관성이 깨집니다.
 
 
 ```r
@@ -80,7 +80,7 @@ null_distribution_simulated <- ad_data %>%
   calculate(stat = "Chisq")
 ```
 
-Note that, in the line `specify(Genotype ~ Class)` above, we could use the equivalent syntax `specify(response = Genotype, explanatory = Class)`. The same goes in the code below, which generates the null distribution using theory-based methods instead of randomization.
+위의 `specify(Genotype ~ Class)` 라인에서 동일한 문법인 `specify(response = Genotype, explanatory = Class)` 를 사용할 수도 있습니다. 랜더마이제이션 대신 이론기반 방법을 사용하여 영분포를 생성하는 아래의 코드에서도 마찬가지 입니다.
 
 
 ```r
@@ -92,7 +92,7 @@ null_distribution_theoretical <- ad_data %>%
   calculate(stat = "Chisq")
 ```
 
-To get a sense for what these distributions look like, and where our observed statistic falls, we can use `visualize()`:
+이 분포들과 우리 관측한 통계량이 어디 떨어지는지를 보기 위해, `visualize()` 를 사용할 수 있습니다:
 
 
 ```r
@@ -105,7 +105,7 @@ null_distribution_simulated %>%
 
 <img src="figs/visualize-indep-1.svg" width="672" />
 
-We could also visualize the observed statistic against the theoretical null distribution. Note that we skip the `generate()` and `calculate()` steps when using the theoretical approach, and that we now need to provide `method = "theoretical"` to `visualize()`.
+이론적 영분포를 배경으로 관측한 통계량을 시각화 할 수 있습니다. 이론방법을 사용할 때 `generate()` 와 `calculate()` 단계를 생략하고, `visualize()` 에 `method = "theoretical"` 를 설정해야 합니다.
 
 
 ```r
@@ -120,7 +120,7 @@ ad_data %>%
 
 <img src="figs/visualize-indep-theor-1.svg" width="672" />
 
-To visualize both the randomization-based and theoretical null distributions to get a sense of how the two relate, we can pipe the randomization-based null distribution into `visualize()`, and further provide `method = "both"`.
+랜덤마이제이션 기반과 이론적 영분포 모두를 시각화하여, 둘이 어떻게 연관되는지를 이해하기 위해, 랜더마이제이션 기반 영분포를 `visualize()` 로 파이핑하고, `method = "both"` 를 설정할 수 있습니다.
 
 
 ```r
@@ -133,7 +133,7 @@ null_distribution_simulated %>%
 
 <img src="figs/visualize-indep-both-1.svg" width="672" />
 
-Either way, it looks like our observed test statistic would be fairly unlikely if there were actually no association between cognition and genotype. More exactly, we can calculate the p-value:
+어떤 경우에도, 인지력과 유전형 사이에 연관성이 없는 상황에서 우리 관측 검정 통계량은 꽤 일어나기 힘듭니다. 더 정확하게, p-값을 계산할 수 있습니다:
 
 
 ```r
@@ -146,12 +146,12 @@ p_value_independence
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0008
+#> 1  0.0002
 ```
 
-Thus, if there were really no relationship between cognition and genotype, the probability that we would see a statistic as or more extreme than 21.577 is approximately 8\times 10^{-4}.
+따라서, 인지력과 유전형 사이에 관계성이 없을 때, 통계량이 21.577 보다 같거나 더 극단적이 될 확률은 약 2\times 10^{-4} 입니다.
 
-Note that, equivalently to the steps shown above, the package supplies a wrapper function, `chisq_test`, to carry out Chi-Squared tests of independence on tidy data. The syntax goes like this:
+위에서 본 단계들과 동일하게, 해당 패키지는 타이디한 데이터에 카이제곱 독립성 검정을 수행하는 래퍼 함수, `chisq_test` 를 제공합니다. 문법은 다음과 같습니다:
 
 
 ```r
@@ -163,12 +163,14 @@ chisq_test(ad_data, Genotype ~ Class)
 ```
 
 
-## Goodness of fit
+## 적합성 (Goodness of fit)
 
-Now, moving on to a chi-squared goodness of fit test, we'll take a look at just the genotype data. Many papers have investigated the relationship of Apolipoprotein E to diseases. For example, [Song _et al_ (2004)](https://annals.org/aim/article-abstract/717641/meta-analysis-apolipoprotein-e-genotypes-risk-coronary-heart-disease) conducted a meta-analysis of numerous studies that looked at this gene and heart disease. In their paper, they describe the frequency of the different genotypes across many samples. For the cognition study, it might be interesting to see if our sample of genotypes was consistent with this literature (treating the rates, for this analysis, as known). 
+이제, 카이제곱 적합성 검정으로 넘어가서, 유전자형 데이터만 살펴볼 것입니다. 
+Apolipoprotein E 와 질병 사이의 관계성을 조사한 논문들이 많이 있습니다. 
+예를 들어, [Song _et al_ (2004)](https://annals.org/aim/article-abstract/717641/meta-analysis-apolipoprotein-e-genotypes-risk-coronary-heart-disease) 에서는 이 유전자와 심장 질환을 조사한 많은 연구의 메타-분석을 수행했습니다. 이 논문에서, 많은 샘플 중 다른 유전자형의 빈도를 보고합니다. 우리 유전자형 샘플이 논문과 일관성이 있는지 보는 것은 흥미로울 수 있습니다 (이 분석에서 빈도를 안다고 가정함).
 
-The rates of the meta-analysis and our observed data are: 
- 
+메타-분석과 우리 관측 데이터의 빈도는 다음과 같다:
+
 
 ```r
 # Song, Y., Stampfer, M. J., & Liu, S. (2004). Meta-Analysis: Apolipoprotein E 
@@ -189,9 +191,9 @@ round(cbind(obs_rates, meta_rates) * 100, 2)
 #> E4E4       3.9       2.21
 ```
 
-Suppose our null hypothesis is that `Genotype` follows the same frequency distribution as the meta-analysis. Lets now test whether this difference in distributions is statistically significant.
+영가설은 `Genotype` 이 메타-분석과 같은 빈도 분포를 따른다고 가정합시다. 분포에서 이 차이가 통계적으로 유의한지 검정해 봅시다. 
 
-First, to carry out this hypothesis test, we would calculate our observed statistic.
+우선, 가설 검정을 수행하기 위해, 우리 관측 통계량을 계산합니다.
 
 
 ```r
@@ -202,8 +204,8 @@ observed_gof_statistic <- ad_data %>%
   calculate(stat = "Chisq")
 ```
 
-The observed statistic is 23.384. Now, generating a null distribution, by just dropping in a call to `generate()`:
-
+관측된 통계량은 23.384 입니다. 
+이제 `generate()` 호출 하나로 영분포를 생성합니다:
 
 
 ```r
@@ -215,7 +217,7 @@ null_distribution_gof <- ad_data %>%
   calculate(stat = "Chisq")
 ```
 
-Again, to get a sense for what these distributions look like, and where our observed statistic falls, we can use `visualize()`:
+한번 더, 이러한 분포가 어떻게 생격고, 관측 통계량이 어디에 떨어지는지 알기 위해, 시각화(`visualize()`)할 수 있습니다:
 
 
 ```r
@@ -228,7 +230,7 @@ null_distribution_gof %>%
 
 <img src="figs/visualize-indep-gof-1.svg" width="672" />
 
-This statistic seems like it would be unlikely if our rates were the same as the rates from the meta-analysis! How unlikely, though? Calculating the p-value:
+이 통계량은 우리 빈도가 메타-분석의 빈도와 같다면, 이 통계량이 일어나기 힘든 것 같습니다! 그런데 얼마나 그런가요? p-값을 계산합니다:
 
 
 ```r
@@ -241,12 +243,12 @@ p_value_gof
 #> # A tibble: 1 × 1
 #>   p_value
 #>     <dbl>
-#> 1  0.0018
+#> 1  0.0016
 ```
 
-Thus, if each genotype occurred at the same rate as the Song paper, the probability that we would see a distribution like the one we did is approximately 0.002.
+따라서, Song 논문과 각 유전자형이 같은 빈도로 일어난다면, 우리가 관측한 것과 같은 분포를 볼 확률은 약 0.002 입니다.
 
-Again, equivalently to the steps shown above, the package supplies a wrapper function, `chisq_test`, to carry out chi-squared goodness of fit tests on tidy data. The syntax goes like this:
+위에서 본 단계들과 동일하게, 해당 패키지는 타이디한 데이터에 카이제곱 독립성 검정을 수행하는 래퍼 함수, `chisq_test` 를 제공합니다. 문법은 다음과 같습니다:
 
 
 ```r
@@ -259,7 +261,7 @@ chisq_test(ad_data, response = Genotype, p = meta_rates)
 
 
 
-## Session information
+## 세션정보
 
 
 ```

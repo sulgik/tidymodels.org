@@ -266,7 +266,7 @@ F_hat <- gss %>%
   calculate(stat = "F")
 ```
 
-영분포를 `visualize()` 에 파이핑 하는 대신, 랜더마이제이션기반 영분포를 시각화할 때 하는 것 처럼, `method = "theoretical"` 를 `visualize()` 에 제공해야 합니다.
+영분포를 `visualize()` 에 파이핑하는 대신, 랜더마이제이션기반 영분포를 시각화할 때 하는 것 처럼, `method = "theoretical"` 를 `visualize()` 에 제공해야 합니다.
 
 ```{r, message = FALSE, warning = FALSE}
 visualize(null_f_distn_theoretical, method = "theoretical") +
@@ -282,10 +282,8 @@ visualize(null_f_distn, method = "both") +
 
 이제 끝났습니다! 이 vignette 은 infer 의 핵심 기능 대부분을 살펴보았습니다.
 `help(package = "infer")` 에서 함수와 vignettes 전체목록을 볼 수 있습니다.
-See `help(package = "infer")` for a full list of functions and vignettes.
 
-
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)
