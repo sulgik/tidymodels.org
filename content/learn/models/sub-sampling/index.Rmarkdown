@@ -5,7 +5,7 @@ categories: [model fitting, pre-processing]
 type: learn-subsection
 weight: 3
 description: | 
-  Improve model performance in imbalanced data sets through undersampling or oversampling.
+  언더샘플링과 오버샘플링을 통해 불균형 데이터셋에서 모델 성능을 개선한다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -105,15 +105,15 @@ cv_folds <- vfold_cv(imbal_data, strata = "Class", repeats = 5)
 모델 성능을 측정하기 위해 두개의 지표를 사용합시다:
 
  * Area under [ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) 는 _모든_ 컷오프값을 통튼 전체 성능을 측정값입니다. 1 에 가까운 값은 매우 좋은 가까운 값은 매우 좋은 결과를 의미하고, 0.5 근처의 값은 모델 성능이 매우 좋지 않음을 의미합니다.  
- * The _J_ 인덱스 (a.k.a. [Youden's _J_](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) statistic) is `sensitivity + specificity - 1`. Values near one are once again best. 
+ * _J_ 인덱스 (a.k.a. [Youden's _J_](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) statistic) 는 `sensitivity + specificity - 1` 입니다. 이 지표도 1 과 가까울 수록 좋습니다.
 
-If a model is poorly calibrated, the ROC curve value might not show diminished performance. However, the _J_ index would be lower for models with pathological distributions for the class probabilities. The yardstick package will be used to compute these metrics. 
+모델이 잘 캘리브레인션되지 않을때도, ROC 커브값은 낮은 성능을 보여주지 않을 것입니다. 하지만, 클래스 확률에 대해 pathological 분포로 모델에 대해 _J_ 인덱스가 낮을 것입니다. (다시 번역필요) 이러한 지표들을 계산하기 위해 yardstick 패키지를 사용할 수 있습니다.
 
 ```{r metrics}
 cls_metrics <- metric_set(roc_auc, j_index)
 ```
 
-Now, we train the models and generate the results using `tune::fit_resamples()`:
+이제, 모델을 훈련하고 `tune::fit_resamples()` 로 결과를 생성합니다:
 
 ```{r resample-rose, message=FALSE}
 set.seed(2180)
@@ -126,7 +126,7 @@ qda_rose_res <- fit_resamples(
 collect_metrics(qda_rose_res)
 ```
 
-What do the results look like without using ROSE? We can create another workflow and fit the QDA model along the same resamples:
+ROSE 를 이용하지 않고 결과가 어떻게 생겼을까? 다른 워크플로를 생성하고 같은 리샘플과 함께 QDA 모델을 적합할 수 있습니다:
 
 ```{r qda-only}
 qda_wflw <- 
@@ -139,9 +139,11 @@ qda_only_res <- fit_resamples(qda_wflw, resamples = cv_folds, metrics = cls_metr
 collect_metrics(qda_only_res)
 ```
 
-It looks like ROSE helped a lot, especially with the J-index. Class imbalance sampling methods tend to greatly improve metrics based on the hard class predictions (i.e., the categorical predictions) because the default cutoff tends to be a better balance of sensitivity and specificity. 
+ROSE 가 많이 도움을 주었는데 특히 J-인덱스에서 그렇습니다. 
+클래스 불균형 샘플링 방법은 hard 클래스 예측 (즉, 범주형 예측)에 기반한 지표들을 크게 개선시키는 경향이 있습니다. 
+왜냐하면 기본값 컷오프가 민감도와 특이도를 잘 균형을 맞추는 경향이 있기 때문입니다.
 
-Let's plot the metrics for each resample to see how the individual results changed. 
+각 리샘플에 대한 지표들을 플롯하여 개별 결과가 어떻게 변했는지 보자.
 
 ```{r merge-metrics}
 no_sampling <- 
@@ -163,9 +165,9 @@ bind_rows(no_sampling, with_sampling) %>%
   facet_wrap(~ .metric, scales = "free_y")
 ```
 
-This visually demonstrates that the subsampling mostly affects metrics that use the hard class predictions. 
+서브샘플링이 대부분 hard 클래스 예측을 사용하는 지표들에 영향을 준다는 것을 시각적으로 보여주고 있습니다.
 
-## Session information
+## 세션정보
 
 ```{r si, echo = FALSE}
 small_session(pkgs)

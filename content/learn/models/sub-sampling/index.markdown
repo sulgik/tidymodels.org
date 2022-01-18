@@ -5,7 +5,7 @@ categories: [model fitting, pre-processing]
 type: learn-subsection
 weight: 3
 description: | 
-  Improve model performance in imbalanced data sets through undersampling or oversampling.
+  언더샘플링과 오버샘플링을 통해 불균형 데이터셋에서 모델 성능을 개선한다.
 ---
 
 
@@ -118,16 +118,16 @@ cv_folds <- vfold_cv(imbal_data, strata = "Class", repeats = 5)
 모델 성능을 측정하기 위해 두개의 지표를 사용합시다:
 
  * Area under [ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) 는 _모든_ 컷오프값을 통튼 전체 성능을 측정값입니다. 1 에 가까운 값은 매우 좋은 가까운 값은 매우 좋은 결과를 의미하고, 0.5 근처의 값은 모델 성능이 매우 좋지 않음을 의미합니다.  
- * The _J_ 인덱스 (a.k.a. [Youden's _J_](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) statistic) is `sensitivity + specificity - 1`. Values near one are once again best. 
+ * _J_ 인덱스 (a.k.a. [Youden's _J_](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) statistic) 는 `sensitivity + specificity - 1` 입니다. 이 지표도 1 과 가까울 수록 좋습니다.
 
-If a model is poorly calibrated, the ROC curve value might not show diminished performance. However, the _J_ index would be lower for models with pathological distributions for the class probabilities. The yardstick package will be used to compute these metrics. 
+모델이 잘 캘리브레인션되지 않을때도, ROC 커브값은 낮은 성능을 보여주지 않을 것입니다. 하지만, 클래스 확률에 대해 pathological 분포로 모델에 대해 _J_ 인덱스가 낮을 것입니다. (다시 번역필요) 이러한 지표들을 계산하기 위해 yardstick 패키지를 사용할 수 있습니다.
 
 
 ```r
 cls_metrics <- metric_set(roc_auc, j_index)
 ```
 
-Now, we train the models and generate the results using `tune::fit_resamples()`:
+이제, 모델을 훈련하고 `tune::fit_resamples()` 로 결과를 생성합니다:
 
 
 ```r
@@ -142,11 +142,11 @@ collect_metrics(qda_rose_res)
 #> # A tibble: 2 × 6
 #>   .metric .estimator  mean     n std_err .config             
 #>   <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
-#> 1 j_index binary     0.773    50 0.0231  Preprocessor1_Model1
-#> 2 roc_auc binary     0.948    50 0.00544 Preprocessor1_Model1
+#> 1 j_index binary     0.781    50 0.0202  Preprocessor1_Model1
+#> 2 roc_auc binary     0.952    50 0.00487 Preprocessor1_Model1
 ```
 
-What do the results look like without using ROSE? We can create another workflow and fit the QDA model along the same resamples:
+ROSE 를 이용하지 않고 결과가 어떻게 생겼을까? 다른 워크플로를 생성하고 같은 리샘플과 함께 QDA 모델을 적합할 수 있습니다:
 
 
 ```r
@@ -165,9 +165,11 @@ collect_metrics(qda_only_res)
 #> 2 roc_auc binary     0.953    50 0.00479 Preprocessor1_Model1
 ```
 
-It looks like ROSE helped a lot, especially with the J-index. Class imbalance sampling methods tend to greatly improve metrics based on the hard class predictions (i.e., the categorical predictions) because the default cutoff tends to be a better balance of sensitivity and specificity. 
+ROSE 가 많이 도움을 주었는데 특히 J-인덱스에서 그렇습니다. 
+클래스 불균형 샘플링 방법은 hard 클래스 예측 (즉, 범주형 예측)에 기반한 지표들을 크게 개선시키는 경향이 있습니다. 
+왜냐하면 기본값 컷오프가 민감도와 특이도를 잘 균형을 맞추는 경향이 있기 때문입니다.
 
-Let's plot the metrics for each resample to see how the individual results changed. 
+각 리샘플에 대한 지표들을 플롯하여 개별 결과가 어떻게 변했는지 보자.
 
 
 ```r
@@ -192,17 +194,17 @@ bind_rows(no_sampling, with_sampling) %>%
 
 <img src="figs/merge-metrics-1.svg" width="672" />
 
-This visually demonstrates that the subsampling mostly affects metrics that use the hard class predictions. 
+서브샘플링이 대부분 hard 클래스 예측을 사용하는 지표들에 영향을 준다는 것을 시각적으로 보여주고 있습니다.
 
-## Session information
+## 세션정보
 
 
 ```
-#> ─ Session info  👩🏾‍✈️  🎢  🥚   ───────────────────────────────────────
-#>  hash: woman pilot: medium-dark skin tone, roller coaster, egg
+#> ─ Session info  👏🏻  🐭  🇱🇰   ───────────────────────────────────────
+#>  hash: clapping hands: light skin tone, mouse face, flag: Sri Lanka
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -210,12 +212,12 @@ This visually demonstrates that the subsampling mostly affects metrics that use 
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2021-12-16
+#>  date     2022-01-18
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
 #>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
 #>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  discrim    * 0.1.3   2021-07-21 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
@@ -224,7 +226,7 @@ This visually demonstrates that the subsampling mostly affects metrics that use 
 #>  klaR       * 0.6-15  2020-02-19 [1] CRAN (R 4.1.0)
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  readr      * 2.1.0   2021-11-11 [1] CRAN (R 4.1.0)
+#>  readr      * 2.1.1   2021-11-30 [1] CRAN (R 4.1.0)
 #>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
 #>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
 #>  ROSE       * 0.0-4   2021-06-14 [1] CRAN (R 4.1.0)
