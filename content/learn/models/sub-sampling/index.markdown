@@ -40,7 +40,7 @@ table(imbal_data$Class)
 
 "Class1" 가 관심있는 이벤트라면, 어떤 classification 모델은 매우 좋은 _특이도_ 를 갖게 되기 쉬울 것이데, 데이터 대부분이 두번째 클래스이기 때문이다. 
 
-그러나, _민감도_ 가 낮을 가능서이 큰데, 모델이 모든 것을 다수 클래스로 예측해서 정확도(혹은 로스 함수)를 최적화할 것이기 때문이다.
+그러나, _민감도_ 가 낮을 가능성이 큰데, 모델이 모든 것을 다수 클래스로 예측해서 정확도(혹은 로스 함수)를 최적화할 것이기 때문이다.
 
 클래스 불균형의 결과 중 하나는 기본값 확률 컷오프를 50%로 하는 것이 부적절하다는 것입니다. 더 극단적인 컷오프값이 성능이 더 좋을 수 있습니다. 
 
@@ -142,8 +142,8 @@ collect_metrics(qda_rose_res)
 #> # A tibble: 2 × 6
 #>   .metric .estimator  mean     n std_err .config             
 #>   <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
-#> 1 j_index binary     0.781    50 0.0202  Preprocessor1_Model1
-#> 2 roc_auc binary     0.952    50 0.00487 Preprocessor1_Model1
+#> 1 j_index binary     0.771    50 0.0207  Preprocessor1_Model1
+#> 2 roc_auc binary     0.950    50 0.00553 Preprocessor1_Model1
 ```
 
 ROSE 를 이용하지 않고 결과가 어떻게 생겼을까? 다른 워크플로를 생성하고 같은 리샘플과 함께 QDA 모델을 적합할 수 있습니다:

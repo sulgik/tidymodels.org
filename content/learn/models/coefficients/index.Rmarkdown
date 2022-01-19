@@ -5,7 +5,7 @@ categories: [model fitting]
 type: learn-subsection
 weight: 5
 description: | 
-  Create models that use coefficients, extract them from fitted models, and visualize them.
+  계수가 있는 모델을 생성하고, 적합된 모델에서 계수를 추출하고, 시각화한다.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -15,23 +15,27 @@ library(Matrix)
 library(glmnet)
 ```
 
-## Introduction 
+## 들어가기 
 
-There are many types of statistical models with diverse kinds of structure. Some models have coefficients (a.k.a. weights) for each term in the model. Familiar examples of such models are linear or logistic regression, but more complex models (e.g. neural networks, MARS) can also have model coefficients. When we work with models that use weights or coefficients, we often want to examine the estimated coefficients. 
+통계 모델은 다양한 구조를 갖습니다.
+어떤 모델은 각 항마다 계수(coefficient, weight)를 가지고 있습니다.
+이러한 모델의 쉬운 예는 선형 혹은 로지스틱회귀이지만, 더 복잡한 모델 (예: 뉴럴네트워크, MARS)에도 모델 계수가 있습니다.
+웨이트나 계수를 가진 모델으로 작업할 때 추정한 계수를 확인하고 싶은 경우가 많습니다.
 
-This article describes how to retrieve the estimated coefficients from models fit using tidymodels. `r req_pkgs(pkgs)`
+이 장에서 tidymodels 를 사용하여 모델 적합 객체로 부터 계수 추정값을 추출하는 법에 대해 알아봅니다.
+`r req_pkgs(pkgs)`
 
-## Linear regression
+## 선형 회귀
 
-Let's start with a linear regression model: 
+선형 회귀모델부터 시작해 봅시다:
 
 $$\hat{y} = \hat{\beta}_0 + \hat{\beta}_1x_1 + \ldots + \hat{\beta}_px_p$$ 
 
-The $\beta$ values are the coefficients and the $x_j$ are model predictors, or features. 
+$\beta$는 계수이고 $x_j$ 은 모델 설명변수 이거나 피쳐입니다.
 
-Let's use the [Chicago train data](https://bookdown.org/max/FES/chicago-intro.html) where we predict the ridership at the Clark and Lake station (column name: `ridership`) with the previous ridership data 14 days prior at three of the stations. 
+[시카고 기차 데이터](https://bookdown.org/max/FES/chicago-intro.html) 에서 Clark 와 Lake 역의 승차를 세 역의 14일 이전 승차데이터를 이용하여 예측해 봅시다.
 
-The data are in the modeldata package:  
+modeldata 패키지에 데이터가 있습니다:
 
 ```{r setup-tm, message = FALSE, warning=FALSE}
 library(tidymodels)
@@ -43,14 +47,14 @@ data(Chicago)
 Chicago <- Chicago %>% select(ridership, Clark_Lake, Austin, Harlem)
 ```
 
-### A single model
+### 단일 모델
 
-Let's start by fitting only a single parsnip model object. We'll create a model specification using `linear_reg()`. 
+단일한 parsnip 모델 객체를 적합하는 것부터 시작해 봅시다.
+`linear_reg()` 를 하여 모델 specification 을 생성할 것입니다. 
 
 {{% note %}} The default engine is `"lm"` so no call to `set_engine()` is required. {{%/ note %}}
 
-The `fit()` function estimates the model coefficients, given a formula and data set. 
-
+공식과 데이터셋이 주어질 때, `fit()` 함수는 모델 계수를 추정합니다.
 
 ```{r lm-single}
 lm_spec <- linear_reg()
@@ -58,38 +62,44 @@ lm_fit <- fit(lm_spec, ridership ~ ., data = Chicago)
 lm_fit
 ```
 
-The best way to retrieve the fitted parameters is to use the `tidy()` method. This function, in the broom package, returns the coefficients and their associated statistics in a data frame with standardized column names: 
+`tidy()` 방법을 사용하는 것이 적합된 파라미터를 추출하는 가장 좋은 방법입니다.
+broom 패키지에 있는 이 함수는 계수와, 연관된 통계량을 데이터프레임에 표준화된 열이름과 함께 반환합니다:
 
 ```{r lm-tidy}
 tidy(lm_fit)
 ```
 
-We'll use this function in subsequent sections. 
+이후 섹션에서 이 함수를 사용합니다.
 
-### Resampled or tuned models
+### 리샘플되거나 튜닝된 모델
 
-The tidymodels framework emphasizes the use of resampling methods to evaluate and characterize how well a model works. While time series resampling methods are appropriate for these data, we can also use the [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) to resample the data. This is a standard resampling approach when evaluating the uncertainty in statistical estimates.  
+tidymodels 프레임워크에서는 리샘플링 방법들로 모델 성능을 평가하는 것을 강조합니다. 
+시게열 리샘플링 방법이 이 데이터에 적절하지만, 데이터를 리샘플하는 [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) 방법을 이용할 수도 있습니다.
+bootstrap 방법은 통계적 추정값의 불확실성을 평가할 때 표준적인 리샘플링 방법입니다.
 
-We'll use five bootstrap resamples of the data to simplify the plots and output (normally, we would use a larger number of resamples for more reliable estimates).
+플롯과 아웃풋을 단순화하기 위해 다섯 bootstrap 리샘플을 사용할 것입니다. (원래는 믿을만한 추정값을 위해서는 더 많은 개수의 리샘플을 사용합니다).
 
 ```{r bootstraps}
 set.seed(123)
 bt <- bootstraps(Chicago, times = 5)
 ```
 
-With resampling, we fit the same model to the different simulated versions of the data set produced by resampling. The tidymodels function [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance) is the recommended approach for doing so. 
+리샘플링이 만든 데이터셋의 다른 시뮬레이션 버전에 동일한 모델을 적합시킵니다. 
+추천하는 방법은 tidymodels 함수 [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance)를 사용하는 것입니다.
 
 {{% warning %}} The `fit_resamples()` function does not automatically save the model objects for each resample since these can be quite large and its main purpose is estimating performance. However, we can pass a function to `fit_resamples()` that _can_ save the model object or any other aspect of the fit. {{%/ warning %}}
 
-This function takes a single argument that represents the fitted [workflow object](https://www.tmwr.org/workflows.html) (even if you don't give `fit_resamples()` a workflow).
+이 함수는 적합된 [워크플로우 객체](https://www.tmwr.org/workflows.html) 를 표현하는 인수를 입력으로 합니다. (`fit_resamples()` 에 워크플로우를 알려주지 않을지라도 그렇습니다.)
 
-From this, we can extract the model fit. There are two "levels" of model objects that are available: 
+이제 모델 적합을 추출할 수 있습니다. 
+모델 객체의 두 "레벨"을 볼 수 있습니다:
 
-* The parsnip model object, which wraps the underlying model object. We retrieve this using the `extract_fit_parsnip()` function. 
+* parsnip 모델객체: 내부 모델객체를 래핑함. `extract_fit_parsnip()` 함수로 추출함. 
 
-* The underlying model object (a.k.a. the engine fit) via the `extract_fit_engine()`. 
+* `extract_fit_engine()` 를 통한 내부 모델객체 (aka 엔진적합). 
 
-We'll use the latter option and then tidy this model object as we did in the previous section. Let's add this to the control function so that we can re-use it. 
+후자 옵션을 사용하여 이 모델객체를 이전섹션에서 했듯이 타이디하게 할 것입니다. 
+이를 재사용할 수 있도록 컨트롤 함수에 추가합시다.
 
 ```{r lm-ctrl}
 get_lm_coefs <- function(x) {
@@ -102,7 +112,7 @@ get_lm_coefs <- function(x) {
 tidy_ctrl <- control_grid(extract = get_lm_coefs)
 ```
 
-This argument is then passed to `fit_resamples()`:
+이후 이 인수를 `fit_resamples()` 에 전달합니다:
 
 ```{r lm-resampled}
 lm_res <- 
