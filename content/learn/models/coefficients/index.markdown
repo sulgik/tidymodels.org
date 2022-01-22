@@ -5,28 +5,32 @@ categories: [model fitting]
 type: learn-subsection
 weight: 5
 description: | 
-  Create models that use coefficients, extract them from fitted models, and visualize them.
+  계수가 있는 모델을 생성하고, 적합된 모델에서 계수를 추출하고, 시각화한다.
 ---
 
 
 
-## Introduction 
+## 들어가기 
 
-There are many types of statistical models with diverse kinds of structure. Some models have coefficients (a.k.a. weights) for each term in the model. Familiar examples of such models are linear or logistic regression, but more complex models (e.g. neural networks, MARS) can also have model coefficients. When we work with models that use weights or coefficients, we often want to examine the estimated coefficients. 
+통계 모델은 다양한 구조를 갖습니다.
+어떤 모델은 각 항마다 계수(coefficient, weight)를 가지고 있습니다.
+이러한 모델의 쉬운 예는 선형 혹은 로지스틱회귀이지만, 더 복잡한 모델 (예: 뉴럴네트워크, MARS)에도 모델 계수가 있습니다.
+웨이트나 계수를 가진 모델으로 작업할 때 추정한 계수를 확인하고 싶은 경우가 많습니다.
 
-This article describes how to retrieve the estimated coefficients from models fit using tidymodels. 이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: glmnet and tidymodels.
+이 장에서 tidymodels 를 사용하여 모델 적합 객체로 부터 계수 추정값을 추출하는 법에 대해 알아봅니다.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: glmnet and tidymodels.
 
-## Linear regression
+## 선형 회귀
 
-Let's start with a linear regression model: 
+선형 회귀모델부터 시작해 봅시다:
 
 `$$\hat{y} = \hat{\beta}_0 + \hat{\beta}_1x_1 + \ldots + \hat{\beta}_px_p$$` 
 
-The `\(\beta\)` values are the coefficients and the `\(x_j\)` are model predictors, or features. 
+`\(\beta\)`는 계수이고 `\(x_j\)` 은 모델 설명변수 이거나 피쳐입니다.
 
-Let's use the [Chicago train data](https://bookdown.org/max/FES/chicago-intro.html) where we predict the ridership at the Clark and Lake station (column name: `ridership`) with the previous ridership data 14 days prior at three of the stations. 
+[시카고 기차 데이터](https://bookdown.org/max/FES/chicago-intro.html) 에서 Clark 와 Lake 역의 승차를 세 역의 14일 이전 승차데이터를 이용하여 예측해 봅시다.
 
-The data are in the modeldata package:  
+modeldata 패키지에 데이터가 있습니다:
 
 
 ```r
@@ -39,14 +43,14 @@ data(Chicago)
 Chicago <- Chicago %>% select(ridership, Clark_Lake, Austin, Harlem)
 ```
 
-### A single model
+### 단일 모델
 
-Let's start by fitting only a single parsnip model object. We'll create a model specification using `linear_reg()`. 
+단일한 parsnip 모델 객체를 적합하는 것부터 시작해 봅시다.
+`linear_reg()` 를 하여 모델 specification 을 생성할 것입니다. 
 
 {{% note %}} The default engine is `"lm"` so no call to `set_engine()` is required. {{%/ note %}}
 
-The `fit()` function estimates the model coefficients, given a formula and data set. 
-
+공식과 데이터셋이 주어질 때, `fit()` 함수는 모델 계수를 추정합니다.
 
 
 ```r
@@ -65,7 +69,8 @@ lm_fit
 #>       1.678        0.904        0.612       -0.555
 ```
 
-The best way to retrieve the fitted parameters is to use the `tidy()` method. This function, in the broom package, returns the coefficients and their associated statistics in a data frame with standardized column names: 
+`tidy()` 방법을 사용하는 것이 적합된 파라미터를 추출하는 가장 좋은 방법입니다.
+broom 패키지에 있는 이 함수는 계수와, 연관된 통계량을 데이터프레임에 표준화된 열이름과 함께 반환합니다:
 
 
 ```r
@@ -79,13 +84,15 @@ tidy(lm_fit)
 #> 4 Harlem        -0.555    0.165      -3.36 7.85e-  4
 ```
 
-We'll use this function in subsequent sections. 
+이후 섹션에서 이 함수를 사용합니다.
 
-### Resampled or tuned models
+### 리샘플되거나 튜닝된 모델
 
-The tidymodels framework emphasizes the use of resampling methods to evaluate and characterize how well a model works. While time series resampling methods are appropriate for these data, we can also use the [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) to resample the data. This is a standard resampling approach when evaluating the uncertainty in statistical estimates.  
+tidymodels 프레임워크에서는 리샘플링 방법들로 모델 성능을 평가하는 것을 강조합니다. 
+시게열 리샘플링 방법이 이 데이터에 적절하지만, 데이터를 리샘플하는 [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) 방법을 이용할 수도 있습니다.
+bootstrap 방법은 통계적 추정값의 불확실성을 평가할 때 표준적인 리샘플링 방법입니다.
 
-We'll use five bootstrap resamples of the data to simplify the plots and output (normally, we would use a larger number of resamples for more reliable estimates).
+플롯과 아웃풋을 단순화하기 위해 다섯 bootstrap 리샘플을 사용할 것입니다. (원래는 믿을만한 추정값을 위해서는 더 많은 개수의 리샘플을 사용합니다).
 
 
 ```r
@@ -93,19 +100,22 @@ set.seed(123)
 bt <- bootstraps(Chicago, times = 5)
 ```
 
-With resampling, we fit the same model to the different simulated versions of the data set produced by resampling. The tidymodels function [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance) is the recommended approach for doing so. 
+리샘플링이 만든 데이터셋의 다른 시뮬레이션 버전에 동일한 모델을 적합시킵니다. 
+추천하는 방법은 tidymodels 함수 [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance)를 사용하는 것입니다.
 
 {{% warning %}} The `fit_resamples()` function does not automatically save the model objects for each resample since these can be quite large and its main purpose is estimating performance. However, we can pass a function to `fit_resamples()` that _can_ save the model object or any other aspect of the fit. {{%/ warning %}}
 
-This function takes a single argument that represents the fitted [workflow object](https://www.tmwr.org/workflows.html) (even if you don't give `fit_resamples()` a workflow).
+이 함수는 적합된 [워크플로우 객체](https://www.tmwr.org/workflows.html) 를 표현하는 인수를 입력으로 합니다. (`fit_resamples()` 에 워크플로우를 알려주지 않을지라도 그렇습니다.)
 
-From this, we can extract the model fit. There are two "levels" of model objects that are available: 
+이제 모델 적합을 추출할 수 있습니다. 
+모델 객체의 두 "레벨"을 볼 수 있습니다:
 
-* The parsnip model object, which wraps the underlying model object. We retrieve this using the `extract_fit_parsnip()` function. 
+* parsnip 모델객체: 내부 모델객체를 래핑함. `extract_fit_parsnip()` 함수로 추출함. 
 
-* The underlying model object (a.k.a. the engine fit) via the `extract_fit_engine()`. 
+* `extract_fit_engine()` 를 통한 내부 모델객체 (aka 엔진적합). 
 
-We'll use the latter option and then tidy this model object as we did in the previous section. Let's add this to the control function so that we can re-use it. 
+후자 옵션을 사용하여 이 모델객체를 이전섹션에서 했듯이 타이디하게 할 것입니다. 
+이를 재사용할 수 있도록 컨트롤 함수에 추가합시다.
 
 
 ```r
@@ -119,7 +129,7 @@ get_lm_coefs <- function(x) {
 tidy_ctrl <- control_grid(extract = get_lm_coefs)
 ```
 
-This argument is then passed to `fit_resamples()`:
+이후 이 인수를 `fit_resamples()` 에 전달합니다:
 
 
 ```r
@@ -139,8 +149,10 @@ lm_res
 #> 5 <split [5698/2088]> Bootstrap5 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [1 ×…
 ```
 
-Note that there is a `.extracts` column in our resampling results. This object contains the output of our `get_lm_coefs()` function for each resample. The structure of the elements of this column is a little complex. Let's start by looking at the first element (which corresponds to the first resample): 
-
+리샘플링 결과에 `.extracts` 열이 생겼습니다.
+이 객체에는 각 리샘플에 대한 `get_lm_coefs()` 아웃풋이 있습니다.
+이 `.extracts` 열 구조는 조금 복잡합니다.
+첫번째 요소 (첫번째 리샘플에 해당) 를 보는 것으로 시작합시다:
 
 
 ```r
@@ -151,7 +163,7 @@ lm_res$.extracts[[1]]
 #> 1 <tibble [4 × 5]> Preprocessor1_Model1
 ```
 
-There is _another_ column in this element called `.extracts` that has the results of the `tidy()` function call: 
+이 요소에는 `tidy()` 함수 호출 결과를 가진 `.extracts` 이름의 _또다른_ 열이 있습니다:
 
 
 ```r
@@ -165,7 +177,7 @@ lm_res$.extracts[[1]]$.extracts[[1]]
 #> 4 Harlem        -0.637    0.163      -3.92 9.01e-  5
 ```
 
-These nested columns can be flattened via the purrr `unnest()` function: 
+이러한 중첩된 열들은 purrr `unnest()` 함수를 통해 flat 하게 만들수 있습니다: 
 
 
 ```r
@@ -182,7 +194,7 @@ lm_res %>%
 #> 5 Bootstrap5 <tibble [4 × 5]> Preprocessor1_Model1
 ```
 
-We still have a column of nested tibbles, so we can run the same command again to get the data into a more useful format: 
+중첩된 티블 열이 여전히 남아있기 때문에, 데이터를 유용한 포맷으로 만드는 같은 명령어를 다시 수행합니다:
 
 
 ```r
@@ -218,7 +230,8 @@ lm_coefs %>% select(id, term, estimate, p.value)
 #> 20 Bootstrap5 Harlem        -0.512 1.73e-  3
 ```
 
-That's better! Now, let's plot the model coefficients for each resample: 
+더 나아졌습니다!
+이제, 각 리샘플의 모델 계수를 플롯해봅시다.
 
 
 ```r
@@ -233,9 +246,9 @@ lm_coefs %>%
 
 <img src="figs/lm-plot-1.svg" width="672" />
 
-There seems to be a lot of uncertainty in the coefficient for the Austin station data, but less for the other two. 
-
-Looking at the code for unnesting the results, you may find the double-nesting structure excessive or cumbersome. However, the extraction functionality is flexible, and a simpler structure would prevent many use cases. 
+Austin 역 데이터의 계수에 있어서 uncertainty 가 크고, 다른 두 역에 대해서는 작은 것 같이 보입니다.
+결과를 unnest 하는 코드를 보면, double-nesting 구조가 과하거나 귀찮을 것입니다.
+그러나, 추출 기능은 유연성이 있고, 더 간단한 구조로는 많은 use case 를 할 수 없었을 것입니다.
 
 ## More complex: a glmnet model
 
@@ -576,11 +589,11 @@ Notice a couple of things:
 
 
 ```
-#> ─ Session info  🏌🏿  🙌🏻  🇨🇿   ──────────────────────────────────────
-#>  hash: person golfing: dark skin tone, raising hands: light skin tone, flag: Czechia
+#> ─ Session info  🆎  👫🏼  🦙   ───────────────────────────────────────
+#>  hash: AB button (blood type), woman and man holding hands: medium-light skin tone, llama
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -588,12 +601,12 @@ Notice a couple of things:
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-11
+#>  date     2022-01-22
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
 #>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
 #>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)

@@ -121,20 +121,22 @@ lm_res <-
 lm_res
 ```
 
-Note that there is a `.extracts` column in our resampling results. This object contains the output of our `get_lm_coefs()` function for each resample. The structure of the elements of this column is a little complex. Let's start by looking at the first element (which corresponds to the first resample): 
-
+리샘플링 결과에 `.extracts` 열이 생겼습니다.
+이 객체에는 각 리샘플에 대한 `get_lm_coefs()` 아웃풋이 있습니다.
+이 `.extracts` 열 구조는 조금 복잡합니다.
+첫번째 요소 (첫번째 리샘플에 해당) 를 보는 것으로 시작합시다:
 
 ```{r lm-extract-ex}
 lm_res$.extracts[[1]]
 ```
 
-There is _another_ column in this element called `.extracts` that has the results of the `tidy()` function call: 
+이 요소에는 `tidy()` 함수 호출 결과를 가진 `.extracts` 이름의 _또다른_ 열이 있습니다:
 
 ```{r lm-extract-again}
 lm_res$.extracts[[1]]$.extracts[[1]]
 ```
 
-These nested columns can be flattened via the purrr `unnest()` function: 
+이러한 중첩된 열들은 purrr `unnest()` 함수를 통해 flat 하게 만들수 있습니다: 
 
 ```{r lm-extract-almost}
 lm_res %>% 
@@ -142,7 +144,7 @@ lm_res %>%
   unnest(.extracts) 
 ```
 
-We still have a column of nested tibbles, so we can run the same command again to get the data into a more useful format: 
+중첩된 티블 열이 여전히 남아있기 때문에, 데이터를 유용한 포맷으로 만드는 같은 명령어를 다시 수행합니다:
 
 ```{r lm-extract-final}
 lm_coefs <- 
@@ -154,7 +156,8 @@ lm_coefs <-
 lm_coefs %>% select(id, term, estimate, p.value)
 ```
 
-That's better! Now, let's plot the model coefficients for each resample: 
+더 나아졌습니다!
+이제, 각 리샘플의 모델 계수를 플롯해봅시다.
 
 ```{r lm-plot}
 lm_coefs %>%
@@ -166,9 +169,9 @@ lm_coefs %>%
   theme(legend.position = "top")
 ```
 
-There seems to be a lot of uncertainty in the coefficient for the Austin station data, but less for the other two. 
-
-Looking at the code for unnesting the results, you may find the double-nesting structure excessive or cumbersome. However, the extraction functionality is flexible, and a simpler structure would prevent many use cases. 
+Austin 역 데이터의 계수에 있어서 uncertainty 가 크고, 다른 두 역에 대해서는 작은 것 같이 보입니다.
+결과를 unnest 하는 코드를 보면, double-nesting 구조가 과하거나 귀찮을 것입니다.
+그러나, 추출 기능은 유연성이 있고, 더 간단한 구조로는 많은 use case 를 할 수 없었을 것입니다.
 
 ## More complex: a glmnet model
 
