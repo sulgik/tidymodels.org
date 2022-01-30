@@ -252,18 +252,18 @@ Austin 역 데이터의 계수에 있어서 uncertainty 가 크고, 다른 두 �
 
 ## 복잡한 모델: glmnet
 
-The glmnet model can fit the same linear regression model structure shown above. 
-It uses regularization (a.k.a penalization) to estimate the model parameters. 
-This has the benefit of shrinking the coefficients towards zero, important in situations where there are strong correlations between predictors or if some feature selection is required. 
-Both of these cases are true for our Chicago train data set. 
+glmnet 모델은 위에서 본 것과 같은 선형 회귀모형을 적합할 수 있습니다.
+이 모델은 regulization (a.k.a penalization) 을 사용하여  모델 파라키터를 추정합니다.
+이렇게 하면 계수를 0 으로 축소시키는데, 설명변수 사이에 상관성이 크거나, 변수 선택이 필요할 때 중요합니다. 
+우리 Chiacago 열차데이터셋에 두 경우 다 해당합니다. 
 
-There are two types of penalization that this model uses: 
+이 모델이 사용하는 두 가지 유형의 penalization 이 있습니다:
 
-* Lasso (a.k.a. `\(L_1\)`) penalties can shrink the model terms so much that they are absolute zero (i.e. their effect is entirely removed from the model). 
+* Lasso (a.k.a. `\(L_1\)`) 페널티는 절대값 0 이 될 정도로 모델 항을 축소시킬 수 있습니다 (즉, 해당 효과가 모델에서 완전히 제거됨). 
 
-* Weight decay (a.k.a ridge regression or `\(L_2\)`) uses a different type of penalty that is most useful for highly correlated predictors. 
+* Weight decay (a.k.a ridge 회귀 혹은 `\(L_2\)`) 는 상관성이 강한 설명변수들에 대해 가장 효과적인 유형의 페널티를 사용합니다. 
 
-The glmnet model has two primary tuning parameters, the total amount of penalization and the mixture of the two penalty types. For example, this specification:
+glmnet 모델은 두 가지의 튜닝파라미터가 있는데, penalization 전체 양과 두 페널티 유형의 mixture 입니다. 예를 들어, 이 specification 은:
 
 
 ```r
@@ -272,11 +272,11 @@ glmnet_spec <-
   set_engine("glmnet")
 ```
 
-has a penalty that is 95% lasso and 5% weight decay. The total amount of these two penalties is 0.1 (which is fairly high). 
+95% lasso 와 5% weight decay 인 페널티를 가집니다. 이 두 페널티의 전체 양은 0.1 (상당히 높은 값) 입니다. 
 
 {{% note %}} Models with regularization require that predictors are all on the same scale. The ridership at our three stations are very different, but glmnet [automatically centers and scales the data](https://parsnip.tidymodels.org/reference/details_linear_reg_glmnet.html). You can use recipes to [center and scale your data yourself](https://recipes.tidymodels.org/reference/step_normalize.html). {{%/ note %}}
 
-Let's combine the model specification with a formula in a model `workflow()` and then fit the model to the data:
+모델 specification 과 모델 `workflow()` 의 공식을 결합한 뒤 모델을 데이터에 적합해 봅시다:
 
 
 ```r
@@ -350,15 +350,18 @@ glmnet_fit
 #> and 9 more lines.
 ```
 
-In this output, the term `lambda` is used to represent the penalty. 
+이 아웃풋에서, `lambda` 항은 페널티를 나타냅니다.
 
-Note that the output shows many values of the penalty despite our specification of `penalty = 0.1`. It turns out that this model fits a "path" of penalty values.  Even though we are interested in a value of 0.1, we can get the model coefficients for many associated values of the penalty from the same model object. 
+`penalty = 0.1` specification 에도 불구하고 아웃풋에서 페널티의 여러 값이 출력되었습니다. 페널티 값 "path" 에 적합하는 것입니다. 0.1 값에 관심이 있더라도, 같은 모델 객체의 여러 패널티 값에 대한 모델 계수를 얻을 수 있습니다.
 
-Let's look at two different approaches to obtaining the coefficients. Both will use the `tidy()` method. One will tidy a glmnet object and the other will tidy a tidymodels object. 
+계수를 구하는 두가지 다른 방법을 살펴봅시다. 두 방법 다 `tidy()` 방법을 사용합니다. 한 방법은 glmnet 객체를 타이디하게 하고 다른 방법은, tidymodels 객체를 타이디하게 할 것입니다.
 
-### Using glmnet penalty values
+### glmnet 페널티 값을 사용
 
-This glmnet fit contains multiple penalty values which depend on the data set; changing the data (or the mixture amount) often produces a different set of values. For this data set, there are 55 penalties available. To get the set of penalties produced for this data set, we can extract the engine fit and tidy: 
+이 glmnet fit 에는 데이터셋에 의존하는 여러 패널티 값이 있습니다;  
+데이터(혹은 mixture 양)를 바꾸면 다른 패널티값이 산출됩니다. 
+이 데이터셋에는, 55 개의 패널티가 있습니다. 
+이 데이터셋에서 산출된 패널티를 구하기 위해, 엔진 fit 을 추출하고, 타이디하게 할 수 있습니다:
 
 
 ```r
@@ -383,11 +386,12 @@ glmnet_fit %>%
 #> # … with 89 more rows
 ```
 
-This works well but, it turns out that our penalty value (0.1) is not in the list produced by the model! The underlying package has functions that use interpolation to produce coefficients for this specific value, but the `tidy()` method for glmnet objects does not use it. 
+출력된 것을 보면, 잘 동작한 것 같지만, 우리 패널티 값 (0.1) 이 모델에서 산출한 목록에 없습니다!
+내부 패키지에는 interpolation 을 이용하여, 이 구체적 값에 해당하는 계수를 산출하는 함수들이 있지만, glmnet 객체에 대한 `tidy()` 메소드는 이 함수들을 사용하지 않습니다. 
 
-### Using specific penalty values
+### 특정 패널티 값 사용하기
 
-If we run the `tidy()` method on the workflow or parsnip object, a different function is used that returns the coefficients for the penalty value that we specified: 
+`tidy()` 메소드를 워크플로나 parsnip 객체에 실행한다면, 우리가 특정한 패널티 값에 해당하는 계수를 반환하는 다른 함수가 사용됩니다: 
 
 
 ```r
@@ -401,7 +405,7 @@ tidy(glmnet_fit)
 #> 4 Harlem         0         0.1
 ```
 
-For any another (single) penalty, we can use an additional argument:
+다른 (single) 패널티에 대해, 추가 인수를 사용할 수 있습니다:
 
 
 ```r
@@ -415,10 +419,10 @@ tidy(glmnet_fit, penalty = 5.5620)  # A value from above
 #> 4 Harlem        0         5.56
 ```
 
-The reason for having two `tidy()` methods is that, with tidymodels, the focus is on using a specific penalty value. 
+두 개의 `tidy()` 메소드가 있는 이유는 tidymodels 에서의 주안점은 특정한 패널티 값에 있기 때문입니다. 
 
 
-### Tuning a glmnet model
+### glmnet 모델 튜닝하기
 
 If we know a priori acceptable values for penalty and mixture, we can use the `fit_resamples()` function as we did before with linear regression. Otherwise, we can tune those parameters with the tidymodels `tune_*()` functions. 
 
@@ -604,7 +608,7 @@ Notice a couple of things:
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-22
+#>  date     2022-01-30
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
