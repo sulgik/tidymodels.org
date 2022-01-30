@@ -250,9 +250,12 @@ Austin 역 데이터의 계수에 있어서 uncertainty 가 크고, 다른 두 �
 결과를 unnest 하는 코드를 보면, double-nesting 구조가 과하거나 귀찮을 것입니다.
 그러나, 추출 기능은 유연성이 있고, 더 간단한 구조로는 많은 use case 를 할 수 없었을 것입니다.
 
-## More complex: a glmnet model
+## 복잡한 모델: glmnet
 
-The glmnet model can fit the same linear regression model structure shown above. It uses regularization (a.k.a penalization) to estimate the model parameters. This has the benefit of shrinking the coefficients towards zero, important in situations where there are strong correlations between predictors or if some feature selection is required. Both of these cases are true for our Chicago train data set. 
+The glmnet model can fit the same linear regression model structure shown above. 
+It uses regularization (a.k.a penalization) to estimate the model parameters. 
+This has the benefit of shrinking the coefficients towards zero, important in situations where there are strong correlations between predictors or if some feature selection is required. 
+Both of these cases are true for our Chicago train data set. 
 
 There are two types of penalization that this model uses: 
 
