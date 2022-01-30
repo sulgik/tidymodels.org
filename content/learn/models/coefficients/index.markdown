@@ -259,11 +259,11 @@ glmnet 모델은 위에서 본 것과 같은 선형 회귀모형을 적합할 �
 
 이 모델이 사용하는 두 가지 유형의 penalization 이 있습니다:
 
-* Lasso (a.k.a. `\(L_1\)`) 페널티는 절대값 0 이 될 정도로 모델 항을 축소시킬 수 있습니다 (즉, 해당 효과가 모델에서 완전히 제거됨). 
+* Lasso (a.k.a. `\(L_1\)`) 패널티는 절대값 0 이 될 정도로 모델 항을 축소시킬 수 있습니다 (즉, 해당 효과가 모델에서 완전히 제거됨). 
 
-* Weight decay (a.k.a ridge 회귀 혹은 `\(L_2\)`) 는 상관성이 강한 설명변수들에 대해 가장 효과적인 유형의 페널티를 사용합니다. 
+* Weight decay (a.k.a ridge 회귀 혹은 `\(L_2\)`) 는 상관성이 강한 설명변수들에 대해 가장 효과적인 유형의 패널티를 사용합니다. 
 
-glmnet 모델은 두 가지의 튜닝파라미터가 있는데, penalization 전체 양과 두 페널티 유형의 mixture 입니다. 예를 들어, 이 specification 은:
+glmnet 모델은 두 가지의 튜닝파라미터가 있는데, penalization 전체 양과 두 패널티 유형의 mixture 입니다. 예를 들어, 이 specification 은:
 
 
 ```r
@@ -272,7 +272,7 @@ glmnet_spec <-
   set_engine("glmnet")
 ```
 
-95% lasso 와 5% weight decay 인 페널티를 가집니다. 이 두 페널티의 전체 양은 0.1 (상당히 높은 값) 입니다. 
+95% lasso 와 5% weight decay 인 패널티를 가집니다. 이 두 패널티의 전체 양은 0.1 (상당히 높은 값) 입니다. 
 
 {{% note %}} Models with regularization require that predictors are all on the same scale. The ridership at our three stations are very different, but glmnet [automatically centers and scales the data](https://parsnip.tidymodels.org/reference/details_linear_reg_glmnet.html). You can use recipes to [center and scale your data yourself](https://recipes.tidymodels.org/reference/step_normalize.html). {{%/ note %}}
 
@@ -350,13 +350,13 @@ glmnet_fit
 #> and 9 more lines.
 ```
 
-이 아웃풋에서, `lambda` 항은 페널티를 나타냅니다.
+이 아웃풋에서, `lambda` 항은 패널티를 나타냅니다.
 
-`penalty = 0.1` specification 에도 불구하고 아웃풋에서 페널티의 여러 값이 출력되었습니다. 페널티 값 "path" 에 적합하는 것입니다. 0.1 값에 관심이 있더라도, 같은 모델 객체의 여러 패널티 값에 대한 모델 계수를 얻을 수 있습니다.
+`penalty = 0.1` specification 에도 불구하고 아웃풋에서 패널티의 여러 값이 출력되었습니다. 패널티 값 "path" 에 적합하는 것입니다. 0.1 값에 관심이 있더라도, 같은 모델 객체의 여러 패널티 값에 대한 모델 계수를 얻을 수 있습니다.
 
 계수를 구하는 두가지 다른 방법을 살펴봅시다. 두 방법 다 `tidy()` 방법을 사용합니다. 한 방법은 glmnet 객체를 타이디하게 하고 다른 방법은, tidymodels 객체를 타이디하게 할 것입니다.
 
-### glmnet 페널티 값을 사용
+### glmnet 패널티 값을 사용
 
 이 glmnet fit 에는 데이터셋에 의존하는 여러 패널티 값이 있습니다;  
 데이터(혹은 mixture 양)를 바꾸면 다른 패널티값이 산출됩니다. 
