@@ -9,3 +9,4 @@ Thumbs.db
 index_cache
 content/start/case-study/cache
 content/learn/work/bayes-opt/cache
+contnet/learn/models/parsnip-nnet/*

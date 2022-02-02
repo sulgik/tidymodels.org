@@ -59,7 +59,7 @@ lm_fit <- fit(lm_spec, ridership ~ ., data = Chicago)
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  5ms 
+#> Fit time:  7ms 
 #> 
 #> Call:
 #> stats::lm(formula = ridership ~ ., data = data)
@@ -424,9 +424,9 @@ tidy(glmnet_fit, penalty = 5.5620)  # A value from above
 
 ### glmnet 모델 튜닝하기
 
-If we know a priori acceptable values for penalty and mixture, we can use the `fit_resamples()` function as we did before with linear regression. Otherwise, we can tune those parameters with the tidymodels `tune_*()` functions. 
-
-Let's tune our glmnet model over both parameters with this grid: 
+penalty 와 mixture 에 사전 값을 알고 있다면, 선형회귀에서와 같이 `fit_resamples()` 함수를 사용할 수 있습니다. 
+다른 방법으로는 tidymodels `tune_*()` 함수로 이러한 파라미터들을 튜닝할 수 있습니다.
+이 그리드로 두개의 파라미터에 대해 glmnet 모델을 튜닝해 봅시다:
 
 
 ```r
@@ -434,11 +434,12 @@ pen_vals <- 10^seq(-3, 0, length.out = 10)
 grid <- crossing(penalty = pen_vals, mixture = c(0.1, 1.0))
 ```
 
-Here is where more glmnet-related complexity comes in: we know that each resample and each value of `mixture` will probably produce a different set of penalty values contained in the model object. _How can we look at the coefficients at the specific penalty values that we are using to tune?_
+여기가 glmnet-관련 복잡도가 더 증가하는 부분입니다: 각 resample 과 가가 `mixture` 값이 모델 객체에 포함된 다른 패널티 값들을 산출할 것입니다. _튜닝을 위해 사용 중인 특정 패널티 값에서 계수들을 어떻게 볼 수 있을까요?_
 
-The approach that we suggest is to use the special `path_values` option for glmnet. Details are described in the [technical documentation about glmnet and tidymodels](https://parsnip.tidymodels.org/reference/glmnet-details.html#arguments) but in short, this parameter will assign the collection of penalty values used by each glmnet fit (regardless of the data or value of mixture). 
+제안하는 방법은 glmnet 의 특수 `path_values` (패쓰 값) 옵션을 사용하는 것입니다. 
+[glmnet 과 tidymodels 에 관한 기술문서](https://parsnip.tidymodels.org/reference/glmnet-details.html#arguments) 에 상세사항이 있지만, 요약하면, 이 파라미터는 각 glmnet 적합이 사용한 패널티 값들 집합을 (데이터나 mixture 값에 상관 없이) 할당할 것입니다. 
 
-We can pass these as an engine argument and then update our previous workflow object:
+이들을 엔진 인수로 전달한 뒤 이전 워크플로 객체를 업데이트할 수 있습니다:
 
 
 ```r
@@ -451,7 +452,8 @@ glmnet_wflow <-
   update_model(glmnet_tune_spec)
 ```
 
-Now we will use an extraction function similar to when we used ordinary least squares. We add an additional argument to retain coefficients that are shrunk to zero by the lasso penalty: 
+ordinary least squared 를 사용했을 때와 유사한 추출 함수를 사용할 것입니다.
+추가 인수를 사용하여 lasso 패널티에 의해 0 으로 축소하는 계수들을 남길 것입니다: 
 
 
 ```r
@@ -483,7 +485,7 @@ glmnet_res
 #> 5 <split [5698/2088]> Bootstrap5 <tibble [40 × 6]> <tibble [0 × 1]> <tibble [20…
 ```
 
-As noted before, the elements of the main `.extracts` column have an embedded list column with the results of `get_glmnet_coefs()`:  
+전에서 보았듯이, 메인 `.extracts` 열의 구성요소들에는 `get_glmnet_coefs()` 결과가 있는 임베디된 리스트 열이 있습니다:
 
 
 ```r
@@ -510,7 +512,8 @@ glmnet_res$.extracts[[1]]$.extracts[[1]] %>% head()
 #> 6 (Intercept)     6    1.22   0.0215     0.783
 ```
 
-As before, we'll have to use a double `unnest()`. Since the penalty value is in both the top-level and lower-level `.extracts`, we'll use `select()` to get rid of the first version (but keep `mixture`):
+전과 같이, `unnest()` 를 두 번 사용해야합니다. 
+패널티 값이 top-level 과 lower-level `.extracts` 모두에 있기 때문에, `select()` 를 사용하여 첫 버전을 제거할 것입니다 (`mixture` 는 보관).
 
 
 ```r
@@ -521,7 +524,8 @@ glmnet_res %>%
   unnest(.extracts)
 ```
 
-But wait! We know that each glmnet fit contains all of the coefficients. This means, for a specific resample and value of `mixture`, the results are the same:  
+잠깐! 각 glmnet 적합에 계수들 모두가 있는 걸 알고 있습니다. 
+특정 resample 과 `mixture` 값에 대해 결과가 같다는 것을 의미합니다:  
 
 
 ```r
@@ -534,7 +538,8 @@ all.equal(
 #> [1] TRUE
 ```
 
-For this reason, we'll add a `slice(1)` when grouping by `id` and `mixture`. This will get rid of the replicated results. 
+이러한 이유로, `id` 와 `mixture` 로 그루핑할 때 slice(1)` 을 추가할 것입니다. 
+동일한 결과가 제거됩니다.
 
 
 ```r
@@ -567,7 +572,8 @@ glmnet_coefs %>%
 #> # … with 290 more rows
 ```
 
-Now we have the coefficients. Let's look at how they behave as more regularization is used: 
+계수들이 있습니다. 
+더 많은 regularization 이 사용될 때 계수들이 어떻게 바뀌는지 살펴봅시다: 
 
 
 ```r
@@ -586,11 +592,11 @@ glmnet_coefs %>%
 
 <img src="figs/glmnet-plot-1.svg" width="816" />
 
-Notice a couple of things: 
+다음을 알 수 있습니다: 
 
-* With a pure lasso model (i.e., `mixture = 1`), the Austin station predictor is selected out in each resample. With a mixture of both penalties, its influence increases. Also, as the penalty increases, the uncertainty in this coefficient decreases. 
+* 순수 lasso 모델 (즉, `mixture = 1`)에서, Austin 역 설명변수는 각 resample 에서 선택되지 않았다.두 패널티 mixture 에서, 영향도가 증가한다. 또한, 패널티가 증가하면, 이 계수의 불확실성은 감소한다. 
 
-* The Harlem predictor is either quickly selected out of the model or goes from negative to positive. 
+* Harlem 설명변수는 빠르게 모델에서 제외되거나 음수에서 양수로 변한다. 
 
 ## 세션정보
 
@@ -608,7 +614,7 @@ Notice a couple of things:
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-30
+#>  date     2022-02-01
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
