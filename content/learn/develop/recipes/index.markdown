@@ -16,7 +16,7 @@ description: |
 
 이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: modeldata and tidymodels.
 
-recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 많이 있습니다. CRAN 패지키들에 있는 전체 스텝 목록은 [여기에 있습니다](/find/recipes/). 한편, 당신만의 전처리 작업들을 정의할 필요가 있을 것입니다; 어떻게 하는지 이 장에서 살펴볼 것입니다. 좋은 스텝의 예를 찾고 있다면, [centering 코드](https://github.com/tidymodels/recipes/blob/master/R/center.R)나  [PCA 코드](https://github.com/tidymodels/recipes/blob/master/R/pca.R)부터 살펴볼 것을 추천합니다.
+recipes, themis, textrecipes 와 같은 패키지에는 레시피 스텝들이 많이 있습니다. CRAN 패지키들에 있는 전체 스텝 목록은 [여기에 있습니다](/find/recipes/). 한편, 당신만의 전처리 작업들을 정의해야 하는 경우가 있습니다; 어떻게 하는지 이 장에서 살펴볼 것입니다. 좋은 예를 보고 싶다면, [centering 코드](https://github.com/tidymodels/recipes/blob/master/R/center.R)나  [PCA 코드](https://github.com/tidymodels/recipes/blob/master/R/pca.R)부터 살펴볼 것을 추천합니다.
 
 체크 작업 (예: `check_class()`) 프로세스는 매우 유사합니다. 이에 관한 내용은 이 장 마지막에서 볼 수 있습니다. 
 
@@ -28,7 +28,7 @@ recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 �
 
 3. (선택적으로) `tunable()` 와 `tidy()` 같은 tidymodels 패키지작업 메소드를 추가한다. 
 
-데이터를 백분율로 변환하는 스텝을 예시로 생성할 것입니다.
+데이터를 백분율로 변환하는 스텝을 예시로 생성해 봅시다.
 
 ## 새로운 스텝 정의
 
@@ -133,7 +133,7 @@ step_percentile <- function(
 
 이제, 생성자 함수를 생성할 수 있습니다.
 
-함수 케스케이드는: 
+함수 캐스케이드는: 
 
 ```
 step_percentile() calls recipes::add_step()
@@ -507,16 +507,16 @@ tidy(rec_obj, number = 1)
 #> # A tibble: 274 × 4
 #>    term     value percentile id              
 #>    <chr>    <dbl>      <dbl> <chr>           
-#>  1 hydrogen 0.03           0 percentile_baW41
-#>  2 hydrogen 0.934          1 percentile_baW41
-#>  3 hydrogen 1.60           2 percentile_baW41
-#>  4 hydrogen 2.07           3 percentile_baW41
-#>  5 hydrogen 2.45           4 percentile_baW41
-#>  6 hydrogen 2.74           5 percentile_baW41
-#>  7 hydrogen 3.15           6 percentile_baW41
-#>  8 hydrogen 3.49           7 percentile_baW41
-#>  9 hydrogen 3.71           8 percentile_baW41
-#> 10 hydrogen 3.99           9 percentile_baW41
+#>  1 hydrogen 0.03           0 percentile_0N4t2
+#>  2 hydrogen 0.934          1 percentile_0N4t2
+#>  3 hydrogen 1.60           2 percentile_0N4t2
+#>  4 hydrogen 2.07           3 percentile_0N4t2
+#>  5 hydrogen 2.45           4 percentile_0N4t2
+#>  6 hydrogen 2.74           5 percentile_0N4t2
+#>  7 hydrogen 3.15           6 percentile_0N4t2
+#>  8 hydrogen 3.49           7 percentile_0N4t2
+#>  9 hydrogen 3.71           8 percentile_0N4t2
+#> 10 hydrogen 3.99           9 percentile_0N4t2
 #> # … with 264 more rows
 ```
 
@@ -595,38 +595,43 @@ tunable.step_poly <- function (x, ...) {
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Catalina 10.15.7      
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       Asia/Seoul                  
-#>  date     2022-01-10                  
+#> ─ Session info  😌  🕵🏼  🎄   ──────────────────────────────────────
+#>  hash: relieved face, detective: medium-light skin tone, Christmas tree
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.0.2)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.0.2)
-#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.0.2)
-#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.1.5   2021-09-30 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.0.2)
-#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-02-06
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  
  

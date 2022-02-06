@@ -23,7 +23,7 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 `r req_pkgs(pkgs)`
 
-recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 많이 있습니다. CRAN 패지키들에 있는 전체 스텝 목록은 [여기에 있습니다](/find/recipes/). 한편, 당신만의 전처리 작업들을 정의할 필요가 있을 것입니다; 어떻게 하는지 이 장에서 살펴볼 것입니다. 좋은 스텝의 예를 찾고 있다면, [centering 코드](https://github.com/tidymodels/recipes/blob/master/R/center.R)나  [PCA 코드](https://github.com/tidymodels/recipes/blob/master/R/pca.R)부터 살펴볼 것을 추천합니다.
+recipes, themis, textrecipes 와 같은 패키지에는 레시피 스텝들이 많이 있습니다. CRAN 패지키들에 있는 전체 스텝 목록은 [여기에 있습니다](/find/recipes/). 한편, 당신만의 전처리 작업들을 정의해야 하는 경우가 있습니다; 어떻게 하는지 이 장에서 살펴볼 것입니다. 좋은 예를 보고 싶다면, [centering 코드](https://github.com/tidymodels/recipes/blob/master/R/center.R)나  [PCA 코드](https://github.com/tidymodels/recipes/blob/master/R/pca.R)부터 살펴볼 것을 추천합니다.
 
 체크 작업 (예: `check_class()`) 프로세스는 매우 유사합니다. 이에 관한 내용은 이 장 마지막에서 볼 수 있습니다. 
 
@@ -35,7 +35,7 @@ recipes, themis, textrecipes 과 같은 패키지에는 레시피 스텝들이 �
 
 3. (선택적으로) `tunable()` 와 `tidy()` 같은 tidymodels 패키지작업 메소드를 추가한다. 
 
-데이터를 백분율로 변환하는 스텝을 예시로 생성할 것입니다.
+데이터를 백분율로 변환하는 스텝을 예시로 생성해 봅시다.
 
 ## 새로운 스텝 정의
 
@@ -126,7 +126,7 @@ step_percentile <- function(
 
 이제, 생성자 함수를 생성할 수 있습니다.
 
-함수 케스케이드는: 
+함수 캐스케이드는: 
 
 ```
 step_percentile() calls recipes::add_step()

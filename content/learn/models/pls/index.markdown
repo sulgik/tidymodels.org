@@ -1,11 +1,11 @@
 ---
-title: "Multivariate analysis using partial least squares"
+title: "Partial least squares 로 하는 다변량 분석"
 tags: [recipes,rsample]
 categories: [pre-processing]
 type: learn-subsection
 weight: 6
 description: | 
-  Build and fit a predictive model with more than one outcome.
+  하나 이상의 결과가 있는 예측 모델을 만들고 적합하기.
 ---
 
 
@@ -13,18 +13,23 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
-To use the code in this article, you will need to install the following packages: modeldata, pls, and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: modeldata, pls, and tidymodels.
 
-"Multivariate analysis" usually refers to multiple _outcomes_ being modeled, analyzed, and/or predicted. There are multivariate versions of many common statistical tools. For example, suppose there was a data set with columns `y1` and `y2` representing two outcomes to be predicted. The `lm()` function would look something like:
+"다변량 분석" 은 다중 _아웃컴_ 을 모델링하고, 분석하고 예측하는 것을 의미합니다. 
+일반적인 통계 도구들에는 다변량 버전이 있습니다. 
+예를 들어, 예측할 두 개의 아웃컴을 의미하는 `y1`, `y2` 열을 가진 데이터셋이 있다고 가정해봅시다. 
+`lm()` 함수는 다음과 같이 생겼습니다:
 
 
 ```r
 lm(cbind(y1, y2) ~ ., data = dat)
 ```
 
-This `cbind()` call is pretty awkward and is a consequence of how the traditional formula infrastructure works. The recipes package is a lot easier to work with! This article demonstrates how to model multiple outcomes.   
+이 `cbind` 호출은 꽤 이상한데, 전통적 공식 인프라가 동작방법의 결과입니다.
+recipes 패키지는 다루기 훨씬 쉽습니다!
+이 장에서 다중 아웃컴을 모델링하는 법을 살펴볼 것입니다.
 
 The data that we'll use has three outcomes. From `?modeldata::meats`:
 
@@ -174,38 +179,43 @@ ggplot(variance_data, aes(x = components, y = proportion, col = source)) +
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.1.1 (2021-08-10)
-#>  os       macOS Big Sur 11.5.2        
-#>  system   aarch64, darwin20           
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2021-09-13                  
+#> ─ Session info  🤷🏻  👉🏽  🔷   ───────────────────────────────────────
+#>  hash: person shrugging: light skin tone, backhand index pointing right: medium skin tone, large blue diamond
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.1)
+#>  setting  value
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-02-06
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
+#> 
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.1)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
 #>  modeldata  * 0.1.1   2021-07-14 [1] CRAN (R 4.1.0)
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
-#>  pls        * 2.8-0   2021-09-03 [1] CRAN (R 4.1.1)
+#>  pls        * 2.8-0   2021-09-03 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-#>  recipes    * 0.1.16  2021-04-16 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-#>  rsample    * 0.1.0   2021-05-08 [1] CRAN (R 4.1.1)
-#>  tibble     * 3.1.4   2021-08-25 [1] CRAN (R 4.1.1)
-#>  tidymodels * 0.1.3   2021-04-19 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
 #>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
-#>  workflows  * 0.2.3   2021-07-16 [1] CRAN (R 4.1.0)
-#>  yardstick  * 0.0.8   2021-03-28 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
  

@@ -1,11 +1,11 @@
 ---
-title: "Multivariate analysis using partial least squares"
+title: "Partial least squares 로 하는 다변량 분석"
 tags: [recipes,rsample]
 categories: [pre-processing]
 type: learn-subsection
 weight: 6
 description: | 
-  Build and fit a predictive model with more than one outcome.
+  하나 이상의 결과가 있는 예측 모델을 만들고 적합하기.
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -22,17 +22,22 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 ```
 
 
-## Introduction
+## 들어가기
 
 `r req_pkgs(pkgs)`
 
-"Multivariate analysis" usually refers to multiple _outcomes_ being modeled, analyzed, and/or predicted. There are multivariate versions of many common statistical tools. For example, suppose there was a data set with columns `y1` and `y2` representing two outcomes to be predicted. The `lm()` function would look something like:
+"다변량 분석" 은 다중 _아웃컴_ 을 모델링하고, 분석하고 예측하는 것을 의미합니다. 
+일반적인 통계 도구들에는 다변량 버전이 있습니다. 
+예를 들어, 예측할 두 개의 아웃컴을 의미하는 `y1`, `y2` 열을 가진 데이터셋이 있다고 가정해봅시다. 
+`lm()` 함수는 다음과 같이 생겼습니다:
 
 ```{r lm, eval = FALSE}
 lm(cbind(y1, y2) ~ ., data = dat)
 ```
 
-This `cbind()` call is pretty awkward and is a consequence of how the traditional formula infrastructure works. The recipes package is a lot easier to work with! This article demonstrates how to model multiple outcomes.   
+이 `cbind` 호출은 꽤 이상한데, 전통적 공식 인프라가 동작방법의 결과입니다.
+recipes 패키지는 다루기 훨씬 쉽습니다!
+이 장에서 다중 아웃컴을 모델링하는 법을 살펴볼 것입니다.
 
 The data that we'll use has three outcomes. From `?modeldata::meats`:
 
