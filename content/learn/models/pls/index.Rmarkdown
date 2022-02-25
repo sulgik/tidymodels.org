@@ -95,18 +95,25 @@ folds <-
 
 ## Partial least squares
 
-The complicated parts for moving forward are:
+복잡한 부분은 다음과 같습니다:
 
-1. Formatting the predictors and outcomes into the format that the pls package requires, and
-2. Estimating the proportions. 
+1. 설명변수와 반응변수 포맷을 pls 패키지가 필요로 하는 포맷으로 바꾸고,
+2. 비율을 추정하기. 
 
-For the first part, the standardized outcomes and predictors need to be formatted into two separate matrices. Since we used `retain = TRUE` when prepping the recipes, we can `bake()` with `new_data = NULl` to get the processed data back out. To save the data as a matrix, the option `composition = "matrix"` will avoid saving the data as tibbles and use the required format. 
+첫번째 부분에서, 표준화된 반응변수와 설명변수가 두 개의 행렬로 포맷될 필요가 있습니다. 
+레시피를 준비할 때, `retain = TRUE` 를 사용했기 때문에, 처리된 데이터를 다시 얻기 위해, `new_data = NULL` 와 함께, `bake()` 를 사용할 수 있습니다.
+데이터를 행렬로 저장하기 위해, `composition = "matrix"` 옵션을 하면, 데이터를 티블로 저장하지 않고 필요한 포맷을 사용하게 됩니다.
 
-The pls package expects a simple formula to specify the model, but each side of the formula should _represent a matrix_. In other words, we need a data set with two columns where each column is a matrix. The secret to doing this is to "protect" the two matrices using `I()` when adding them to the data frame.
+pls 패키지는 간단한 공식이 모델을 규정하기를 기대하지만, 공식의 각 사이드는 _행렬을 표현_ 해야 합니다. 
+다른말로 하면, 각 열이 행렬인 열이 두 개인 데이터셋이 필요합니다.
+이를 하는 비밀은 두 행렬을 데이터프레임으로 추가할 때 `I()` 를 사용하여 두 행렬을 "보호하는 것"입니다.
 
-The calculation for the proportion of variance explained is straightforward for the predictors; the function `pls::explvar()` will compute that. For the outcomes, the process is more complicated. A ready-made function to compute these is not obvious but there is some code inside of the summary function to do the computation (see below). 
+설명되는 분산의 비율 계산은 설명변수에 대해서 간단합니다; `pls::explvar()` 함수가 계산할 수 있습니다. 
+반응변수에 대해 이 과정은 더 복잡합니다.
+이를 계산하는 준비된 함수는 명확하지는 않지만 계산하는 요약함수 내에 코드가 조금 있습니다 (아래 참고).
 
-The function `get_var_explained()` shown here will do all these computations and return a data frame with columns `components`, `source` (for the predictors, water, etc), and the `proportion` of variance that is explained by the components. 
+
+여기서 보이는 `get_var_explained()` 함수는 이 모든 계산을 하고 (설명변수, water, 등의) `components`, `source` 열과 이 성분들이 설명하는 변수의 비율 (`proportion`) 열이 있는 데이터프레임을 반환할 것입니다.
 
 
 ```{r var-explained}
@@ -152,7 +159,7 @@ get_var_explained <- function(recipe, ...) {
 }
 ```
 
-We compute this data frame for each resample and save the results in the different columns. 
+각 리샘플에 해당하는 데이터프레임을 계산하고 다른 열에 결과를 저장합니다.
 
 ```{r get-estimates}
 folds <- 
@@ -161,7 +168,8 @@ folds <-
          var = unname(var))
 ```
 
-To extract and aggregate these data, simple row binding can be used to stack the data vertically. Most of the action happens in the first 15 components so let's filter the data and compute the _average_ proportion.
+이 데이터를 추출하고 집계하기 위해, 간단한 행 바인딩을 사용하여 데이터를 수직으로 쌓을 수 있습니다.
+대부분의 동작은 첫 15 개 성분에 일어나기 때문에, 데이터를 필터하고 _평균_ 비율을 계산해 봅시다.
 
 ```{r collapse-and-average}
 variance_data <- 
@@ -171,7 +179,9 @@ variance_data <-
   summarize(proportion = mean(proportion))
 ```
 
-The plot below shows that, if the protein measurement is important, you might require 10 or so components to achieve a good representation of that outcome. Note that the predictor variance is captured extremely well using a single component. This is due to the high degree of correlation in those data. 
+아래 플롯에서는, 단백질 측정값이 중요하면, 반응변수의 표현을 좋게 하기 위해 10 개 정도의 성분이 필요할 것이라는 것을 의미합니다.
+설명변수 분산은 하나의 성분을 사용하여 극단적으로 잘 포착되는 것을 주목하세요.
+이 데이터의 상관관계가 높기 때문입니다.
 
 ```{r plot, fig.width=6, fig.height=4.25,  out.width = '100%'}
 ggplot(variance_data, aes(x = components, y = proportion, col = source)) + 
