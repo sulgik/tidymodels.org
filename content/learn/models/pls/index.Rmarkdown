@@ -39,31 +39,37 @@ lm(cbind(y1, y2) ~ ., data = dat)
 recipes 패키지는 다루기 훨씬 쉽습니다!
 이 장에서 다중 아웃컴을 모델링하는 법을 살펴볼 것입니다.
 
-The data that we'll use has three outcomes. From `?modeldata::meats`:
+우리가 사용할 데이터는 아웃컴이 세 개 입니다. `?modeldata::meats` 을 보면:
 
-> "These data are recorded on a Tecator Infratec Food and Feed Analyzer working in the wavelength range 850 - 1050 nm by the Near Infrared Transmission (NIT) principle. Each sample contains finely chopped pure meat with different moisture, fat and protein contents.
+> "이 데이터는 Tecator Infratec Food 와 근거리 적외선 통신 법칙(NIT)의 주파수 범위 850 - 1050 nm 에서 작동하는 Feed Analyzier 에서 기록되었습니다. 각 샘플에는 습도, 지방, 단백질 성분이 다른 잘게 다져진 고기가 있습니다.
 
-> "For each meat sample the data consists of a 100 channel spectrum of absorbances and the contents of moisture (water), fat and protein. The absorbance is `-log10` of the transmittance measured by the spectrometer. The three contents, measured in percent, are determined by analytic chemistry."
+> "각 고기 샘플에 대해 데이터는 100 개의 흡수도 채널 스펙트럼과 습도(물), 지방, 단백질 성분으로 구성되어 있습니다. 흡수도는 spectrometer 가 측정한 `-log10` 의 transmittance 입니다. 퍼센트로 측정한 세 가지 성분은 분석 화학가가 정했습니다. 
 
-The goal is to predict the proportion of the three substances using the chemistry test. There can often be a high degree of between-variable correlations in predictors, and that is certainly the case here. 
+화학 테스트를 이용하여 세 성분의 비율을 예측하는 것이 목적입니다. 
+설명변수들에 높은 수준의 변수간 상관관계가 있는 경우가 많은데 이 경우가 그렇습니다. 
 
-To start, let's take the two data matrices (called `endpoints` and `absorp`) and bind them together in a data frame:
+두 개의 데이터 행렬 (`endpoints` 와 `absorp` 라 부름) 를 가져와서 데이터프레임으로 묶는 것으로 시작해 봅시다:
 
 ```{r data}
 library(modeldata)
 data(meats)
 ```
 
-The three _outcomes_ have fairly high correlations also. 
+세 개의 _아웃컴_ 도 꽤 높은 상관관계를 가집니다.
 
-## Preprocessing the data
+## 데이터 전처리하기
 
-If the outcomes can be predicted using a linear model, partial least squares (PLS) is an ideal method. PLS models the data as a function of a set of unobserved _latent_ variables that are derived in a manner similar to principal component analysis (PCA). 
+선형 모형을 이용하여 아웃컴을 예측할 수 있으면, partial least squares (PLS) 이 이상적인 방법이다. 
+PLS는 데이터를 관측할 수 없는 _숨겨진_ 변수들의 집합의 함수로 모델링 하는데, 숨겨진 변수는 주성분 분석 (PCA) 와 유사한 방법으로 유도한다.
 
-PLS, unlike PCA, also incorporates the outcome data when creating the PLS components. Like PCA, it tries to maximize the variance of the predictors that are explained by the components but it also tries to simultaneously maximize the correlation between those components and the outcomes. In this way, PLS _chases_ variation of the predictors and outcomes. 
+PCA 와 달리 PLS 는 PLS 성분을 생성할 때 아웃컴 데이터를 이용할 수도 있다. 
+PCA 와 같이 PLS 는 이 성분들로 설명되는 설명변수의 분산을 최대화하지만, 동시에 이 성분들과 아웃컴들 사이의 상관관계를 최대화 합니다.
+이렇게 하여, PLS 는 설명변ㅅ와 반응변수의 분산을 _쫓아갑니다(chase)_.
 
-Since we are working with variances and covariances, we need to standardize the data. The recipe will center and scale all of the variables. 
+분산과 공분산 작업을 하고 있기 때문에, 데이터를 표준화 해야 합니다.
+레시피가 모든 변수를 센터링 하고 스케일 할 것입니다.
 
+공식을 사용하는 다변량 아웃컴을 다루는 많은 베이스 R 함수들은 전통적인 공식 방법 작업을 하기 위해 공식의 왼편에 `
 Many base R functions that deal with multivariate outcomes using a formula require the use of `cbind()` on the left-hand side of the formula to work with the traditional formula methods. In tidymodels, recipes do not; the outcomes can be symbolically "added" together on the left-hand side:
 
 ```{r recipe}
