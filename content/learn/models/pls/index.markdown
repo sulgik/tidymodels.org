@@ -31,15 +31,16 @@ lm(cbind(y1, y2) ~ ., data = dat)
 recipes 패키지는 다루기 훨씬 쉽습니다!
 이 장에서 다중 아웃컴을 모델링하는 법을 살펴볼 것입니다.
 
-The data that we'll use has three outcomes. From `?modeldata::meats`:
+우리가 사용할 데이터는 아웃컴이 세 개 입니다. `?modeldata::meats` 을 보면:
 
-> "These data are recorded on a Tecator Infratec Food and Feed Analyzer working in the wavelength range 850 - 1050 nm by the Near Infrared Transmission (NIT) principle. Each sample contains finely chopped pure meat with different moisture, fat and protein contents.
+> "이 데이터는 Tecator Infratec Food 와 근거리 적외선 통신 법칙(NIT)의 주파수 범위 850 - 1050 nm 에서 작동하는 Feed Analyzier 에서 기록되었습니다. 각 샘플에는 습도, 지방, 단백질 성분이 다른 잘게 다져진 고기가 있습니다.
 
-> "For each meat sample the data consists of a 100 channel spectrum of absorbances and the contents of moisture (water), fat and protein. The absorbance is `-log10` of the transmittance measured by the spectrometer. The three contents, measured in percent, are determined by analytic chemistry."
+> "각 고기 샘플에 대해 데이터는 100 개의 흡수도 채널 스펙트럼과 습도(물), 지방, 단백질 성분으로 구성되어 있습니다. 흡수도는 spectrometer 가 측정한 `-log10` 의 transmittance 입니다. 퍼센트로 측정한 세 가지 성분은 분석 화학가가 정했습니다. 
 
-The goal is to predict the proportion of the three substances using the chemistry test. There can often be a high degree of between-variable correlations in predictors, and that is certainly the case here. 
+화학 테스트를 이용하여 세 성분의 비율을 예측하는 것이 목적입니다. 
+설명변수들에 높은 수준의 변수간 상관관계가 있는 경우가 많은데 이 경우가 그렇습니다. 
 
-To start, let's take the two data matrices (called `endpoints` and `absorp`) and bind them together in a data frame:
+두 개의 데이터 행렬 (`endpoints` 와 `absorp` 라 부름) 를 가져와서 데이터프레임으로 묶는 것으로 시작해 봅시다:
 
 
 ```r
@@ -47,17 +48,22 @@ library(modeldata)
 data(meats)
 ```
 
-The three _outcomes_ have fairly high correlations also. 
+세 개의 _아웃컴_ 도 꽤 높은 상관관계를 가집니다.
 
-## Preprocessing the data
+## 데이터 전처리하기
 
-If the outcomes can be predicted using a linear model, partial least squares (PLS) is an ideal method. PLS models the data as a function of a set of unobserved _latent_ variables that are derived in a manner similar to principal component analysis (PCA). 
+선형 모형을 이용하여 아웃컴을 예측할 수 있으면, partial least squares (PLS) 이 이상적인 방법이다. 
+PLS는 데이터를 관측할 수 없는 _숨겨진_ 변수들의 집합의 함수로 모델링 하는데, 숨겨진 변수는 주성분 분석 (PCA) 와 유사한 방법으로 유도한다.
 
-PLS, unlike PCA, also incorporates the outcome data when creating the PLS components. Like PCA, it tries to maximize the variance of the predictors that are explained by the components but it also tries to simultaneously maximize the correlation between those components and the outcomes. In this way, PLS _chases_ variation of the predictors and outcomes. 
+PCA 와 달리 PLS 는 PLS 성분을 생성할 때 아웃컴 데이터를 이용할 수도 있다. 
+PCA 와 같이 PLS 는 이 성분들로 설명되는 설명변수의 분산을 최대화하지만, 동시에 이 성분들과 아웃컴들 사이의 상관관계를 최대화 합니다.
+이렇게 하여, PLS 는 설명변수와 반응변수의 분산을 _쫓아갑니다(chase)_.
 
-Since we are working with variances and covariances, we need to standardize the data. The recipe will center and scale all of the variables. 
+분산과 공분산 작업을 하고 있기 때문에, 데이터를 표준화 해야 합니다.
+레시피가 모든 변수를 센터링 하고 스케일 할 것입니다.
 
-Many base R functions that deal with multivariate outcomes using a formula require the use of `cbind()` on the left-hand side of the formula to work with the traditional formula methods. In tidymodels, recipes do not; the outcomes can be symbolically "added" together on the left-hand side:
+공식을 사용하는 다변량 아웃컴을 다루는 많은 베이스 R 함수들은 전통적인 공식 방법 작업을 하기 위해 공식의 왼편에 `cbind()` 를 사용해야 합니다. 
+tidymodels 에서 레시피는 이렇게 할 필요가 없습니다; 아웃컴들이 왼편에 같이 심볼릭하게 "추가"될 수 있습니다:
 
 
 ```r
@@ -66,11 +72,16 @@ norm_rec <-
   step_normalize(everything()) 
 ```
 
-Before we can finalize the PLS model, the number of PLS components to retain must be determined. This can be done using performance metrics such as the root mean squared error. However, we can also calculate the proportion of variance explained by the components for the _predictors and each of the outcomes_. This allows an informed choice to be made based on the level of evidence that the situation requires. 
+PLS 모델을 마무리하기 전에, 사용할 PLS 성분의 개수를 정해야 합니다.
+RMSE 와 같은 성능지표를 사용하여 할 수 있습니다.
+하지만, _설명변수와아웃컴각각_ 에 대해 성분이 설병하는 분산의 비율을 계산할 수도 있습니다. 
+이렇게 하면 상황이 요구하는 증거의 수준에 기반하여 informed 선택을 할 수 있도록 합니다. 
 
-Since the data set isn't large, let's use resampling to measure these proportions. With ten repeats of 10-fold cross-validation, we build the PLS model on 90% of the data and evaluate on the heldout 10%. For each of the 100 models, we extract and save the proportions. 
+데이터셋이 크지 않으므로, 리샘플링을 해서 비율들을 측정해 봅시다. 
+10-폴드 크로스밸리데이션을 열번 반복하여, 90% 데이터로 PLS 모델을 만들고 따로 둔 10% 로 평가를 합니다.
+100 개 모델 각각에 대해 비율을 추출하고 저장합니다.
 
-The folds can be created using the [rsample](https://tidymodels.github.io/rsample/) package and the recipe can be estimated for each resample using the [`prepper()`](https://tidymodels.github.io/rsample/reference/prepper.html) function: 
+[rsample](https://tidymodels.github.io/rsample/) 패키지를 사용하여 폴드들을 생성할 수 있고, [`prepper()`](https://tidymodels.github.io/rsample/reference/prepper.html) 함수를 이용하여 각 리샘플에 대해 레시피를 추정할 수 있습니다: 
 
 
 ```r
@@ -84,19 +95,24 @@ folds <-
 
 ## Partial least squares
 
-The complicated parts for moving forward are:
+복잡한 부분은 다음과 같습니다:
 
-1. Formatting the predictors and outcomes into the format that the pls package requires, and
-2. Estimating the proportions. 
+1. 설명변수와 반응변수 포맷을 pls 패키지가 필요로 하는 포맷으로 바꾸고,
+2. 비율을 추정하기. 
 
-For the first part, the standardized outcomes and predictors need to be formatted into two separate matrices. Since we used `retain = TRUE` when prepping the recipes, we can `bake()` with `new_data = NULl` to get the processed data back out. To save the data as a matrix, the option `composition = "matrix"` will avoid saving the data as tibbles and use the required format. 
+첫번째 부분에서, 표준화된 반응변수와 설명변수가 두 개의 행렬로 포맷될 필요가 있습니다. 
+레시피를 준비할 때, `retain = TRUE` 를 사용했기 때문에, 처리된 데이터를 다시 얻기 위해, `new_data = NULL` 와 함께, `bake()` 를 사용할 수 있습니다.
+데이터를 행렬로 저장하기 위해, `composition = "matrix"` 옵션을 하면, 데이터를 티블로 저장하지 않고 필요한 포맷을 사용하게 됩니다.
 
-The pls package expects a simple formula to specify the model, but each side of the formula should _represent a matrix_. In other words, we need a data set with two columns where each column is a matrix. The secret to doing this is to "protect" the two matrices using `I()` when adding them to the data frame.
+pls 패키지는 간단한 공식이 모델을 규정하기를 기대하지만, 공식의 각 사이드는 _행렬을 표현_ 해야 합니다. 
+다른말로 하면, 각 열이 행렬인 열이 두 개인 데이터셋이 필요합니다.
+이를 하는 비밀은 두 행렬을 데이터프레임으로 추가할 때 `I()` 를 사용하여 두 행렬을 "보호하는 것"입니다.
 
-The calculation for the proportion of variance explained is straightforward for the predictors; the function `pls::explvar()` will compute that. For the outcomes, the process is more complicated. A ready-made function to compute these is not obvious but there is some code inside of the summary function to do the computation (see below). 
+설명되는 분산의 비율 계산은 설명변수에 대해서 간단합니다; `pls::explvar()` 함수가 계산할 수 있습니다. 
+반응변수에 대해 이 과정은 더 복잡합니다.
+이를 계산하는 준비된 함수는 명확하지는 않지만 계산하는 요약함수 내에 코드가 조금 있습니다 (아래 참고).
 
-The function `get_var_explained()` shown here will do all these computations and return a data frame with columns `components`, `source` (for the predictors, water, etc), and the `proportion` of variance that is explained by the components. 
-
+여기서 보이는 `get_var_explained()` 함수는 이 모든 계산을 하고 (설명변수, water, 등의) `components`, `source` 열과 이 성분들이 설명하는 변수의 비율 (`proportion`) 열이 있는 데이터프레임을 반환할 것입니다.
 
 
 ```r
@@ -142,7 +158,7 @@ get_var_explained <- function(recipe, ...) {
 }
 ```
 
-We compute this data frame for each resample and save the results in the different columns. 
+각 리샘플에 해당하는 데이터프레임을 계산하고 다른 열에 결과를 저장합니다.
 
 
 ```r
@@ -152,7 +168,8 @@ folds <-
          var = unname(var))
 ```
 
-To extract and aggregate these data, simple row binding can be used to stack the data vertically. Most of the action happens in the first 15 components so let's filter the data and compute the _average_ proportion.
+이 데이터를 추출하고 집계하기 위해, 간단한 행 바인딩을 사용하여 데이터를 수직으로 쌓을 수 있습니다.
+대부분의 동작은 첫 15 개 성분에 일어나기 때문에, 데이터를 필터하고 _평균_ 비율을 계산해 봅시다.
 
 
 ```r
@@ -163,7 +180,9 @@ variance_data <-
   summarize(proportion = mean(proportion))
 ```
 
-The plot below shows that, if the protein measurement is important, you might require 10 or so components to achieve a good representation of that outcome. Note that the predictor variance is captured extremely well using a single component. This is due to the high degree of correlation in those data. 
+아래 플롯에서는, 단백질 측정값이 중요하면, 반응변수의 표현을 좋게 하기 위해 10 개 정도의 성분이 필요할 것이라는 것을 의미합니다.
+설명변수 분산은 하나의 성분을 사용하여 극단적으로 잘 포착되는 것을 주목하세요.
+이 데이터의 상관관계가 높기 때문입니다.
 
 
 ```r
@@ -175,7 +194,7 @@ ggplot(variance_data, aes(x = components, y = proportion, col = source)) +
 <img src="figs/plot-1.svg" width="100%" />
 
 
-## Session information
+## 세션정보
 
 
 ```
@@ -191,7 +210,7 @@ ggplot(variance_data, aes(x = components, y = proportion, col = source)) +
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-02-06
+#>  date     2022-03-01
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
