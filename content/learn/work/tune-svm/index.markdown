@@ -1,26 +1,28 @@
 ---
-title: "Model tuning via grid search"
+title: "그리드서치로 모델 튜닝하기"
 tags: [rsample, parsnip, tune, yardstick]
 categories: [model tuning]
 type: learn-subsection
 weight: 1
 description: | 
-  Choose hyperparameters for a model by training on a grid of many possible parameter values.
+  그리드에서 훈련하여 하이퍼파라미터 선택하기
 ---
 
 
   
 
 
-## Introduction
+## 들어가기
 
-To use the code in this article, you will need to install the following packages: kernlab, mlbench, and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: kernlab, mlbench, and tidymodels.
 
-This article demonstrates how to tune a model using grid search. Many models have **hyperparameters** that can't be learned directly from a single data set when training the model. Instead, we can train many models in a grid of possible hyperparameter values and see which ones turn out best. 
+이 장에서는 그리드서치를 사용하여 모델을 튜닝하는 방법을 시연합니다.
+모델을 훈련할 때 하나의 데이터셋에서 직접 학습할 수 없는 **하이퍼파라미터** 가 많이 있습니다.
+가능한 하이퍼파라미터 값들로 이루어진 그리드에서 모델을 여러번 훈편하고 가장 좋은 것을 발견할 수 있습니다.
 
-## Example data
+## 예제 데이터
 
-To demonstrate model tuning, we'll use the Ionosphere data in the mlbench package:
+모델 튜닝을 시연하기 위해, mlbench 패키지의 Ionosphere 데이터를 사용할 수 있습니다:
 
 
 ```r
@@ -29,13 +31,15 @@ library(mlbench)
 data(Ionosphere)
 ```
 
-From `?Ionosphere`:
+`?Ionosphere` 를 하면:
 
-> This radar data was collected by a system in Goose Bay, Labrador. This system consists of a phased array of 16 high-frequency antennas with a total transmitted power on the order of 6.4 kilowatts. See the paper for more details. The targets were free electrons in the ionosphere. "good" radar returns are those showing evidence of some type of structure in the ionosphere. "bad" returns are those that do not; their signals pass through the ionosphere.
+> 이 레이더 데이터는 Labrador, Goose Bay 의 시스템에서 수집되었다. 이 시스템은 6.4 킬로와트 수준의 transmitted power 가 있는 16개의 고주파 안테나의 phased array 로 이루어져 있다. 자세한 내용은 논문을 살펴보라. 목표는 ionosphere 의 자유 전자였다. "좋은" 레이더는 ionosphere 의 어떤 유형의 구조 증거를 보여주는 것을 반환한다. "나쁜" 레이더는 그렇지 않은 것을 반환한다; 신호가 ionosphere 를 투과한다.
 
-> Received signals were processed using an autocorrelation function whose arguments are the time of a pulse and the pulse number. There were 17 pulse numbers for the Goose Bay system. Instances in this databse are described by 2 attributes per pulse number, corresponding to the complex values returned by the function resulting from the complex electromagnetic signal. See cited below for more details.
+> 펄스 시간과 펄스 숫자를 인수로 가지는 autocorrelation 함수를 사용하여 수신된 신호가 처리되었다. Goose Bay 시스템에는 17 펄스 숫자가 있었다. 이 데이터베이스의 인스턴스들은 펄스 숫자당 2 개의 attribute 가 기술하는데, 복잡한 전자기 신호에서 나오는 함수가 반환하는 complex value 에 해당한다. 
 
-There are 43 predictors and a factor outcome. Two of the predictors are factors (`V1` and `V2`) and the rest are numeric variables that have been scaled to a range of -1 to 1. Note that the two factor predictors have sparse distributions:
+43 개의 설명변수와 팩터형 아웃컴이 있습니다. 
+설명변수 두 개는 팩터형이고  (`V1`, `V2`), 나머지는 -1 에서 1 의 범위로 스케일된 수치형 변수입니다.
+두 개의 팩터형 설명변수는 희소 분포를 가집니다:
 
 
 ```r
@@ -49,7 +53,10 @@ table(Ionosphere$V2)
 #> 351
 ```
 
-There's no point of putting `V2` into any model since is is a zero-variance predictor. `V1` is not but it _could_ be if the resampling process ends up sampling all of the same value. Is this an issue? It might be since the standard R formula infrastructure fails when there is only a single observed value:
+`V2` 는 0-분산 설명변수이므로 이를 모델에 넣는 것은 의미가 없습니다.
+`V1` 도 0-분산은 아니지만, resampling 과정에서 같은 값이 모두 뽑힌다면 그럴 _가능성이 있습니다_.
+이것이 이슈일까요?
+표준 R 공식 인프라는 관측값이 하나만 있다면 에러가 납니다:
 
 
 ```r
@@ -62,16 +69,16 @@ glm(Class ~ . - V2, data = Ionosphere, family = binomial)
 #> Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]): contrasts can be applied only to factors with 2 or more levels
 ```
 
-Let's remove these two problematic variables:
+문제가 있는 두 개의 변수들을 제거해 봅시다:
 
 
 ```r
 Ionosphere <- Ionosphere %>% select(-V1, -V2)
 ```
 
-## Inputs for the search
+## 서치 인풋
 
-To demonstrate, we'll fit a radial basis function support vector machine to these data and tune the SVM cost parameter and the `\(\sigma\)` parameter in the kernel function:
+radial basis 함수 서포트벡터머신을 이 데이터에 적합하고 SVM 코스트 파라미터와 커널 함수에서 `\(\sigma\)` 파라미터를 튠할 것입니다:
 
 
 ```r
@@ -81,12 +88,12 @@ svm_mod <-
   set_engine("kernlab")
 ```
 
-In this article, tuning will be demonstrated in two ways, using:
+이 장에서, 다음을 사용하여 튜닝을 두 가지 방법으로 보여줄 것입니다:
 
-- a standard R formula, and 
-- a recipe.
+- 표준 R 공식 
+- 레시피
 
-Let's create a simple recipe here:
+간단한 레시피를 생성해 봅시다:
 
 
 ```r
@@ -98,7 +105,8 @@ iono_rec <-
   step_lincomb(all_numeric())
 ```
 
-The only other required item for tuning is a resampling strategy as defined by an rsample object. Let's demonstrate using basic bootstrapping:
+마지막으로 튜닝에 필요한 것은 rsample 객체로 정의할 수 있는 resampling 전략입니다. 
+기초 부트스트래핑을 이용하는 것을 해봅시다:
 
 
 ```r
@@ -106,27 +114,34 @@ set.seed(4943)
 iono_rs <- bootstraps(Ionosphere, times = 30)
 ```
 
-## Optional inputs
 
-An _optional_ step for model tuning is to specify which metrics should be computed using the out-of-sample predictions. For classification, the default is to calculate the log-likelihood statistic and overall accuracy. Instead of the defaults, the area under the ROC curve will be used. To do this, a yardstick package function can be used to create a metric set:
+## 선택적 인풋
+
+모델 튜닝에서 _선택적_ 단계는 out-of-sample 예측을 사용하여 계산해야하는 메트릭을 명시하는 것입니다.
+분류에서, 기본값은 log-likelihood 통계량과 종합 정확도를 계산하는 것입니다.
+기본값 대신, AUROC 를 사용할 것입니다.
+yardstick 패키지에 있는 함수를 사용하여 메트릭들을 생성할 수 있습니다:
 
 
 ```r
 roc_vals <- metric_set(roc_auc)
 ```
 
-If no grid or parameters are provided, a set of 10 hyperparameters are created using a space-filling design (via a Latin hypercube). A grid can be given in a data frame where the parameters are in columns and parameter combinations are in rows. Here, the default will be used.
+그리드나 파라미터가 없다면, space-filling 디자인(라틴 방격법을 통한)을 이용하여 10 개의 하이퍼파라미터 세트가 생성됩니다.
+그리드는 파라미터들이 열에 있고, 파라미터 조합이 행에 있는 데이터프레임으로 제공할 수 있습니다.
+여기에, 기본값이 사용될 것입니다.
 
-Also, a control object can be passed that specifies different aspects of the search. Here, the verbose option is turned off and the option to save the out-of-sample predictions is turned on. 
+또한, 서치의 다른 면을 명시하는 컨트롤 객체를 전달할 수도 있습니다.
+여기에, verbose 옵션은 껐고, out-of-sample 예측을 저장하는 옵션은 켰습니다.
 
 
 ```r
 ctrl <- control_grid(verbose = FALSE, save_pred = TRUE)
 ```
 
-## Executing with a formula
+## 공식으로 실행하기
 
-First, we can use the formula interface:
+첫번째로, 공식 인터페이스를 사용할 수 있습니다:
 
 
 ```r
@@ -142,23 +157,23 @@ formula_res <-
 formula_res
 #> # Tuning results
 #> # Bootstrap sampling 
-#> # A tibble: 30 x 5
-#>    splits          id         .metrics         .notes         .predictions      
-#>    <list>          <chr>      <list>           <list>         <list>            
-#>  1 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,200 × …
-#>  2 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,300 × …
-#>  3 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,370 × …
-#>  4 <split [351/14… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,410 × …
-#>  5 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#>  6 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#>  7 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,270 × …
-#>  8 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,230 × …
-#>  9 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#> 10 <split [351/11… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,170 × …
+#> # A tibble: 30 × 5
+#>    splits            id          .metrics          .notes           .predictions
+#>    <list>            <chr>       <list>            <list>           <list>      
+#>  1 <split [351/120]> Bootstrap01 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  2 <split [351/130]> Bootstrap02 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  3 <split [351/137]> Bootstrap03 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  4 <split [351/141]> Bootstrap04 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  5 <split [351/131]> Bootstrap05 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  6 <split [351/131]> Bootstrap06 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  7 <split [351/127]> Bootstrap07 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  8 <split [351/123]> Bootstrap08 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  9 <split [351/131]> Bootstrap09 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#> 10 <split [351/117]> Bootstrap10 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
 #> # … with 20 more rows
 ```
 
-The `.metrics` column contains tibbles of the performance metrics for each tuning parameter combination:
+`.metrics` 열에는 각 튜닝 파라미터 조합의 성능 지표 티블이 있습니다:
 
 
 ```r
@@ -167,7 +182,7 @@ formula_res %>%
   slice(1) %>% 
   pull(1)
 #> [[1]]
-#> # A tibble: 10 x 6
+#> # A tibble: 10 × 6
 #>        cost rbf_sigma .metric .estimator .estimate .config              
 #>       <dbl>     <dbl> <chr>   <chr>          <dbl> <chr>                
 #>  1  0.00849  1.11e-10 roc_auc binary         0.815 Preprocessor1_Model01
@@ -182,13 +197,13 @@ formula_res %>%
 #> 10  0.0364   4.96e- 9 roc_auc binary         0.839 Preprocessor1_Model10
 ```
 
-To get the final resampling estimates, the `collect_metrics()` function can be used on the grid object:
+최종 리샘플링 추정값을 얻기 위해, `collect_metrics()` 함수를 그리드 객체에 사용할 수 있습니다:
 
 
 ```r
 estimates <- collect_metrics(formula_res)
 estimates
-#> # A tibble: 10 x 8
+#> # A tibble: 10 × 8
 #>        cost rbf_sigma .metric .estimator  mean     n std_err .config            
 #>       <dbl>     <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>              
 #>  1  0.00849  1.11e-10 roc_auc binary     0.822    30 0.00718 Preprocessor1_Mode…
@@ -203,12 +218,12 @@ estimates
 #> 10  0.0364   4.96e- 9 roc_auc binary     0.871    30 0.00537 Preprocessor1_Mode…
 ```
 
-The top combinations are:
+가장 좋은 조합은:
 
 
 ```r
 show_best(formula_res, metric = "roc_auc")
-#> # A tibble: 5 x 8
+#> # A tibble: 5 × 8
 #>       cost rbf_sigma .metric .estimator  mean     n std_err .config             
 #>      <dbl>     <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
 #> 1  0.950   0.174     roc_auc binary     0.979    30 0.00204 Preprocessor1_Model…
@@ -218,9 +233,9 @@ show_best(formula_res, metric = "roc_auc")
 #> 5  0.00719 0.0000145 roc_auc binary     0.871    30 0.00534 Preprocessor1_Model…
 ```
 
-##  Executing with a recipe
+##  레시피로 실행하기
 
-Next, we can use the same syntax but pass a *recipe* in as the pre-processor argument:
+다음으로, 문법은 같지만, 전처리 인수로 *레시피*를 전달할 수 있습니다:
 
 
 ```r
@@ -236,28 +251,28 @@ recipe_res <-
 recipe_res
 #> # Tuning results
 #> # Bootstrap sampling 
-#> # A tibble: 30 x 5
-#>    splits          id         .metrics         .notes         .predictions      
-#>    <list>          <chr>      <list>           <list>         <list>            
-#>  1 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,200 × …
-#>  2 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,300 × …
-#>  3 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,370 × …
-#>  4 <split [351/14… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,410 × …
-#>  5 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#>  6 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#>  7 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,270 × …
-#>  8 <split [351/12… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,230 × …
-#>  9 <split [351/13… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,310 × …
-#> 10 <split [351/11… Bootstrap… <tibble [10 × 6… <tibble [0 × … <tibble [1,170 × …
+#> # A tibble: 30 × 5
+#>    splits            id          .metrics          .notes           .predictions
+#>    <list>            <chr>       <list>            <list>           <list>      
+#>  1 <split [351/120]> Bootstrap01 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  2 <split [351/130]> Bootstrap02 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  3 <split [351/137]> Bootstrap03 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  4 <split [351/141]> Bootstrap04 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  5 <split [351/131]> Bootstrap05 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  6 <split [351/131]> Bootstrap06 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  7 <split [351/127]> Bootstrap07 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  8 <split [351/123]> Bootstrap08 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#>  9 <split [351/131]> Bootstrap09 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
+#> 10 <split [351/117]> Bootstrap10 <tibble [10 × 6]> <tibble [0 × 1]> <tibble [1,…
 #> # … with 20 more rows
 ```
 
-The best setting here is:
+여기서 가장 좋은 설정은:
 
 
 ```r
 show_best(recipe_res, metric = "roc_auc")
-#> # A tibble: 5 x 8
+#> # A tibble: 5 × 8
 #>      cost rbf_sigma .metric .estimator  mean     n std_err .config              
 #>     <dbl>     <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>                
 #> 1 15.6    0.182     roc_auc binary     0.981    30 0.00213 Preprocessor1_Model04
@@ -267,30 +282,30 @@ show_best(recipe_res, metric = "roc_auc")
 #> 5  0.0499 0.0000335 roc_auc binary     0.872    30 0.00521 Preprocessor1_Model08
 ```
 
-## Out-of-sample predictions
+## Out-of-sample 예측
 
-If we used `save_pred = TRUE` to keep the out-of-sample predictions for each resample during tuning, we can obtain those predictions, along with the tuning parameters and resample identifier, using `collect_predictions()`:
+`save_pred = TRUE` 를 해서 튜닝하는 동안 각 리샘플에 대해 out-of-sample 예측값들을 저장하면, `collect_predictions()` 을 사용하여 이러한 예측값들을 튜닝 파라미터와 리샘플 식별자와 함께 얻을 수 있습니다:
 
 
 ```r
 collect_predictions(recipe_res)
-#> # A tibble: 38,740 x 8
-#>    id        .pred_bad .pred_good  .row    cost  rbf_sigma Class .config        
-#>    <chr>         <dbl>      <dbl> <int>   <dbl>      <dbl> <fct> <chr>          
-#>  1 Bootstra…     0.333      0.667     1 0.00296 0.00000383 good  Preprocessor1_…
-#>  2 Bootstra…     0.333      0.667     9 0.00296 0.00000383 good  Preprocessor1_…
-#>  3 Bootstra…     0.333      0.667    10 0.00296 0.00000383 bad   Preprocessor1_…
-#>  4 Bootstra…     0.333      0.667    12 0.00296 0.00000383 bad   Preprocessor1_…
-#>  5 Bootstra…     0.333      0.667    14 0.00296 0.00000383 bad   Preprocessor1_…
-#>  6 Bootstra…     0.333      0.667    15 0.00296 0.00000383 good  Preprocessor1_…
-#>  7 Bootstra…     0.333      0.667    16 0.00296 0.00000383 bad   Preprocessor1_…
-#>  8 Bootstra…     0.334      0.666    22 0.00296 0.00000383 bad   Preprocessor1_…
-#>  9 Bootstra…     0.333      0.667    23 0.00296 0.00000383 good  Preprocessor1_…
-#> 10 Bootstra…     0.334      0.666    24 0.00296 0.00000383 bad   Preprocessor1_…
+#> # A tibble: 38,740 × 8
+#>    id          .pred_bad .pred_good  .row    cost  rbf_sigma Class .config      
+#>    <chr>           <dbl>      <dbl> <int>   <dbl>      <dbl> <fct> <chr>        
+#>  1 Bootstrap01     0.333      0.667     1 0.00296 0.00000383 good  Preprocessor…
+#>  2 Bootstrap01     0.333      0.667     9 0.00296 0.00000383 good  Preprocessor…
+#>  3 Bootstrap01     0.333      0.667    10 0.00296 0.00000383 bad   Preprocessor…
+#>  4 Bootstrap01     0.333      0.667    12 0.00296 0.00000383 bad   Preprocessor…
+#>  5 Bootstrap01     0.333      0.667    14 0.00296 0.00000383 bad   Preprocessor…
+#>  6 Bootstrap01     0.333      0.667    15 0.00296 0.00000383 good  Preprocessor…
+#>  7 Bootstrap01     0.333      0.667    16 0.00296 0.00000383 bad   Preprocessor…
+#>  8 Bootstrap01     0.334      0.666    22 0.00296 0.00000383 bad   Preprocessor…
+#>  9 Bootstrap01     0.333      0.667    23 0.00296 0.00000383 good  Preprocessor…
+#> 10 Bootstrap01     0.334      0.666    24 0.00296 0.00000383 bad   Preprocessor…
 #> # … with 38,730 more rows
 ```
 
-We can obtain the hold-out sets for all the resamples augmented with the predictions using `augment()`, which provides opportunities for flexible visualization of model results:
+`augment()` 를 사용하여 예측값들이 붙어 있는 모든 리샘플의 hold-out 세트를 얻을 수 있는데, 모델 결과의 유연한 시각화를 할 수 있습니다:
 
 
 ```r
@@ -302,41 +317,46 @@ augment(recipe_res) %>%
 
 <img src="figs/augment-preds-1.svg" width="672" />
 
-## Session information
+## 세션정보
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-08                  
+#> ─ Session info  👩‍❤️‍💋‍👩  🌅  🔭   ───────────────────────────────────────
+#>  hash: kiss: woman, woman, sunrise, telescope
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  kernlab    * 0.9-29  2019-11-12 [1] CRAN (R 4.0.0)
-#>  mlbench    * 2.1-1   2012-07-10 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang      * 0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-03-03
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  kernlab    * 0.9-29  2019-11-12 [1] CRAN (R 4.1.0)
+#>  mlbench    * 2.1-3   2021-01-29 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang      * 1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
