@@ -1,11 +1,11 @@
 ---
-title: "Nested resampling"
+title: "중첩 리샘플링"
 tags: [rsample, parsnip]
 categories: [tuning]
 type: learn-subsection
 weight: 2
 description: | 
-  Estimate the best hyperparameters for a model using nested resampling.
+  중첩 리샘플링을 사용하여 최적 하이퍼파라미터를 추정하기.
 ---
 
 
@@ -13,27 +13,40 @@ description: |
 
 
 
-## Introduction
+## 들어가기
 
-To use the code in this article, you will need to install the following packages: furrr, kernlab, mlbench, scales, and tidymodels.
+이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: furrr, kernlab, mlbench, scales, and tidymodels.
 
-In this article, we discuss an alternative method for evaluating and tuning models, called [nested resampling](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=). While it is more computationally taxing and challenging to implement than other resampling methods, it has the potential to produce better estimates of model performance. 
+이 장에서는 [nested resampling](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=) 라고 부르는 모델을 평가하고 튜닝하는 다른 방법에 대해 살펴봅니다.
+다른 리샘플링 방법들보다 계산이 더 걸리고 구현하기 어렵지만, 모델 성능 추정값을 더 잘 구할 수 있는 잠재력이 있습니다.
 
-## Resampling models
+## 리샘플링 모델
 
-A typical scheme for splitting the data when developing a predictive model is to create an initial split of the data into a training and test set. If resampling is used, it is executed on the training set. A series of binary splits is created. In rsample, we use the term _analysis set_ for the data that are used to fit the model and the term _assessment set_ for the set used to compute performance: 
+예측모델을 개발할 때 데이터를 나누는 일반적인 방법은 초기데이터 분할을 훈련과 테스트셋으로 생성하는 것입니다.
+rsample 에서, 모델을 적합하기 위해 사용하는 데이터를 지칭하는 용어로, _analysis set_, 성능을 계산하기 위해 사용되는 세트를 지칭하는 용어로, _assessment set_ 을 사용합니다:
 
 <img src="figs/resampling.svg" width="70%" style="display: block; margin: auto;" />
 
-A common method for tuning models is [grid search](/learn/work/tune-svm/) where a candidate set of tuning parameters is created. The full set of models for every combination of the tuning parameter grid and the resamples is fitted. Each time, the assessment data are used to measure performance and the average value is determined for each tuning parameter. 
+모델을 튜닝하는 일반적인 방법은 [그리드서치](/learn/work/tune-svm/) 인데 튜닝 파라미터 후보셋이 생성됩니다.
+튜닝파라미터 그리드와 리샘플의 모든 조합에 해당하는 모델의 전체 집합이 적합됩니다.
+매회에는, 평가 데이터를 이용하여 성능을 측정하고, 평균값이 각 튜닝파라미터에 관해 결정됩니다.
 
-The potential problem is that once we pick the tuning parameter associated with the best performance, this performance value is usually quoted as the performance of the model. There is serious potential for _optimization bias_ since we use the same data to tune the model and to assess performance. This would result in an optimistic estimate of performance. 
+여기에 잠재된 문제점은 가장 좋은 성능과 관계된 튜닝파라미터를 고르면, 이 성능값은 일반적으로 모델의 성능으로 인용된다는 것입니다.
+같은 데이터를 사용하여 모델을 튜닝하고 성능을 평가하기 때문에 _최적화 바이어스_ 라는 심한 잠재된 위험이 있습니다.
+이렇게 되면 성능이 긍정적인 추청값으로 됩니다.
 
-Nested resampling uses an additional layer of resampling that separates the tuning activities from the process used to estimate the efficacy of the model. An _outer_ resampling scheme is used and, for every split in the outer resample, another full set of resampling splits are created on the original analysis set. For example, if 10-fold cross-validation is used on the outside and 5-fold cross-validation on the inside, a total of 500 models will be fit. The parameter tuning will be conducted 10 times and the best parameters are determined from the average of the 5 assessment sets. This process occurs 10 times. 
+중첩된 리샘플링은 모델 효과를 추정하기 위해 사용하는 프로세스로 부터 튜닝 활동을 분리하는 추가 리샘플링 레이어를 사용합니다.
+_outer_ 리샘플링 방법이 사용되고, 아우터 리샘플의 모둔 분할에 대해 다른 리샘플링 분할 전체세트가 원 분섯셋에 대해 생성됩니다.
+예를 들어, 10-폴드 cross-validation 이 외부에서 사용되고 5-폴드 cross-validation 이 내부에서 사용된다면, 총 500 모델이 적합될 것입니다. 
+파라미터 튜닝이 10번 수행되고 최적 파라미터가 5 개 평가셋의 평균으로 결정됩니다. 
+이 프로세스는 10회 반복됩니다.
 
-Once the tuning results are complete, a model is fit to each of the outer resampling splits using the best parameter associated with that resample. The average of the outer method's assessment sets are a unbiased estimate of the model.  
+튜닝 결과가 끝나면, 해당 리샘플과 연관된 최적파라미터를 사용하여 아우터 리샘플링 분할 각각에 모델이 적합됩니다.
+아우터 방법의 평가셋의 평균은 모델의 unbiased 추정값입니다.
 
-We will simulate some regression data to illustrate the methods. The mlbench package has a function `mlbench::mlbench.friedman1()` that can simulate a complex regression data structure from the [original MARS publication](https://scholar.google.com/scholar?hl=en&q=%22Multivariate+adaptive+regression+splines%22&btnG=&as_sdt=1%2C7&as_sdtp=). A training set size of 100 data points are generated as well as a large set that will be used to characterize how well the resampling procedure performed.  
+이 방법을 설명하기 위해 회귀 데이터를 시뮬레이트할 것입니다.
+mlbench 패키지에는 [original MARS publication](https://scholar.google.com/scholar?hl=en&q=%22Multivariate+adaptive+regression+splines%22&btnG=&as_sdt=1%2C7&as_sdtp=) 의 복잡한 회귀 데이터 구조를 시뮬레이터 할 수 있는 `mlbench::mlbench.friedman1()` 함수가 있습니다. 
+100 개의 데이터포인트가 있는 트레이닝셋과 resampling 과정이 얼마나 잘 수행되었는지를 기록하는데 사용할 더 큰 데이터셋이 생성됩니다.
 
 
 ```r
@@ -51,11 +64,15 @@ train_dat <- sim_data(100)
 large_dat <- sim_data(10^5)
 ```
 
-## Nested resampling
+## 중복 리샘플링
 
-To get started, the types of resampling methods need to be specified. This isn't a large data set, so 5 repeats of 10-fold cross validation will be used as the _outer_ resampling method for generating the estimate of overall performance. To tune the model, it would be good to have precise estimates for each of the values of the tuning parameter so let's use 25 iterations of the bootstrap. This means that there will eventually be `5 * 10 * 25 = 1250` models that are fit to the data _per tuning parameter_. These models will be discarded once the performance of the model has been quantified. 
+우선, 리샘플링 방법의 유형이 명시되어야 합니다.
+데이터셋이 크지 않으므로, 10-폴드 cross-validation 5 번 반복이 전체 성능 추정값을 생성하기 위해 _outer_ 리샘플링 방법으로 사용될 것입니다.
+모델은 튜닝하기 위해, 튜닝파라미터 값 각각에 대해 정확한 추정값을 얻어야 하므로, 부트스트랩 25회 반복을 사용할 것입니다.
+_튜닝파라미터당_ 데이터에 적합되는 모델개수는 `5 * 10 * 25 = 1250` 가 될 것입니다.
+모델 성능이 정량화되고 나면 이 모델들은 버려질 것입니다.
 
-To create the tibble with the resampling specifications: 
+리샘플링 명시가 있는 티블을 생성합니다:
 
 
 ```r
@@ -67,23 +84,24 @@ results
 #> # Nested resampling:
 #> #  outer: 10-fold cross-validation repeated 5 times
 #> #  inner: Bootstrap sampling
-#> # A tibble: 50 x 4
-#>    splits          id      id2    inner_resamples  
-#>    <list>          <chr>   <chr>  <list>           
-#>  1 <split [90/10]> Repeat1 Fold01 <tibble [25 × 2]>
-#>  2 <split [90/10]> Repeat1 Fold02 <tibble [25 × 2]>
-#>  3 <split [90/10]> Repeat1 Fold03 <tibble [25 × 2]>
-#>  4 <split [90/10]> Repeat1 Fold04 <tibble [25 × 2]>
-#>  5 <split [90/10]> Repeat1 Fold05 <tibble [25 × 2]>
-#>  6 <split [90/10]> Repeat1 Fold06 <tibble [25 × 2]>
-#>  7 <split [90/10]> Repeat1 Fold07 <tibble [25 × 2]>
-#>  8 <split [90/10]> Repeat1 Fold08 <tibble [25 × 2]>
-#>  9 <split [90/10]> Repeat1 Fold09 <tibble [25 × 2]>
-#> 10 <split [90/10]> Repeat1 Fold10 <tibble [25 × 2]>
+#> # A tibble: 50 × 4
+#>    splits          id      id2    inner_resamples      
+#>    <list>          <chr>   <chr>  <list>               
+#>  1 <split [90/10]> Repeat1 Fold01 <bootstraps [25 × 2]>
+#>  2 <split [90/10]> Repeat1 Fold02 <bootstraps [25 × 2]>
+#>  3 <split [90/10]> Repeat1 Fold03 <bootstraps [25 × 2]>
+#>  4 <split [90/10]> Repeat1 Fold04 <bootstraps [25 × 2]>
+#>  5 <split [90/10]> Repeat1 Fold05 <bootstraps [25 × 2]>
+#>  6 <split [90/10]> Repeat1 Fold06 <bootstraps [25 × 2]>
+#>  7 <split [90/10]> Repeat1 Fold07 <bootstraps [25 × 2]>
+#>  8 <split [90/10]> Repeat1 Fold08 <bootstraps [25 × 2]>
+#>  9 <split [90/10]> Repeat1 Fold09 <bootstraps [25 × 2]>
+#> 10 <split [90/10]> Repeat1 Fold10 <bootstraps [25 × 2]>
 #> # … with 40 more rows
 ```
 
-The splitting information for each resample is contained in the `split` objects. Focusing on the second fold of the first repeat:
+리샘플 각각의 분할정보가 `split` 객체에 포함됩니다.
+첫번째 반복의 두번째 폴드에 주목해보면:
 
 
 ```r
@@ -92,15 +110,15 @@ results$splits[[2]]
 #> <90/10/100>
 ```
 
-`<90/10/100>` indicates the number of observations in the analysis set, assessment set, and the original data. 
+`<90/10/100>` 는 analysis 세트, assessment 셋, 원데이터의 관측값의 개수를 의미합니다.
 
-Each element of `inner_resamples` has its own tibble with the bootstrapping splits. 
+`inner_resamples` 각 요소에는 부트스트래핑 분할을 가진 티블이 있습니다.
 
 
 ```r
 results$inner_resamples[[5]]
 #> # Bootstrap sampling 
-#> # A tibble: 25 x 2
+#> # A tibble: 25 × 2
 #>    splits          id         
 #>    <list>          <chr>      
 #>  1 <split [90/31]> Bootstrap01
@@ -116,7 +134,7 @@ results$inner_resamples[[5]]
 #> # … with 15 more rows
 ```
 
-These are self-contained, meaning that the bootstrap sample is aware that it is a sample of a specific 90% of the data:
+부트스트랩 샘플은 특정 90% 데이터의 샘플인 것을 알고 있는데, 이를 self-contained 라고 합니다:
 
 
 ```r
@@ -125,11 +143,18 @@ results$inner_resamples[[5]]$splits[[1]]
 #> <90/31/90>
 ```
 
-To start, we need to define how the model will be created and measured. Let's use a radial basis support vector machine model via the function `kernlab::ksvm`. This model is generally considered to have _two_ tuning parameters: the SVM cost value and the kernel parameter `sigma`. For illustration purposes here, only the cost value will be tuned and the function `kernlab::sigest` will be used to estimate `sigma` during each model fit. This is automatically done by `ksvm`. 
+모델이 생성되고 측정되는 방법을 정의하는 것 부터 시작해야 합니다.
+`kernlab::ksvm` 함수를 사용하여 radial basis 서포트벡트머신모델을 사용해 봅시다.
+This model is generally considered to have _two_ tuning parameters: the SVM cost value and the kernel parameter `sigma`. 
+이 모델은 일반적으로 _두개의_ 튜닝파라미터를 갖는데, SVM cost value 와 커널 파라미터, `sigma` 가 그 것입니다.
+여기서 설명을 위해, cost 값만 튜닝할 것이고, 각 모델 적합동안 `sigma` 을 추정하기 위해 `kernlab::sigest` 함수를 사용할 것입니다.
+`ksvm` 이 이것을 자동으로 수행합니다.
 
-After the model is fit to the analysis set, the root-mean squared error (RMSE) is computed on the assessment set. **One important note:** for this model, it is critical to center and scale the predictors before computing dot products. We don't do this operation here because `mlbench.friedman1` simulates all of the predictors to be standardized uniform random variables. 
+분석셋을 이용하여 모델을 적합하고 나면, 평가셋을 이용하여 RMSE 를 계산합니다.
+**주의사항**: 이 모델에 대해 dot products 를 계산하기 전에 설명변수들을 센터링하고 스케일하는 것이 중요합니다.
+`mlbench.friedman1` 가 설명변수 모드를 표준화된 유니폼 랜덤 변수로 시뮬레이트하기 때문에 우리는 여기서 이 연산을 하지 않습니다.
 
-Our function to fit the model and compute the RMSE is:
+모델을 적합하고 RMSE 를 계산하는 함수는:
 
 
 ```r
@@ -154,7 +179,8 @@ svm_rmse <- function(object, cost = 1) {
 rmse_wrapper <- function(cost, object) svm_rmse(object, cost)
 ```
 
-For the nested resampling, a model needs to be fit for each tuning parameter and each bootstrap split. To do this, create a wrapper: 
+중첩 리샘플링을 하기 위해, 모델이 튜닝파라미터 각각과 부트스트랩 분할 각각에 대해 적합되어야 합니다.
+이를 위해 래퍼를 생성합니다:
 
 
 ```r
@@ -165,7 +191,7 @@ tune_over_cost <- function(object) {
 }
 ```
 
-Since this will be called across the set of outer cross-validation splits, another wrapper is required: 
+outer cross-validation 분할 집합들에 대해 호출될 것이기 때문에, 다른 래퍼가 필요합니다:
 
 
 ```r
@@ -182,14 +208,17 @@ summarize_tune_results <- function(object) {
 }
 ```
 
-Now that those functions are defined, we can execute all the inner resampling loops:
+이러한 함수들이 정의되었기 때문에 이제 내부 리샘플링 루프 모두를 실행할 수 있습니다:
 
 
 ```r
 tuning_results <- map(results$inner_resamples, summarize_tune_results) 
 ```
 
-Alternatively, since these computations can be run in parallel, we can use the furrr package. Instead of using `map()`, the function `future_map()` parallelizes the iterations using the [future package](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html). The `multisession` plan uses the local cores to process the inner resampling loop. The end results are the same as the sequential computations. 
+다른 방법으로는, 이 계산이 병렬로 실행될 수 있기 때문에, furrr 패키지를 사용할 수 있습니다.
+`map()` 대신 `future_map()` 함수를 사용하면, [future package](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) 를 사용하여 반복을 병렬화할 수 있습니다.
+`multisession` 플랜은 내부 리샘플링 루프를 프로세스하기 위해 로컬 코어를 사용합니다.
+최종 결과는 이전의 순차적 계산했을 때와 같게 됩니다.
 
 
 ```r
@@ -199,9 +228,9 @@ plan(multisession)
 tuning_results <- future_map(results$inner_resamples, summarize_tune_results) 
 ```
 
-The object `tuning_results` is a list of data frames for each of the 50 outer resamples. 
+`tuning_results` 객체는 50 개 아우터 리샘플들 각각에 대해 데이터프레임의 리스트 입니다.
 
-Let's make a plot of the averaged results to see what the relationship is between the RMSE and the tuning parameters for each of the inner bootstrapping operations:
+내부 부트스트래핑 연산 각각에 대해 RMSE 와 튜닝파라미터 사이에 어떤 관계가 있는지를 보기 위해 평균 결과의 플롯을 그려 봅시다:
 
 
 ```r
@@ -227,9 +256,10 @@ p
 
 <img src="figs/rmse-plot-1.svg" width="672" />
 
-Each gray line is a separate bootstrap resampling curve created from a different 90% of the data. The blue line is a LOESS smooth of all the results pooled together. 
+각 회색선은 데이터의 다른 90% 에서 생성된 개별 부트스트랩 리샘플링 커브입니다.
+파란선은 함께 풀링된 결과 모드의 LOESS 스무드입니다.
 
-To determine the best parameter estimate for each of the outer resampling iterations:
+아우터 리샘플링 반복 각각에 해당하는 최적 파라미터 추정값을 결정합니다:
 
 
 ```r
@@ -250,9 +280,9 @@ ggplot(results, aes(x = cost)) +
 
 <img src="figs/choose-1.svg" width="672" />
 
-Most of the resamples produced an optimal cost value of 2.0, but the distribution is right-skewed due to the flat trend in the resampling profile once the cost value becomes 10 or larger.
+리샘플 대부분은 최적 cost 값 2.0 을 찾았지만, 분포가 cost 값이 10 이나 그 이상이 되면 리샘플링 프로파일에서 flat trend 때문에 오른쪽으로 치우쳐 있습니다.
 
-Now that we have these estimates, we can compute the outer resampling results for each of the 50 splits using the corresponding tuning parameter value:
+이 추정값들을 얻었기 때문에 이제 50 분할 각각에 대해 해당되는 튜닝 파라미터 값을 사용하여 outer resampling 결과를 계산할 수 있습니다:
 
 
 ```r
@@ -262,12 +292,14 @@ results <-
 
 summary(results$RMSE)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>    1.57    2.09    2.70    2.69    3.25    4.35
+#>    1.71    2.09    2.69    2.69    3.26    4.27
 ```
 
-The estimated RMSE for the model tuning process is 2.69. 
-
-What is the RMSE estimate for the non-nested procedure when only the outer resampling method is used? For each cost value in the tuning grid, 50 SVM models are fit and their RMSE values are averaged. The table of cost values and mean RMSE estimates is used to determine the best cost value. The associated RMSE is the biased estimate. 
+모델 튜닝 프로세스에서 추정한 RMSE 은 2.69 입니다. 
+outer resampling 방법만 사용하였을 때 중첩하지 않은 과정에서 RMSE 추정값은 어떻게 됩니까?
+튜닝 그리드의 cost 값 각각에 대해, 50 개의 SVM 모델이 적합되고, RMSE 값이 평균됩니다.
+cost 값 테이블과 RMSE 추정값 평균을 사용하여 최적 cost 값을 결정합니다.
+연관된 RMSE 는 biased estimate 입니다.
 
 
 ```r
@@ -280,7 +312,7 @@ outer_summary <- not_nested %>%
   summarize(outer_RMSE = mean(RMSE), n = length(RMSE))
 
 outer_summary
-#> # A tibble: 11 x 3
+#> # A tibble: 11 × 3
 #>      cost outer_RMSE     n
 #>     <dbl>      <dbl> <int>
 #>  1   0.25       3.54    50
@@ -304,9 +336,10 @@ ggplot(outer_summary, aes(x = cost, y = outer_RMSE)) +
 
 <img src="figs/not-nested-1.svg" width="672" />
 
-The non-nested procedure estimates the RMSE to be 2.62. Both estimates are fairly close. 
+비중첩 과정의 RMSE 추정값은 2.62 입니다.
+추정값 두 개가 꽤 서로 가깝습니다.
 
-The approximately true RMSE for an SVM model with a cost value of 2.0 can be approximated with the large sample that was simulated at the beginning. 
+cost 값 2.0 의 SVM 모델의 참 RMSE 는 처음에 시뮬레이트된 큰 샘플로 근사될 수 있습니다.
 
 
 ```r
@@ -316,46 +349,51 @@ sqrt(mean((large_dat$y - large_pred) ^ 2, na.rm = TRUE))
 #> [1] 2.71
 ```
 
-The nested procedure produces a closer estimate to the approximate truth but the non-nested estimate is very similar.
+중첩 과정은 근사 참값에 더 가까운 추정값을 생성했지만 비중첩 추정값은 매우 유사합니다.
 
 
-## Session information
+## 세션정보
 
 
 ```
-#> ─ Session info ───────────────────────────────────────────────────────────────
-#>  setting  value                       
-#>  version  R version 4.0.3 (2020-10-10)
-#>  os       macOS Mojave 10.14.6        
-#>  system   x86_64, darwin17.0          
-#>  ui       X11                         
-#>  language (EN)                        
-#>  collate  en_US.UTF-8                 
-#>  ctype    en_US.UTF-8                 
-#>  tz       America/Denver              
-#>  date     2020-12-07                  
+#> ─ Session info  ↔️  🇦🇸  🟧   ────────────────────────────────────────
+#>  hash: left-right arrow, flag: American Samoa, orange square
 #> 
-#> ─ Packages ───────────────────────────────────────────────────────────────────
-#>  package    * version date       lib source        
-#>  broom      * 0.7.2   2020-10-20 [1] CRAN (R 4.0.2)
-#>  dials      * 0.0.9   2020-09-16 [1] CRAN (R 4.0.2)
-#>  dplyr      * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-#>  furrr      * 0.2.1   2020-10-21 [1] CRAN (R 4.0.2)
-#>  ggplot2    * 3.3.2   2020-06-19 [1] CRAN (R 4.0.0)
-#>  infer      * 0.5.3   2020-07-14 [1] CRAN (R 4.0.0)
-#>  kernlab    * 0.9-29  2019-11-12 [1] CRAN (R 4.0.0)
-#>  mlbench    * 2.1-1   2012-07-10 [1] CRAN (R 4.0.0)
-#>  parsnip    * 0.1.4   2020-10-27 [1] CRAN (R 4.0.2)
-#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#>  recipes    * 0.1.15  2020-11-11 [1] CRAN (R 4.0.2)
-#>  rlang        0.4.9   2020-11-26 [1] CRAN (R 4.0.2)
-#>  rsample    * 0.0.8   2020-09-23 [1] CRAN (R 4.0.2)
-#>  scales     * 1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
-#>  tibble     * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
-#>  tidymodels * 0.1.2   2020-11-22 [1] CRAN (R 4.0.2)
-#>  tune       * 0.1.2   2020-11-17 [1] CRAN (R 4.0.3)
-#>  workflows  * 0.2.1   2020-10-08 [1] CRAN (R 4.0.2)
-#>  yardstick  * 0.0.7   2020-07-13 [1] CRAN (R 4.0.2)
+#>  setting  value
+#>  version  R version 4.1.2 (2021-11-01)
+#>  os       macOS Big Sur 10.16
+#>  system   x86_64, darwin17.0
+#>  ui       X11
+#>  language (EN)
+#>  collate  en_US.UTF-8
+#>  ctype    en_US.UTF-8
+#>  tz       Asia/Seoul
+#>  date     2022-03-06
+#>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
-#> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+#> ─ Packages ─────────────────────────────────────────────────────────
+#>  package    * version date (UTC) lib source
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
+#>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
+#>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+#>  furrr      * 0.2.3   2021-06-25 [1] CRAN (R 4.1.0)
+#>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+#>  infer      * 1.0.0   2021-08-13 [1] CRAN (R 4.1.0)
+#>  kernlab    * 0.9-29  2019-11-12 [1] CRAN (R 4.1.0)
+#>  mlbench    * 2.1-3   2021-01-29 [1] CRAN (R 4.1.0)
+#>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
+#>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+#>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
+#>  rlang        1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
+#>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
+#>  scales     * 1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
+#>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+#>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
+#>  tune       * 0.1.6   2021-07-21 [1] CRAN (R 4.1.0)
+#>  workflows  * 0.2.4   2021-10-12 [1] CRAN (R 4.1.0)
+#>  yardstick  * 0.0.9   2021-11-22 [1] CRAN (R 4.1.0)
+#> 
+#>  [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+#> 
+#> ────────────────────────────────────────────────────────────────────
 ```
