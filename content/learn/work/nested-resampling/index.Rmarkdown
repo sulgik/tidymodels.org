@@ -29,7 +29,7 @@ theme_set(theme_bw() + theme(legend.position = "top"))
 
 `r req_pkgs(pkgs)`
 
-이 장에서는 [nested resampling](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=) 라고 부르는 모델을 평가하고 튜닝하는 다른 방법에 대해 살펴봅니다.
+이 장에서는 [중첩 리샘플링(nested resampling)](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=) 이라고 부르는 모델을 평가하고 튜닝하는 다른 방법에 대해 살펴봅니다.
 다른 리샘플링 방법들보다 계산이 더 걸리고 구현하기 어렵지만, 모델 성능 추정값을 더 잘 구할 수 있는 잠재력이 있습니다.
 
 ## 리샘플링 모델

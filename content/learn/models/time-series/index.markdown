@@ -17,10 +17,12 @@ description: |
 
 이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: forecast, sweep, tidymodels, timetk, and zoo.
 
-"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" 는 시계열에 타이디한 방법을 사용하는 훌륭한 기사입니다. 이 기사는 rsample 을 분석에 사용하는데, [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/) 을 사용하여 미래 관측값에 관한 성능 추정값을 구합니다. 
+"[Demo Week: Tidy Forecasting with sweep](https://www.business-science.io/code-tools/2017/10/25/demo_week_sweep.html)" 는 시계열에 타이디한 방법을 사용하는 훌륭한 글입니다. 
+이 글에서는 rsample 을 분석에 사용하는데, [rolling forecast origin resampling](https://robjhyndman.com/hyndsight/crossvalidation/) 을 사용하여 미래 관측값에 관한 성능 추정값을 구합니다. 
+
 
 ## 예제 데이터
-
+ㅇ
 이 기사의 데이터는 [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN) 에서 가져온 주류 음료 매출에 관한 것입니다.
 
 
@@ -270,11 +272,11 @@ mutate(
 
 
 ```
-#> ─ Session info  ⏏️  👐  ☣️   ─────────────────────────────────────────
-#>  hash: eject button, open hands, biohazard
+#> ─ Session info  👧🏿  🙆🏽  🎅🏽   ───────────────────────────────────────
+#>  hash: girl: dark skin tone, person gesturing OK: medium skin tone, Santa Claus: medium skin tone
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -282,12 +284,12 @@ mutate(
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-09
+#>  date     2022-03-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
 #>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
 #>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  forecast   * 8.15    2021-06-01 [1] CRAN (R 4.1.0)
@@ -296,7 +298,7 @@ mutate(
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
 #>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rlang        1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
 #>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
 #>  sweep      * 0.2.3   2020-07-10 [1] CRAN (R 4.1.0)
 #>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)

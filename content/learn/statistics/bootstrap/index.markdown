@@ -15,11 +15,14 @@ description: |
 
 ## 들어가기
 
-이 장은 tidymodels 패키지만 필요로 합니다.
+이 장에서는 tidymodels 패키지만 있으면 됩니다.
 
-적합된 모델들을 타이디한 방법으로 결합하면 부트스트래핑이나 퍼뮤테이션 테스트를 하기 편리합니다. 이러한 방법들은 예를 들면 [Andrew MacDonald here](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html)에 의해 살펴본 적이 있고, [해들리는 dplyr 에 잠재적인 확장으로써 부트스트래핑에 효율적인 서포트를 탐색한 적이 있습니다](https://github.com/hadley/dplyr/issues/269). tidymodels 패키지 [broom](https://broom.tidyverse.org/) 은 이러한 분석을 수행함에 있어 [dplyr](https://dplyr.tidyverse.org/) 에 자연스럽게 녹아듭니다.
+적합된 모델들을 타이디한 방법으로 결합하면 부트스트래핑이나 퍼뮤테이션 테스트를 하기 편리합니다. 
+이러한 방법들은 예를 들면 [Andrew MacDonald](https://rstudio-pubs-static.s3.amazonaws.com/19698_a4c472606e3c43e4b94720506e49bb7b.html)에서 살펴본 적이 있고, [해들리는 dplyr 에 잠재적인 확장으로써 부트스트래핑에 효율적인 서포트를 탐색한 적이 있습니다](https://github.com/hadley/dplyr/issues/269). 
+tidymodels 의 [broom 패키지](https://broom.tidyverse.org/) 는 이러한 분석을 할 때 [dplyr](https://dplyr.tidyverse.org/) 에 자연스럽게 녹아듭니다.
 
-부트스트래핑은 데이터셋을 대치하면서 랜덤하게 샘플링한 뒤 각 부트스태랩된 데이터(bootstraped replicate)에 개별적으로 분석을 수행하는 것으로 이루어져 있습니다. 결과 추정치에서의 분산은 그 후 우리 추정값에서의 분산의 좋은 근사값이 됩니다.
+부트스트래핑은 데이터셋을 랜덤하게 샘플링한 뒤 각 부트스트랩된 데이터(bootstraped replicate)에 개별적으로 분석을 수행하는 것으로 이루어져 있습니다. 
+결과 추정값들의 분산값은 우리 추정값에서의 분산의 좋은 근사값이 됩니다.
 
 `mtcars` 데이터셋에서 무게/마일리지 관계에 비선형 모델을 적합하고 싶다고 해봅시다.
 
@@ -33,7 +36,7 @@ ggplot(mtcars, aes(mpg, wt)) +
 
 <img src="figs/unnamed-chunk-1-1.svg" width="672" />
 
-(`nls()` 함수를 통해) nonlinear least squares 방법을 사용하여 모델을 적합할 수 있습니다.
+`nls()` 함수를 통해 nonlinear least squares 방법으로 모델을 적합할 수 있습니다.
 
 
 ```r
@@ -60,14 +63,17 @@ ggplot(mtcars, aes(wt, mpg)) +
 ```
 
 <img src="figs/unnamed-chunk-2-1.svg" width="672" />
-이렇게 하면 파라미터의 p-value 와 신뢰구간을 얻을 수 있지만, 이들은 실제 데이터에서는 만족하지 않는 모델 가정에 기반한 것입니다. 부트스트래핑은 데이터 성질에 더 로버스트한 신뢰구간과 예측값을 제공하는 널리사용되는 방법입니다.
+이렇게 하면 파라미터의 p-값과 신뢰구간을 얻을 수 있지만, 이들은 실제 데이터에서는 만족하지 않는 모델 가정에 기반한 것입니다.
+부트스트래핑은 데이터 성질에 더 로버스트한 신뢰구간과 예측값을 제공하는 널리사용되는 방법입니다.
 
 ## 부트스트래핑 모델
 
-rsample 패키지의 `bootstraps()` 함수를 사용하여 부트스트랩 데이터를 샘플할 수 있습니다
-우선, 데이터의 각 데이터가 복원 랜덤 샘플링된, 2000 부트스트랩 데이터들을 만듭니다. 결과 객체는 `rset` 인데, `rsplit` 객체들을 하나의 열로 가지고 있는 데이터프레임이 됩니다.
+rsample 패키지의 `bootstraps()` 함수를 사용하여 부트스트랩 데이터를 샘플할 수 있습니다.
+우선, 각 데이터가 복원 랜덤 샘플링된, 2000 개의 부트스트랩 데이터들을 만듭니다. 
+결과 객체는 `rset` 인데, `rsplit` 객체들을 하나의 열로 가지고 있는 데이터프레임입니다.
 
-`rsplit` 객체에는 두 개의 메인 구성요소가 있습니다: 분석 데이터셋과 평가 데이터셋이며 각각 `analysis(rsplit)` 과 `assessment(rsplit)` 으로 접근할 수 있습니다. 부트스트랩 샘플에 대해 분석 데이터셋은 부트스트램 샘플 자체이고, 평가 데이터셋은 out-of-bag 샘플들로 구성됩니다.
+`rsplit` 객체에는 두 개의 메인 구성요소가 있습니다: 분석 데이터셋과 평가 데이터셋이며 각각 `analysis(rsplit)` 과 `assessment(rsplit)` 으로 접근할 수 있습니다. 
+부트스트랩 샘플에 대해 분석 데이터셋은 부트스트램 샘플 자체이고, 평가 데이터셋은 out-of-bag 샘플들로 구성됩니다.
 
 
 ```r
@@ -91,7 +97,8 @@ boots
 #> # … with 1,991 more rows
 ```
 
-각 부트스트랩 샘플에 `nls()` 모델을 적합하기 위해 도우미 함수를 생성해보고 `purr::map()` 을 이용하여 이 함수를 모든 부트스트랩 샘플들에 한번에 적용해 봅시다. 유사하게, 중첩을 풀어서 타이디한 계수 정보를 가진 열 하나를 생성합니다.
+`nls()` 모델을 각 부트스트랩 샘플에 적합하기 위해 도우미 함수를 생성해보고, `purr::map()` 을 이용하여 이 함수를 모든 부트스트랩 샘플들에 한번에 적용해 봅시다.
+중첩을 풀어서 타이디한 계수 정보를 가진 열을 생성합니다.
 
 
 ```r
@@ -132,7 +139,7 @@ boot_coefs
 
 ## 신뢰구간
 
-이제 ([백분율 방법](https://www.uvm.edu/~dhowell/StatPages/Randomization%20Tests/ResamplingWithR/BootstMeans/bootstrapping_means.html)이라 불리는 것을 사용하여) 신뢰구간을 계산할 수 있습니다:
+이제 ([백분율 방법](https://www.uvm.edu/~dhowell/StatPages/Randomization%20Tests/ResamplingWithR/BootstMeans/bootstrapping_means.html)이라는 것을 사용하여) 신뢰구간을 계산할 수 있습니다:
 
 
 ```r
@@ -158,11 +165,12 @@ ggplot(boot_coefs, aes(estimate)) +
 
 <img src="figs/unnamed-chunk-6-1.svg" width="672" />
 
-rsample 패키지에는 [다른 유형의 신뢰구간](https://tidymodels.github.io/rsample/reference/int_pctl.html) 을 위한 함수들도 있습니다.. 
+rsample 패키지에는 [다른 유형의 신뢰구간](https://tidymodels.github.io/rsample/reference/int_pctl.html) 을 위한 함수들도 있습니다. 
 
 ## 가능한 모델 적합
 
-`augment()` 을 사용하여 적합된 곡선에서 불확실성을 시각화할 수 있습니다. 부트스트랩 샘플이 아주 많기 때문에, 여기 시각화에서는 모델 적합 샘플만 보여줄 것입니다:
+`augment()` 을 사용하여 적합된 곡선에서 불확실성을 시각화할 수 있습니다. 
+부트스트랩 샘플이 아주 많기 때문에, 여기에서는 일부만 시각화합니다:
 
 
 ```r
@@ -198,7 +206,9 @@ ggplot(boot_aug, aes(wt, mpg)) +
 
 <img src="figs/unnamed-chunk-8-1.svg" width="672" />
 
-조금만 바꿔서, 다른 종류의 예측모델이나 가설 검정 모델로 부트스트래핑을 쉽게 수행할 수 있는데, `tidy()` 와 `augment()` 함수가 다양한 통계결과에 사용할 수 있기 때문입니다. 다른 예로, `smooth.spline()` 을 사용할 수 있는데 이는 데이터에 이차 스무딩 spline 을 적합합니다:
+`tidy()` 와 `augment()` 함수가 다양한 통계결과에 사용할 수 있습니다.
+따라서, 다른 종류의 예측모델이나 가설검정 모델로 부트스트래핑을 쉽게 수행할 수 있습니다.
+데이터에 이차 스무딩 spline 을 적합하는 `smooth.spline()` 을 사용할 수도 있습니다:
 
 
 ```r
@@ -230,11 +240,11 @@ ggplot(splines_aug, aes(x, y)) +
 
 
 ```
-#> ─ Session info  👧🏼  ⛱️  🇸🇷   ────────────────────────────────────────
-#>  hash: girl: medium-light skin tone, umbrella on ground, flag: Suriname
+#> ─ Session info  😌  🕵🏼  🎄   ──────────────────────────────────────
+#>  hash: relieved face, detective: medium-light skin tone, Christmas tree
 #> 
 #>  setting  value
-#>  version  R version 4.1.1 (2021-08-10)
+#>  version  R version 4.1.2 (2021-11-01)
 #>  os       macOS Big Sur 10.16
 #>  system   x86_64, darwin17.0
 #>  ui       X11
@@ -242,12 +252,12 @@ ggplot(splines_aug, aes(x, y)) +
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-01-11
+#>  date     2022-03-09
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
 #>  package    * version date (UTC) lib source
-#>  broom      * 0.7.10  2021-10-31 [1] CRAN (R 4.1.0)
+#>  broom      * 0.7.11  2022-01-03 [1] CRAN (R 4.1.2)
 #>  dials      * 0.0.10  2021-09-10 [1] CRAN (R 4.1.0)
 #>  dplyr      * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 #>  ggplot2    * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
@@ -255,7 +265,7 @@ ggplot(splines_aug, aes(x, y)) +
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
 #>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang        0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rlang        1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
 #>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
 #>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
 #>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)

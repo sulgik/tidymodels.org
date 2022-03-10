@@ -17,7 +17,7 @@ description: |
 
 이 장의 코드를 사용하려면, 다음의 패키지들을 인스톨해야합니다: furrr, kernlab, mlbench, scales, and tidymodels.
 
-이 장에서는 [nested resampling](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=) 라고 부르는 모델을 평가하고 튜닝하는 다른 방법에 대해 살펴봅니다.
+이 장에서는 [중첩 리샘플링(nested resampling)](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22nested+resampling%22+inner+outer&btnG=) 이라고 부르는 모델을 평가하고 튜닝하는 다른 방법에 대해 살펴봅니다.
 다른 리샘플링 방법들보다 계산이 더 걸리고 구현하기 어렵지만, 모델 성능 추정값을 더 잘 구할 수 있는 잠재력이 있습니다.
 
 ## 리샘플링 모델
@@ -72,7 +72,7 @@ large_dat <- sim_data(10^5)
 _튜닝파라미터당_ 데이터에 적합되는 모델개수는 `5 * 10 * 25 = 1250` 가 될 것입니다.
 모델 성능이 정량화되고 나면 이 모델들은 버려질 것입니다.
 
-리샘플링 명시가 있는 티블을 생성합니다:
+리샘플링 명시(specification)가 있는 티블을 생성합니다:
 
 
 ```r
@@ -292,10 +292,10 @@ results <-
 
 summary(results$RMSE)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>    1.71    2.09    2.69    2.69    3.26    4.27
+#>    1.57    2.09    2.68    2.70    3.26    4.35
 ```
 
-모델 튜닝 프로세스에서 추정한 RMSE 은 2.69 입니다. 
+모델 튜닝 프로세스에서 추정한 RMSE 은 2.7 입니다. 
 outer resampling 방법만 사용하였을 때 중첩하지 않은 과정에서 RMSE 추정값은 어떻게 됩니까?
 튜닝 그리드의 cost 값 각각에 대해, 50 개의 SVM 모델이 적합되고, RMSE 값이 평균됩니다.
 cost 값 테이블과 RMSE 추정값 평균을 사용하여 최적 cost 값을 결정합니다.
@@ -368,7 +368,7 @@ sqrt(mean((large_dat$y - large_pred) ^ 2, na.rm = TRUE))
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-03-06
+#>  date     2022-03-09
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
