@@ -28,7 +28,7 @@ description: |
 
 `\(\beta\)`는 계수이고 `\(x_j\)` 은 모델 설명변수 이거나 피쳐입니다.
 
-[시카고 기차 데이터](https://bookdown.org/max/FES/chicago-intro.html) 에서 Clark 와 Lake 역의 승차를 세 역의 14일 이전 승차데이터를 이용하여 예측해 봅시다.
+[시카고 기차 데이터](https://bookdown.org/max/FES/chicago-intro.html) 에서 세 역의 14일 이전 승차데이터를 이용하여 Clark 역과 Lake 역의 얼마나 승차할지를 예측해 봅시다.
 
 modeldata 패키지에 데이터가 있습니다:
 
@@ -59,7 +59,7 @@ lm_fit <- fit(lm_spec, ridership ~ ., data = Chicago)
 lm_fit
 #> parsnip model object
 #> 
-#> Fit time:  7ms 
+#> Fit time:  5ms 
 #> 
 #> Call:
 #> stats::lm(formula = ridership ~ ., data = data)
@@ -69,7 +69,7 @@ lm_fit
 #>       1.678        0.904        0.612       -0.555
 ```
 
-`tidy()` 방법을 사용하는 것이 적합된 파라미터를 추출하는 가장 좋은 방법입니다.
+적합된 파라미터를 추출하려면 `tidy()` 를 사용하는 것이 가장 좋습니다.
 broom 패키지에 있는 이 함수는 계수와, 연관된 통계량을 데이터프레임에 표준화된 열이름과 함께 반환합니다:
 
 
@@ -86,10 +86,11 @@ tidy(lm_fit)
 
 이후 섹션에서 이 함수를 사용합니다.
 
+
 ### 리샘플되거나 튜닝된 모델
 
 tidymodels 프레임워크에서는 리샘플링 방법들로 모델 성능을 평가하는 것을 강조합니다. 
-시게열 리샘플링 방법이 이 데이터에 적절하지만, 데이터를 리샘플하는 [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) 방법을 이용할 수도 있습니다.
+시계열 리샘플링 방법이 이 데이터에 적절하지만, 데이터를 리샘플하는 [bootstrap](https://www.tmwr.org/resampling.html#bootstrap) 방법을 이용할 수도 있습니다.
 bootstrap 방법은 통계적 추정값의 불확실성을 평가할 때 표준적인 리샘플링 방법입니다.
 
 플롯과 아웃풋을 단순화하기 위해 다섯 bootstrap 리샘플을 사용할 것입니다. (원래는 믿을만한 추정값을 위해서는 더 많은 개수의 리샘플을 사용합니다).
@@ -101,21 +102,21 @@ bt <- bootstraps(Chicago, times = 5)
 ```
 
 리샘플링이 만든 데이터셋의 다른 시뮬레이션 버전에 동일한 모델을 적합시킵니다. 
-추천하는 방법은 tidymodels 함수 [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance)를 사용하는 것입니다.
+tidymodels 의 [`fit_resamples()`](https://www.tmwr.org/resampling.html#resampling-performance) 함수를 사용하는 것을 추천합니다.
 
 {{% warning %}} The `fit_resamples()` function does not automatically save the model objects for each resample since these can be quite large and its main purpose is estimating performance. However, we can pass a function to `fit_resamples()` that _can_ save the model object or any other aspect of the fit. {{%/ warning %}}
 
 이 함수는 적합된 [워크플로우 객체](https://www.tmwr.org/workflows.html) 를 표현하는 인수를 입력으로 합니다. (`fit_resamples()` 에 워크플로우를 알려주지 않을지라도 그렇습니다.)
 
-이제 모델 적합을 추출할 수 있습니다. 
+이제 모델적합을 추출할 수 있습니다. 
 모델 객체의 두 "레벨"을 볼 수 있습니다:
 
 * parsnip 모델객체: 내부 모델객체를 래핑함. `extract_fit_parsnip()` 함수로 추출함. 
 
-* `extract_fit_engine()` 를 통한 내부 모델객체 (aka 엔진적합). 
+* `extract_fit_engine()` 를 통한 내부 모델객체 (다른말로는 엔진적합). 
 
-후자 옵션을 사용하여 이 모델객체를 이전섹션에서 했듯이 타이디하게 할 것입니다. 
-이를 재사용할 수 있도록 컨트롤 함수에 추가합시다.
+이전 섹션에서 했듯이 후자 옵션을 사용하여 이 모델객체를 타이디하게 할 것입니다. 
+재사용할 수 있도록 컨트롤 함수에 추가합시다.
 
 
 ```r
@@ -249,6 +250,7 @@ lm_coefs %>%
 Austin 역 데이터의 계수에 있어서 uncertainty 가 크고, 다른 두 역에 대해서는 작은 것 같이 보입니다.
 결과를 unnest 하는 코드를 보면, double-nesting 구조가 과하거나 귀찮을 것입니다.
 그러나, 추출 기능은 유연성이 있고, 더 간단한 구조로는 많은 use case 를 할 수 없었을 것입니다.
+
 
 ## 복잡한 모델: glmnet
 
@@ -602,8 +604,8 @@ glmnet_coefs %>%
 
 
 ```
-#> ─ Session info  🆎  👫🏼  🦙   ───────────────────────────────────────
-#>  hash: AB button (blood type), woman and man holding hands: medium-light skin tone, llama
+#> ─ Session info  🇸🇳  🏄🏾  😔   ───────────────────────────────────────
+#>  hash: flag: Senegal, person surfing: medium-dark skin tone, pensive face
 #> 
 #>  setting  value
 #>  version  R version 4.1.2 (2021-11-01)
@@ -614,7 +616,7 @@ glmnet_coefs %>%
 #>  collate  en_US.UTF-8
 #>  ctype    en_US.UTF-8
 #>  tz       Asia/Seoul
-#>  date     2022-02-01
+#>  date     2022-03-10
 #>  pandoc   2.11.4 @ /Applications/RStudio.app/Contents/MacOS/pandoc/ (via rmarkdown)
 #> 
 #> ─ Packages ─────────────────────────────────────────────────────────
@@ -628,7 +630,7 @@ glmnet_coefs %>%
 #>  parsnip    * 0.1.7   2021-07-21 [1] CRAN (R 4.1.0)
 #>  purrr      * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
 #>  recipes    * 0.1.17  2021-09-27 [1] CRAN (R 4.1.0)
-#>  rlang      * 0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+#>  rlang      * 1.0.0   2022-01-26 [1] CRAN (R 4.1.2)
 #>  rsample    * 0.1.1   2021-11-08 [1] CRAN (R 4.1.0)
 #>  tibble     * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
 #>  tidymodels * 0.1.4   2021-10-01 [1] CRAN (R 4.1.0)
