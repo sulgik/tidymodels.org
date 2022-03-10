@@ -22,7 +22,7 @@ description: |
 
 
 ## 예제 데이터
-ㅇ
+
 이 기사의 데이터는 [the Federal Reserve Bank of St. Louis website](https://fred.stlouisfed.org/series/S4248SM144NCEN) 에서 가져온 주류 음료 매출에 관한 것입니다.
 
 
